@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/finance_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../core/widgets/data_widgets.dart';
@@ -21,6 +24,7 @@ class SuppliersScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<List<Supplier>> suppliers = ref.watch(suppliersProvider);
+    final SuppliersStrings strings = ref.watch(stringsProvider).suppliers;
 
     return ModuleScaffold(
       title: 'Proveedores',
@@ -28,15 +32,13 @@ class SuppliersScreen extends ConsumerWidget {
       onRefresh: () => ref.invalidate(suppliersProvider),
       body: AsyncSection<List<Supplier>>(
         value: suppliers,
-        errorMessage: 'No se pudieron cargar los proveedores.',
+        errorMessage: strings.loadError,
         onRetry: () => ref.invalidate(suppliersProvider),
         builder: (List<Supplier> data) => data.isEmpty
-            ? const EmptyState(
+            ? EmptyState(
                 icon: Icons.local_shipping_rounded,
-                title: 'Sin proveedores',
-                message:
-                    'Cuando tu empresa dé de alta proveedores, aparecerán aquí '
-                    'para asociarlos a las órdenes de compra.',
+                title: strings.emptyTitle,
+                message: strings.emptyMessage,
               )
             : ModuleList(
                 itemCount: data.length,
@@ -58,6 +60,7 @@ class _SupplierCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AuthUser? user = ref.watch(currentUserProvider);
     final bool canDelete = user?.can(Perm.suppliersDelete) ?? false;
+    final AppStrings strings = ref.watch(stringsProvider);
 
     return AppCard(
       child: Row(
@@ -85,7 +88,7 @@ class _SupplierCard extends ConsumerWidget {
                 if (supplier.nit.isNotEmpty)
                   InfoLine(
                     icon: Icons.badge_outlined,
-                    text: 'NIT ${supplier.nit}',
+                    text: strings.suppliers.taxIdOf(supplier.nit),
                   ),
                 if (supplier.phone.isNotEmpty)
                   InfoLine(icon: Icons.phone_outlined, text: supplier.phone),
@@ -104,7 +107,7 @@ class _SupplierCard extends ConsumerWidget {
           ),
           if (canDelete)
             IconButton(
-              tooltip: 'Eliminar',
+              tooltip: strings.common.delete,
               icon: const Icon(Icons.delete_outline_rounded, size: 19),
               color: AppColors.textDisabled,
               onPressed: () => _delete(context, ref),
@@ -115,17 +118,18 @@ class _SupplierCard extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final SuppliersStrings strings = ref.read(stringsProvider).suppliers;
     final bool confirmed = await confirmDestructive(
       context,
-      title: 'Eliminar proveedor',
-      message: 'Se eliminará «${supplier.name}».',
+      title: strings.deleteTitle,
+      message: strings.deleteBody(supplier.name),
     );
     if (!confirmed || !context.mounted) return;
 
     final bool ok = await runWithFeedback(
       context,
       action: () => ref.read(suppliersRepositoryProvider).delete(supplier.id),
-      successMessage: 'Proveedor eliminado',
+      successMessage: strings.deleted,
     );
     if (ok) ref.invalidate(suppliersProvider);
   }

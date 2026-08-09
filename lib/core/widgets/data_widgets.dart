@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../i18n/app_strings.dart';
+import '../i18n/locale_controller.dart';
 import '../network/api_exception.dart';
 import '../theme/app_colors.dart';
 import 'app_widgets.dart';
@@ -216,28 +218,37 @@ class ProgressBar extends StatelessWidget {
 /// Pregunta de confirmación con acción destructiva en rojo.
 ///
 /// Devuelve `true` solo si el usuario confirma.
+/// Si no se indica [confirmLabel], el botón dice «Eliminar» en el idioma
+/// activo.
 Future<bool> confirmDestructive(
   BuildContext context, {
   required String title,
   required String message,
-  String confirmLabel = 'Eliminar',
+  String? confirmLabel,
 }) async {
   final bool? confirmed = await showDialog<bool>(
     context: context,
-    builder: (BuildContext context) => AlertDialog(
-      title: Text(title),
-      content: Text(message),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancelar'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-          child: Text(confirmLabel),
-        ),
-      ],
+    // `Consumer` en vez de recibir los textos por parámetro: así los diez
+    // sitios que borran algo no tienen que pasarlos.
+    builder: (BuildContext context) => Consumer(
+      builder: (BuildContext context, WidgetRef ref, Widget? _) {
+        final AppStrings strings = ref.watch(stringsProvider);
+        return AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(strings.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(foregroundColor: AppColors.danger),
+              child: Text(confirmLabel ?? strings.common.delete),
+            ),
+          ],
+        );
+      },
     ),
   );
   return confirmed ?? false;

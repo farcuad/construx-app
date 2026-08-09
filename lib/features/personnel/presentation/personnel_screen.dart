@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/resources_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -19,28 +22,32 @@ class PersonnelScreen extends ConsumerWidget {
   static const String routePath = '/personnel';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => DefaultTabController(
-    length: 3,
-    child: ModuleScaffold(
-      title: 'Personal',
-      currentPath: routePath,
-      onRefresh: () {
-        ref.invalidate(employeesProvider);
-        ref.invalidate(positionsProvider);
-        ref.invalidate(projectContractsProvider);
-      },
-      bottom: const TabBar(
-        tabs: <Widget>[
-          Tab(text: 'Empleados'),
-          Tab(text: 'Cargos'),
-          Tab(text: 'Contratos'),
-        ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final PersonnelStrings strings = ref.watch(stringsProvider).personnel;
+
+    return DefaultTabController(
+      length: 3,
+      child: ModuleScaffold(
+        title: 'Personal',
+        currentPath: routePath,
+        onRefresh: () {
+          ref.invalidate(employeesProvider);
+          ref.invalidate(positionsProvider);
+          ref.invalidate(projectContractsProvider);
+        },
+        bottom: TabBar(
+          tabs: <Widget>[
+            Tab(text: strings.tabEmployees),
+            Tab(text: strings.tabPositions),
+            Tab(text: strings.tabContracts),
+          ],
+        ),
+        body: const TabBarView(
+          children: <Widget>[_EmployeesTab(), _PositionsTab(), _ContractsTab()],
+        ),
       ),
-      body: const TabBarView(
-        children: <Widget>[_EmployeesTab(), _PositionsTab(), _ContractsTab()],
-      ),
-    ),
-  );
+    );
+  }
 }
 
 class _EmployeesTab extends ConsumerWidget {
@@ -55,15 +62,18 @@ class _EmployeesTab extends ConsumerWidget {
         p.id: p.name,
     };
 
+    final AppStrings all = ref.watch(stringsProvider);
+    final PersonnelStrings strings = all.personnel;
+
     return AsyncSection<List<Employee>>(
       value: employees,
-      errorMessage: 'No se pudo cargar la plantilla.',
+      errorMessage: strings.employeesError,
       onRetry: () => ref.invalidate(employeesProvider),
       builder: (List<Employee> data) => data.isEmpty
-          ? const EmptyState(
+          ? EmptyState(
               icon: Icons.badge_rounded,
-              title: 'Sin empleados',
-              message: 'Aquí aparecerá la plantilla de la empresa.',
+              title: strings.employeesEmptyTitle,
+              message: strings.employeesEmptyMessage,
             )
           : ModuleList(
               itemCount: data.length,
@@ -101,8 +111,8 @@ class _EmployeesTab extends ConsumerWidget {
                                   ),
                                 ),
                                 if (!e.isActive)
-                                  const StatusChip(
-                                    label: 'Inactivo',
+                                  StatusChip(
+                                    label: all.common.inactive,
                                     color: AppColors.textDisabled,
                                   ),
                               ],
@@ -115,7 +125,7 @@ class _EmployeesTab extends ConsumerWidget {
                             if (e.dni.isNotEmpty)
                               InfoLine(
                                 icon: Icons.badge_outlined,
-                                text: 'DNI ${e.dni}',
+                                text: strings.nationalIdOf(e.dni),
                               ),
                             if (e.phone.isNotEmpty)
                               InfoLine(
@@ -141,15 +151,17 @@ class _PositionsTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<List<Position>> positions = ref.watch(positionsProvider);
 
+    final PersonnelStrings strings = ref.watch(stringsProvider).personnel;
+
     return AsyncSection<List<Position>>(
       value: positions,
-      errorMessage: 'No se pudieron cargar los cargos.',
+      errorMessage: strings.positionsError,
       onRetry: () => ref.invalidate(positionsProvider),
       builder: (List<Position> data) => data.isEmpty
-          ? const EmptyState(
+          ? EmptyState(
               icon: Icons.work_outline_rounded,
-              title: 'Sin cargos',
-              message: 'Los cargos definen el salario base de cada puesto.',
+              title: strings.positionsEmptyTitle,
+              message: strings.positionsEmptyMessage,
             )
           : ModuleList(
               itemCount: data.length,
@@ -179,7 +191,7 @@ class _PositionsTab extends ConsumerWidget {
                       ),
                       const SizedBox(width: 10),
                       LabeledValue(
-                        label: 'SALARIO BASE',
+                        label: strings.baseSalaryUpper,
                         value: Fmt.money(p.baseSalary),
                         alignEnd: true,
                       ),
@@ -197,7 +209,7 @@ class _ContractsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => ProjectScope(
-    emptyMessage: 'Los contratos laborales se asignan a una obra.',
+    emptyMessage: ref.watch(stringsProvider).personnel.needsProject,
     builder: (BuildContext context, Project project) {
       final AsyncValue<List<LaborContract>> contracts = ref.watch(
         projectContractsProvider(project.id),
@@ -208,15 +220,17 @@ class _ContractsTab extends ConsumerWidget {
           e.id: e.fullName,
       };
 
+      final PersonnelStrings strings = ref.watch(stringsProvider).personnel;
+
       return AsyncSection<List<LaborContract>>(
         value: contracts,
-        errorMessage: 'No se pudieron cargar los contratos.',
+        errorMessage: strings.contractsError,
         onRetry: () => ref.invalidate(projectContractsProvider(project.id)),
         builder: (List<LaborContract> data) => data.isEmpty
             ? EmptyState(
                 icon: Icons.description_outlined,
-                title: 'Sin contratos',
-                message: 'Nadie tiene contrato asignado a «${project.name}».',
+                title: strings.contractsEmptyTitle,
+                message: strings.contractsEmptyFor(project.name),
               )
             : ModuleList(
                 itemCount: data.length,
@@ -232,7 +246,7 @@ class _ContractsTab extends ConsumerWidget {
                           children: <Widget>[
                             Expanded(
                               child: Text(
-                                names[c.employeeId] ?? 'Empleado',
+                                names[c.employeeId] ?? strings.unnamedEmployee,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -255,20 +269,20 @@ class _ContractsTab extends ConsumerWidget {
                           children: <Widget>[
                             Expanded(
                               child: LabeledValue(
-                                label: 'SALARIO',
+                                label: strings.salaryUpper,
                                 value: Fmt.money(c.salary),
                                 color: AppColors.orangeNeon,
                               ),
                             ),
                             Expanded(
                               child: LabeledValue(
-                                label: 'DESDE',
+                                label: strings.fromUpper,
                                 value: Fmt.date(c.startDate),
                               ),
                             ),
                             Expanded(
                               child: LabeledValue(
-                                label: 'HASTA',
+                                label: strings.toUpper,
                                 value: Fmt.date(c.endDate),
                                 alignEnd: true,
                               ),

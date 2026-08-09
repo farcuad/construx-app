@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/finance_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -22,16 +25,20 @@ class BudgetsScreen extends ConsumerWidget {
   static const String routePath = '/budgets';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => ModuleScaffold(
-    title: 'Presupuestos',
-    currentPath: routePath,
-    onRefresh: () => ref.invalidate(projectBudgetsProvider),
-    body: ProjectScope(
-      emptyMessage: 'Los presupuestos se hacen por obra. Crea la primera.',
-      builder: (BuildContext context, Project project) =>
-          _BudgetsList(project: project),
-    ),
-  );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AppStrings strings = ref.watch(stringsProvider);
+
+    return ModuleScaffold(
+      title: 'Presupuestos',
+      currentPath: routePath,
+      onRefresh: () => ref.invalidate(projectBudgetsProvider),
+      body: ProjectScope(
+        emptyMessage: strings.budgets.needsProject,
+        builder: (BuildContext context, Project project) =>
+            _BudgetsList(project: project),
+      ),
+    );
+  }
 }
 
 class _BudgetsList extends ConsumerWidget {
@@ -44,16 +51,17 @@ class _BudgetsList extends ConsumerWidget {
     final AsyncValue<List<Budget>> budgets = ref.watch(
       projectBudgetsProvider(project.id),
     );
+    final BudgetsStrings strings = ref.watch(stringsProvider).budgets;
 
     return AsyncSection<List<Budget>>(
       value: budgets,
-      errorMessage: 'No se pudieron cargar los presupuestos.',
+      errorMessage: strings.loadError,
       onRetry: () => ref.invalidate(projectBudgetsProvider(project.id)),
       builder: (List<Budget> data) => data.isEmpty
           ? EmptyState(
               icon: Icons.request_quote_rounded,
-              title: 'Sin presupuestos',
-              message: '«${project.name}» aún no tiene presupuestos cargados.',
+              title: strings.emptyTitle,
+              message: strings.emptyFor(project.name),
             )
           : ModuleList(
               itemCount: data.length,
@@ -68,13 +76,13 @@ class _BudgetsList extends ConsumerWidget {
 }
 
 /// Suma de todos los presupuestos de la obra.
-class _Total extends StatelessWidget {
+class _Total extends ConsumerWidget {
   const _Total({required this.budgets});
 
   final List<Budget> budgets;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final double total = budgets.fold<double>(
       0,
       (double sum, Budget b) => sum + b.totalAmount,
@@ -92,9 +100,7 @@ class _Total extends StatelessWidget {
           const SizedBox(width: 13),
           Expanded(
             child: LabeledValue(
-              label:
-                  '${budgets.length} PRESUPUESTO'
-                  '${budgets.length == 1 ? '' : 'S'}',
+              label: ref.watch(stringsProvider).budgets.count(budgets.length),
               value: Fmt.money(total),
               color: AppColors.orangeNeon,
             ),
@@ -114,6 +120,7 @@ class _BudgetCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AuthUser? user = ref.watch(currentUserProvider);
     final bool canDelete = user?.can(Perm.budgetsDelete) ?? false;
+    final AppStrings strings = ref.watch(stringsProvider);
 
     return AppCard(
       padding: EdgeInsets.zero,
@@ -127,7 +134,7 @@ class _BudgetCard extends ConsumerWidget {
           iconColor: AppColors.orangeNeon,
           collapsedIconColor: AppColors.textSecondary,
           title: Text(
-            budget.title.isEmpty ? 'Presupuesto' : budget.title,
+            budget.title.isEmpty ? strings.budgets.untitled : budget.title,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
@@ -140,8 +147,7 @@ class _BudgetCard extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               '${Fmt.money(budget.totalAmount)} · '
-              '${budget.items.length} partida'
-              '${budget.items.length == 1 ? '' : 's'}',
+              '${strings.budgets.items(budget.items.length)}',
               style: const TextStyle(
                 color: AppColors.orangeNeon,
                 fontSize: 13,
@@ -169,7 +175,7 @@ class _BudgetCard extends ConsumerWidget {
                 child: TextButton.icon(
                   onPressed: () => _delete(context, ref),
                   icon: const Icon(Icons.delete_outline_rounded, size: 17),
-                  label: const Text('Eliminar'),
+                  label: Text(strings.common.delete),
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.danger,
                   ),
@@ -182,17 +188,18 @@ class _BudgetCard extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final BudgetsStrings strings = ref.read(stringsProvider).budgets;
     final bool confirmed = await confirmDestructive(
       context,
-      title: 'Eliminar presupuesto',
-      message: 'Se eliminará «${budget.title}» y todas sus partidas.',
+      title: strings.deleteTitle,
+      message: strings.deleteBody(budget.title),
     );
     if (!confirmed || !context.mounted) return;
 
     final bool ok = await runWithFeedback(
       context,
       action: () => ref.read(budgetsRepositoryProvider).delete(budget.id),
-      successMessage: 'Presupuesto eliminado',
+      successMessage: strings.deleted,
     );
     if (ok) ref.invalidate(projectBudgetsProvider(budget.projectId));
   }

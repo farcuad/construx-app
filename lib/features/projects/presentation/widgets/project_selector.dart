@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/i18n/locale_controller.dart';
+import '../../../../core/i18n/sections/admin_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/app_widgets.dart';
@@ -26,6 +28,7 @@ class ProjectSelector extends ConsumerWidget {
         ref.watch(projectsControllerProvider).valueOrNull ?? const <Project>[];
     final Project? active = ref.watch(activeProjectProvider);
     if (active == null) return const SizedBox.shrink();
+    final ProjectScopeStrings strings = ref.watch(stringsProvider).projectScope;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 4, 8, 4),
@@ -60,12 +63,15 @@ class ProjectSelector extends ConsumerWidget {
                 // Sin esto el desplegable se leería como un campo de texto más;
                 // el rótulo aclara que lo que se elige es el ámbito de la
                 // pantalla entera.
-                hint: const Text('Elige una obra'),
+                hint: Text(strings.hint),
                 selectedItemBuilder: (BuildContext context) => <Widget>[
                   for (final Project project in projects)
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: _SelectedLabel(name: project.name),
+                      child: _SelectedLabel(
+                        name: project.name,
+                        label: strings.label,
+                      ),
                     ),
                 ],
                 items: <DropdownMenuItem<String>>[
@@ -100,18 +106,19 @@ class ProjectSelector extends ConsumerWidget {
 /// Lo que se ve en el control cuando el menú está cerrado: rótulo pequeño
 /// encima del nombre de la obra.
 class _SelectedLabel extends StatelessWidget {
-  const _SelectedLabel({required this.name});
+  const _SelectedLabel({required this.name, required this.label});
 
   final String name;
+  final String label;
 
   @override
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     mainAxisSize: MainAxisSize.min,
     children: <Widget>[
-      const Text(
-        'PROYECTO',
-        style: TextStyle(
+      Text(
+        label,
+        style: const TextStyle(
           color: AppColors.textDisabled,
           fontSize: 9.5,
           fontWeight: FontWeight.w700,
@@ -138,15 +145,13 @@ class _SelectedLabel extends StatelessWidget {
 /// Resuelve de una vez los dos casos que si no repetiría cada módulo por obra:
 /// que la empresa aún no tenga proyectos y que la lista todavía esté cargando.
 class ProjectScope extends ConsumerWidget {
-  const ProjectScope({
-    required this.builder,
-    this.emptyMessage =
-        'Este módulo trabaja sobre una obra. Crea la primera para empezar.',
-    super.key,
-  });
+  const ProjectScope({required this.builder, this.emptyMessage, super.key});
 
   final Widget Function(BuildContext context, Project project) builder;
-  final String emptyMessage;
+
+  /// Qué decir cuando la empresa aún no tiene obras. Cada módulo explica por
+  /// qué necesita una; sin él se usa una frase genérica.
+  final String? emptyMessage;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -154,19 +159,20 @@ class ProjectScope extends ConsumerWidget {
       projectsControllerProvider,
     );
     final Project? active = ref.watch(activeProjectProvider);
+    final ProjectScopeStrings strings = ref.watch(stringsProvider).projectScope;
 
     if (active == null) {
       return switch (projects) {
         AsyncLoading<List<Project>>() => const LoadingView(),
         AsyncError<List<Project>>() => ErrorView(
-          message: 'No se pudieron cargar los proyectos.',
+          message: strings.loadError,
           onRetry: () =>
               ref.read(projectsControllerProvider.notifier).refresh(),
         ),
         _ => EmptyState(
           icon: Icons.apartment_rounded,
-          title: 'Aún no hay proyectos',
-          message: emptyMessage,
+          title: strings.emptyTitle,
+          message: emptyMessage ?? strings.defaultEmptyMessage,
         ),
       };
     }

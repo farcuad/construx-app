@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/admin_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -11,6 +14,7 @@ import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/auth_user.dart';
 import '../../auth/domain/permissions.dart';
 import '../../clients/application/clients_controller.dart';
+import '../../home/presentation/widgets/app_nav_bar.dart';
 import '../application/projects_controller.dart';
 import '../domain/project.dart';
 import '../domain/project_kpis.dart';
@@ -35,10 +39,12 @@ class ProjectDetailScreen extends ConsumerWidget {
       ),
     );
 
+    final ProjectsStrings strings = ref.watch(stringsProvider).projects;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          project?.name ?? 'Proyecto',
+          project?.name ?? strings.fallbackTitle,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -48,12 +54,15 @@ class ProjectDetailScreen extends ConsumerWidget {
               context.canPop() ? context.pop() : context.go('/projects'),
         ),
       ),
+      // El detalle es una vista más: la barra inferior no desaparece por bajar
+      // un nivel.
+      bottomNavigationBar: const AppNavBar(currentPath: '/projects'),
       body: NeonBackground(
         child: project == null
-            ? const EmptyState(
+            ? EmptyState(
                 icon: Icons.search_off_rounded,
-                title: 'Proyecto no encontrado',
-                message: 'Puede que se haya eliminado o que no tengas acceso.',
+                title: strings.notFoundTitle,
+                message: strings.notFoundMessage,
               )
             : _DetailBody(project: project),
       ),
@@ -71,6 +80,8 @@ class _DetailBody extends ConsumerWidget {
     final AuthUser? user = ref.watch(currentUserProvider);
     final String? clientName = ref.watch(clientNamesProvider)[project.clientId];
     final bool canSeeKpis = user?.can(Perm.dashboardRead) ?? false;
+    final AppStrings all = ref.watch(stringsProvider);
+    final ProjectsStrings strings = all.projects;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
@@ -80,9 +91,9 @@ class _DetailBody extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Text(
-                'PRESUPUESTO DEL PROYECTO',
-                style: TextStyle(
+              Text(
+                strings.projectBudgetUpper,
+                style: const TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -104,22 +115,22 @@ class _DetailBody extends ConsumerWidget {
               const SizedBox(height: 12),
               _InfoRow(
                 icon: Icons.handshake_outlined,
-                label: 'Cliente',
-                value: clientName ?? 'Sin asignar',
+                label: all.common.client,
+                value: clientName ?? strings.unassigned,
               ),
               _InfoRow(
                 icon: Icons.place_outlined,
-                label: 'Ubicación',
+                label: all.common.location,
                 value: project.location.isEmpty ? '—' : project.location,
               ),
               _InfoRow(
                 icon: Icons.play_arrow_rounded,
-                label: 'Inicio',
+                label: all.common.start,
                 value: Fmt.date(project.startDate),
               ),
               _InfoRow(
                 icon: Icons.flag_outlined,
-                label: 'Fin previsto',
+                label: strings.expectedEnd,
                 value: Fmt.date(project.endDate),
               ),
             ],
@@ -129,19 +140,19 @@ class _DetailBody extends ConsumerWidget {
         if (canSeeKpis)
           _KpiSection(projectId: project.id)
         else
-          const AppCard(
+          AppCard(
             child: Row(
               children: <Widget>[
-                Icon(
+                const Icon(
                   Icons.lock_outline_rounded,
                   size: 18,
                   color: AppColors.textDisabled,
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Tu rol no tiene acceso al dashboard financiero.',
-                    style: TextStyle(
+                    strings.noDashboardAccess,
+                    style: const TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 13,
                     ),
@@ -165,15 +176,16 @@ class _KpiSection extends ConsumerWidget {
     final AsyncValue<ProjectKpis> kpis = ref.watch(
       projectKpisProvider(projectId),
     );
+    final AppStrings all = ref.watch(stringsProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Padding(
-          padding: EdgeInsets.only(left: 4, bottom: 12),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
           child: Text(
-            'Resumen financiero',
-            style: TextStyle(
+            all.projects.financialSummary,
+            style: const TextStyle(
               color: AppColors.textPrimary,
               fontSize: 17,
               fontWeight: FontWeight.w800,
@@ -186,9 +198,7 @@ class _KpiSection extends ConsumerWidget {
           ),
           AsyncError<ProjectKpis>(:final Object error) => AppCard(
             child: Text(
-              error is ApiException
-                  ? error.message
-                  : 'No se pudieron cargar los indicadores.',
+              error is ApiException ? error.message : all.dashboard.kpisError,
               style: const TextStyle(
                 color: AppColors.textSecondary,
                 fontSize: 13,
@@ -202,13 +212,15 @@ class _KpiSection extends ConsumerWidget {
   }
 }
 
-class _KpiGrid extends StatelessWidget {
+class _KpiGrid extends ConsumerWidget {
   const _KpiGrid({required this.kpis});
 
   final ProjectKpis kpis;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AppStrings all = ref.watch(stringsProvider);
+    final DashboardStrings strings = all.dashboard;
     final double? used = kpis.budgetUsedPercent;
 
     return Column(
@@ -223,10 +235,10 @@ class _KpiGrid extends StatelessWidget {
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Presupuesto consumido',
-                        style: TextStyle(
+                        strings.budgetUsed,
+                        style: const TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 13,
                         ),
@@ -272,37 +284,37 @@ class _KpiGrid extends StatelessWidget {
           childAspectRatio: 1.5,
           children: <Widget>[
             _KpiTile(
-              label: 'Gastos',
+              label: strings.expenses,
               value: kpis.totalExpenses,
               color: AppColors.warning,
               icon: Icons.payments_outlined,
             ),
             _KpiTile(
-              label: 'Compras',
+              label: strings.purchases,
               value: kpis.totalPurchased,
               color: AppColors.orange,
               icon: Icons.shopping_cart_outlined,
             ),
             _KpiTile(
-              label: 'Facturado',
+              label: strings.invoiced,
               value: kpis.totalInvoiced,
               color: AppColors.cyanNeon,
               icon: Icons.receipt_long_outlined,
             ),
             _KpiTile(
-              label: 'Cobrado',
+              label: strings.collected,
               value: kpis.totalCollected,
               color: AppColors.success,
               icon: Icons.savings_outlined,
             ),
             _KpiTile(
-              label: 'Pagado a prov.',
+              label: all.projects.paidToProvidersShort,
               value: kpis.totalPaidToProviders,
               color: AppColors.textSecondary,
               icon: Icons.local_shipping_outlined,
             ),
             _KpiTile(
-              label: 'Variación',
+              label: all.projects.varianceShort,
               value: kpis.financialVariance,
               color: kpis.financialVariance < 0
                   ? AppColors.danger

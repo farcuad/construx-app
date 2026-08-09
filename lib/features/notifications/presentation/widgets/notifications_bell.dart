@@ -1,48 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
+import '../../../../core/i18n/app_strings.dart';
+import '../../../../core/i18n/locale_controller.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/application/auth_controller.dart';
 import '../../../auth/domain/auth_user.dart';
 import '../../../auth/domain/permissions.dart';
 import '../../application/notifications_providers.dart';
-import '../../domain/notification_models.dart';
-import '../notifications_screen.dart';
+import 'notifications_panel.dart';
 
-/// Campana de avisos para la cabecera del panel.
+/// Campana de avisos, presente en la cabecera del panel y en la barra de todos
+/// los módulos.
 ///
-/// Mientras está montada mantiene abierta la conexión con `/notifications/ws`:
-/// cada aviso que llega refresca la bandeja y, con ella, el número del
-/// distintivo. Al salir del panel `autoDispose` cierra el socket, que es lo que
-/// se quiere — no tiene sentido sostener una conexión desde una pantalla que
-/// no la usa.
+/// Solo pinta el distintivo: quien mantiene viva la bandeja y la conexión con
+/// `/notifications/ws` es [NotificationsSync], montado en la raíz de la app.
+/// Así el contador es el mismo en todas las pantallas y no se reconecta el
+/// socket cada vez que se navega.
 class NotificationsBell extends ConsumerWidget {
   const NotificationsBell({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AuthUser? user = ref.watch(currentUserProvider);
-    // Sin permiso no se pide la bandeja: sería un 403 en cada arranque.
+    // Sin permiso no hay campana: la bandeja tampoco se pide.
     if (user == null || !user.can(Perm.notificationsRead)) {
       return const SizedBox.shrink();
     }
 
-    ref.listen<AsyncValue<AppNotification>>(notificationsStreamProvider, (
-      AsyncValue<AppNotification>? _,
-      AsyncValue<AppNotification> next,
-    ) {
-      if (next.hasValue) ref.invalidate(notificationsInboxProvider);
-    });
-
+    final AppStrings strings = ref.watch(stringsProvider);
     final int unread = ref.watch(unreadNotificationsProvider);
 
     return IconButton(
-      tooltip: unread == 0
-          ? 'Avisos'
-          : '$unread aviso${unread == 1 ? '' : 's'} sin leer',
+      tooltip: unread == 0 ? strings.notices : strings.unreadNotices(unread),
       color: AppColors.textSecondary,
-      onPressed: () => context.go(NotificationsScreen.routePath),
+      onPressed: () => showNotificationsPanel(context),
       icon: Stack(
         clipBehavior: Clip.none,
         children: <Widget>[

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/resources_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -30,7 +32,7 @@ class DocumentsScreen extends ConsumerWidget {
       ref.invalidate(documentTypesProvider);
     },
     body: ProjectScope(
-      emptyMessage: 'Los documentos se archivan por obra.',
+      emptyMessage: ref.watch(stringsProvider).documents.needsProject,
       builder: (BuildContext context, Project project) =>
           _DocumentsList(project: project),
     ),
@@ -54,15 +56,17 @@ class _DocumentsList extends ConsumerWidget {
         t.id: t.name,
     };
 
+    final DocumentsStrings strings = ref.watch(stringsProvider).documents;
+
     return AsyncSection<List<ProjectDocument>>(
       value: documents,
-      errorMessage: 'No se pudieron cargar los documentos.',
+      errorMessage: strings.loadError,
       onRetry: () => ref.invalidate(projectDocumentsProvider(project.id)),
       builder: (List<ProjectDocument> data) => data.isEmpty
           ? EmptyState(
               icon: Icons.folder_copy_rounded,
-              title: 'Sin documentos',
-              message: '«${project.name}» no tiene documentos archivados.',
+              title: strings.emptyTitle,
+              message: strings.emptyFor(project.name),
             )
           : ModuleList(
               itemCount: data.length,
@@ -77,14 +81,14 @@ class _DocumentsList extends ConsumerWidget {
   }
 }
 
-class _DocumentCard extends StatelessWidget {
+class _DocumentCard extends ConsumerWidget {
   const _DocumentCard({required this.document, this.typeName});
 
   final ProjectDocument document;
   final String? typeName;
 
   @override
-  Widget build(BuildContext context) => AppCard(
+  Widget build(BuildContext context, WidgetRef ref) => AppCard(
     padding: EdgeInsets.zero,
     child: Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -99,7 +103,9 @@ class _DocumentCard extends StatelessWidget {
           size: 38,
         ),
         title: Text(
-          document.title.isEmpty ? 'Documento' : document.title,
+          document.title.isEmpty
+              ? ref.watch(stringsProvider).documents.untitled
+              : document.title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
@@ -111,7 +117,8 @@ class _DocumentCard extends StatelessWidget {
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4),
           child: Text(
-            '${typeName ?? 'Sin tipo'} · v${document.currentVersion}',
+            '${typeName ?? ref.watch(stringsProvider).documents.noType} · '
+            'v${document.currentVersion}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
@@ -134,9 +141,9 @@ class _DocumentCard extends StatelessWidget {
               ),
             ),
           if (document.versions.isEmpty)
-            const InfoLine(
+            InfoLine(
               icon: Icons.history_rounded,
-              text: 'Sin versiones registradas',
+              text: ref.watch(stringsProvider).documents.noVersions,
             )
           else
             for (final DocumentVersion v in document.versions)
@@ -147,7 +154,7 @@ class _DocumentCard extends StatelessWidget {
   );
 }
 
-class _VersionRow extends StatelessWidget {
+class _VersionRow extends ConsumerWidget {
   const _VersionRow({required this.version});
 
   final DocumentVersion version;
@@ -162,7 +169,7 @@ class _VersionRow extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) => Padding(
+  Widget build(BuildContext context, WidgetRef ref) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 6),
     child: Row(
       children: <Widget>[
@@ -176,7 +183,9 @@ class _VersionRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                version.changeLog.isEmpty ? 'Sin notas' : version.changeLog,
+                version.changeLog.isEmpty
+                    ? ref.watch(stringsProvider).documents.noNotes
+                    : version.changeLog,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(

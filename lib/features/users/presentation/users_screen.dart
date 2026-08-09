@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/admin_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../core/widgets/data_widgets.dart';
@@ -24,6 +27,7 @@ class UsersScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<List<CompanyUser>> users = ref.watch(companyUsersProvider);
+    final UsersStrings strings = ref.watch(stringsProvider).users;
 
     return ModuleScaffold(
       title: 'Usuarios',
@@ -31,14 +35,13 @@ class UsersScreen extends ConsumerWidget {
       onRefresh: () => ref.invalidate(companyUsersProvider),
       body: AsyncSection<List<CompanyUser>>(
         value: users,
-        errorMessage: 'No se pudieron cargar los usuarios.',
+        errorMessage: strings.loadError,
         onRetry: () => ref.invalidate(companyUsersProvider),
         builder: (List<CompanyUser> data) => data.isEmpty
-            ? const EmptyState(
+            ? EmptyState(
                 icon: Icons.manage_accounts_rounded,
-                title: 'Sin usuarios',
-                message:
-                    'Tu empresa aún no tiene otros usuarios dados de alta.',
+                title: strings.emptyTitle,
+                message: strings.emptyMessage,
               )
             : ModuleList(
                 itemCount: data.length,
@@ -59,6 +62,8 @@ class _UserCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AuthUser? me = ref.watch(currentUserProvider);
+    final AppStrings all = ref.watch(stringsProvider);
+    final UsersStrings strings = all.users;
     final bool canDelete =
         (me?.can(Perm.usersDelete) ?? false) && me?.id != user.id;
     final bool isAdmin = user.permissions.contains(Perm.wildcard);
@@ -91,27 +96,30 @@ class _UserCard extends ConsumerWidget {
                       ),
                     ),
                     if (me?.id == user.id)
-                      const StatusChip(label: 'Tú', color: AppColors.orange),
+                      StatusChip(
+                        label: all.common.you,
+                        color: AppColors.orange,
+                      ),
                   ],
                 ),
                 InfoLine(icon: Icons.mail_outline_rounded, text: user.email),
                 InfoLine(
                   icon: Icons.shield_outlined,
-                  text: user.role.isEmpty ? 'Sin rol' : user.role,
+                  text: user.role.isEmpty ? all.noRole : user.role,
                   color: isAdmin ? AppColors.orangeNeon : null,
                 ),
                 InfoLine(
                   icon: Icons.key_outlined,
                   text: isAdmin
-                      ? 'Acceso total (*)'
-                      : '${user.permissions.length} permisos',
+                      ? strings.fullAccess
+                      : strings.permissions(user.permissions.length),
                 ),
               ],
             ),
           ),
           if (canDelete)
             IconButton(
-              tooltip: 'Eliminar',
+              tooltip: all.common.delete,
               icon: const Icon(Icons.delete_outline_rounded, size: 19),
               color: AppColors.textDisabled,
               onPressed: () => _delete(context, ref),
@@ -122,19 +130,18 @@ class _UserCard extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final UsersStrings strings = ref.read(stringsProvider).users;
     final bool confirmed = await confirmDestructive(
       context,
-      title: 'Eliminar usuario',
-      message:
-          'Se eliminará «${user.name.isEmpty ? user.email : user.name}» y '
-          'perderá el acceso a la app.',
+      title: strings.deleteTitle,
+      message: strings.deleteBody(user.name.isEmpty ? user.email : user.name),
     );
     if (!confirmed || !context.mounted) return;
 
     final bool ok = await runWithFeedback(
       context,
       action: () => ref.read(usersRepositoryProvider).delete(user.id),
-      successMessage: 'Usuario eliminado',
+      successMessage: strings.deleted,
     );
     if (ok) ref.invalidate(companyUsersProvider);
   }

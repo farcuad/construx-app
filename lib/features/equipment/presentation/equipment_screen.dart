@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/resources_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -29,6 +31,8 @@ class EquipmentScreen extends ConsumerWidget {
         t.id: t.name,
     };
 
+    final EquipmentStrings strings = ref.watch(stringsProvider).equipment;
+
     return ModuleScaffold(
       title: 'Maquinaria',
       currentPath: routePath,
@@ -38,14 +42,13 @@ class EquipmentScreen extends ConsumerWidget {
       },
       body: AsyncSection<List<Equipment>>(
         value: equipment,
-        errorMessage: 'No se pudo cargar la maquinaria.',
+        errorMessage: strings.loadError,
         onRetry: () => ref.invalidate(equipmentProvider),
         builder: (List<Equipment> data) => data.isEmpty
-            ? const EmptyState(
+            ? EmptyState(
                 icon: Icons.agriculture_rounded,
-                title: 'Sin maquinaria',
-                message:
-                    'Aquí aparecerán las máquinas propias y las alquiladas.',
+                title: strings.emptyTitle,
+                message: strings.emptyMessage,
               )
             : ModuleList(
                 itemCount: data.length,
@@ -155,6 +158,7 @@ class _EquipmentSheet extends ConsumerWidget {
     final AsyncValue<List<MaintenanceRecord>> maintenances = ref.watch(
       equipmentMaintenancesProvider(equipment.id),
     );
+    final EquipmentStrings strings = ref.watch(stringsProvider).equipment;
 
     return SafeArea(
       child: ConstrainedBox(
@@ -194,15 +198,15 @@ class _EquipmentSheet extends ConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
                 children: <Widget>[
-                  const _SheetTitle('Asignaciones'),
+                  _SheetTitle(strings.assignments),
                   AsyncSection<List<EquipmentAssignment>>(
                     value: assignments,
-                    errorMessage: 'No se pudieron cargar las asignaciones.',
+                    errorMessage: strings.assignmentsError,
                     onRetry: () => ref.invalidate(
                       equipmentAssignmentsProvider(equipment.id),
                     ),
                     builder: (List<EquipmentAssignment> data) => data.isEmpty
-                        ? const _SheetEmpty('Sin asignaciones a obra.')
+                        ? _SheetEmpty(strings.noAssignments)
                         : Column(
                             children: <Widget>[
                               for (final EquipmentAssignment a in data)
@@ -217,15 +221,15 @@ class _EquipmentSheet extends ConsumerWidget {
                           ),
                   ),
                   const SizedBox(height: 22),
-                  const _SheetTitle('Mantenimientos'),
+                  _SheetTitle(strings.maintenances),
                   AsyncSection<List<MaintenanceRecord>>(
                     value: maintenances,
-                    errorMessage: 'No se pudo cargar el mantenimiento.',
+                    errorMessage: strings.maintenancesError,
                     onRetry: () => ref.invalidate(
                       equipmentMaintenancesProvider(equipment.id),
                     ),
                     builder: (List<MaintenanceRecord> data) => data.isEmpty
-                        ? const _SheetEmpty('Sin mantenimientos registrados.')
+                        ? _SheetEmpty(strings.noMaintenances)
                         : Column(
                             children: <Widget>[
                               for (final MaintenanceRecord m in data)
@@ -240,7 +244,7 @@ class _EquipmentSheet extends ConsumerWidget {
                                           children: <Widget>[
                                             Text(
                                               m.maintenanceType.isEmpty
-                                                  ? 'Mantenimiento'
+                                                  ? strings.untitledMaintenance
                                                   : m.maintenanceType,
                                               style: const TextStyle(
                                                 color: AppColors.textPrimary,

@@ -3,15 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/admin_strings.dart';
+import '../../../core/widgets/data_widgets.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_widgets.dart';
-import '../../../core/widgets/neon_background.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/auth_user.dart';
 import '../../auth/domain/permissions.dart';
 import '../../clients/application/clients_controller.dart';
-import '../../home/presentation/widgets/app_drawer.dart';
+import '../../home/presentation/widgets/module_scaffold.dart';
 import '../application/projects_controller.dart';
 import '../domain/project.dart';
 import 'project_form_sheet.dart';
@@ -29,46 +32,36 @@ class ProjectsScreen extends ConsumerWidget {
       projectsControllerProvider,
     );
     final AuthUser? user = ref.watch(currentUserProvider);
+    final AppStrings strings = ref.watch(stringsProvider);
     final bool canCreate = user?.can(Perm.projectsCreate) ?? false;
 
-    return Scaffold(
-      // El menú lateral sustituye a la flecha de volver: desde el panel se
-      // navega con `go`, así que no hay pila a la que retroceder.
-      drawer: const AppDrawer(currentPath: routePath),
-      appBar: AppBar(
-        title: const Text('Proyectos'),
-        actions: <Widget>[
-          IconButton(
-            tooltip: 'Actualizar',
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () =>
-                ref.read(projectsControllerProvider.notifier).refresh(),
-          ),
-        ],
-      ),
+    // El menú lateral sustituye a la flecha de volver: desde el panel se
+    // navega con `go`, así que no hay pila a la que retroceder.
+    return ModuleScaffold(
+      title: 'Proyectos',
+      currentPath: routePath,
+      onRefresh: () => ref.read(projectsControllerProvider.notifier).refresh(),
       floatingActionButton: canCreate
           ? FloatingActionButton.extended(
               onPressed: () => showProjectFormSheet(context),
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Nuevo'),
+              label: Text(strings.common.newItem),
             )
           : null,
-      body: NeonBackground(
-        child: switch (projects) {
-          AsyncData<List<Project>>(:final List<Project> value) => _ProjectsList(
-            projects: value,
-            canCreate: canCreate,
-          ),
-          AsyncError<List<Project>>(:final Object error) => ErrorView(
-            message: error is ApiException
-                ? error.message
-                : 'No se pudieron cargar los proyectos.',
-            onRetry: () =>
-                ref.read(projectsControllerProvider.notifier).refresh(),
-          ),
-          _ => const LoadingView(),
-        },
-      ),
+      body: switch (projects) {
+        AsyncData<List<Project>>(:final List<Project> value) => _ProjectsList(
+          projects: value,
+          canCreate: canCreate,
+        ),
+        AsyncError<List<Project>>(:final Object error) => ErrorView(
+          message: error is ApiException
+              ? error.message
+              : strings.projects.loadError,
+          onRetry: () =>
+              ref.read(projectsControllerProvider.notifier).refresh(),
+        ),
+        _ => const LoadingView(),
+      },
     );
   }
 }
@@ -81,13 +74,13 @@ class _ProjectsList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final ProjectsStrings strings = ref.watch(stringsProvider).projects;
+
     if (projects.isEmpty) {
       return EmptyState(
         icon: Icons.apartment_rounded,
-        title: 'Aún no hay proyectos',
-        message: canCreate
-            ? 'Crea el primero para empezar a registrar avances, gastos y presupuestos.'
-            : 'Cuando tu empresa registre obras, aparecerán aquí.',
+        title: strings.emptyTitle,
+        message: canCreate ? strings.emptyCanCreate : strings.emptyReadOnly,
       );
     }
 
@@ -185,7 +178,10 @@ class _ProjectCard extends ConsumerWidget {
               ),
               if (progress != null)
                 StatusChip(
-                  label: '${(progress * 100).round()}% del plazo',
+                  label: ref
+                      .watch(stringsProvider)
+                      .projects
+                      .termElapsedOf((progress * 100).round()),
                   color: progress >= 1
                       ? AppColors.danger
                       : progress > 0.8
@@ -226,70 +222,60 @@ class _ProjectMenu extends ConsumerWidget {
   final bool canDelete;
 
   @override
-  Widget build(
-    BuildContext context,
-    WidgetRef ref,
-  ) => PopupMenuButton<_ProjectAction>(
-    icon: const Icon(Icons.more_vert_rounded, size: 20),
-    color: AppColors.surfaceHigh,
-    onSelected: (_ProjectAction action) => switch (action) {
-      _ProjectAction.edit => showProjectFormSheet(context, project: project),
-      _ProjectAction.delete => _confirmDelete(context, ref),
-    },
-    itemBuilder: (BuildContext context) => <PopupMenuEntry<_ProjectAction>>[
-      if (canUpdate)
-        const PopupMenuItem<_ProjectAction>(
-          value: _ProjectAction.edit,
-          child: ListTile(
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(Icons.edit_outlined, size: 19),
-            title: Text('Editar'),
+  Widget build(BuildContext context, WidgetRef ref) =>
+      PopupMenuButton<_ProjectAction>(
+        icon: const Icon(Icons.more_vert_rounded, size: 20),
+        color: AppColors.surfaceHigh,
+        onSelected: (_ProjectAction action) => switch (action) {
+          _ProjectAction.edit => showProjectFormSheet(
+            context,
+            project: project,
           ),
-        ),
-      if (canDelete)
-        const PopupMenuItem<_ProjectAction>(
-          value: _ProjectAction.delete,
-          child: ListTile(
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(
-              Icons.delete_outline_rounded,
-              size: 19,
-              color: AppColors.danger,
+          _ProjectAction.delete => _confirmDelete(context, ref),
+        },
+        itemBuilder: (BuildContext context) => <PopupMenuEntry<_ProjectAction>>[
+          if (canUpdate)
+            PopupMenuItem<_ProjectAction>(
+              value: _ProjectAction.edit,
+              child: ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.edit_outlined, size: 19),
+                title: Text(ref.read(stringsProvider).projects.edit),
+              ),
             ),
-            title: Text('Eliminar', style: TextStyle(color: AppColors.danger)),
-          ),
-        ),
-    ],
-  );
+          if (canDelete)
+            PopupMenuItem<_ProjectAction>(
+              value: _ProjectAction.delete,
+              child: ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(
+                  Icons.delete_outline_rounded,
+                  size: 19,
+                  color: AppColors.danger,
+                ),
+                title: Text(
+                  ref.read(stringsProvider).common.delete,
+                  style: const TextStyle(color: AppColors.danger),
+                ),
+              ),
+            ),
+        ],
+      );
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Eliminar proyecto'),
-        content: Text(
-          'Se eliminará «${project.name}». Esta acción no se puede deshacer.',
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
+    final ProjectsStrings strings = ref.read(stringsProvider).projects;
+    final bool confirmed = await confirmDestructive(
+      context,
+      title: strings.deleteTitle,
+      message: strings.deleteBody(project.name),
     );
-    if (!(confirmed ?? false) || !context.mounted) return;
+    if (!confirmed || !context.mounted) return;
 
     try {
       await ref.read(projectsControllerProvider.notifier).delete(project.id);
-      if (context.mounted) showAppSnackBar(context, 'Proyecto eliminado');
+      if (context.mounted) showAppSnackBar(context, strings.deleted);
     } on ApiException catch (e) {
       if (context.mounted) showAppSnackBar(context, e.message, isError: true);
     }

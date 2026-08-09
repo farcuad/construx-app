@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/finance_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -27,6 +30,7 @@ class ExpensesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AuthUser? user = ref.watch(currentUserProvider);
     final Project? project = ref.watch(activeProjectProvider);
+    final AppStrings strings = ref.watch(stringsProvider);
     final bool canCreate =
         (user?.can(Perm.expensesCreate) ?? false) && project != null;
 
@@ -39,11 +43,11 @@ class ExpensesScreen extends ConsumerWidget {
               onPressed: () =>
                   showExpenseFormSheet(context, projectId: project.id),
               icon: const Icon(Icons.add_rounded),
-              label: const Text('Nuevo'),
+              label: Text(strings.common.newItem),
             )
           : null,
       body: ProjectScope(
-        emptyMessage: 'Los gastos se imputan a una obra. Crea la primera.',
+        emptyMessage: strings.expenses.needsProject,
         builder: (BuildContext context, Project project) =>
             _ExpensesList(project: project),
       ),
@@ -61,16 +65,17 @@ class _ExpensesList extends ConsumerWidget {
     final AsyncValue<List<Expense>> expenses = ref.watch(
       projectExpensesProvider(project.id),
     );
+    final ExpensesStrings strings = ref.watch(stringsProvider).expenses;
 
     return AsyncSection<List<Expense>>(
       value: expenses,
-      errorMessage: 'No se pudieron cargar los gastos.',
+      errorMessage: strings.loadError,
       onRetry: () => ref.invalidate(projectExpensesProvider(project.id)),
       builder: (List<Expense> data) => data.isEmpty
           ? EmptyState(
               icon: Icons.payments_rounded,
-              title: 'Sin gastos',
-              message: '«${project.name}» no tiene gastos registrados todavía.',
+              title: strings.emptyTitle,
+              message: strings.emptyFor(project.name),
             )
           : ModuleList(
               itemCount: data.length,
@@ -84,13 +89,13 @@ class _ExpensesList extends ConsumerWidget {
   }
 }
 
-class _Total extends StatelessWidget {
+class _Total extends ConsumerWidget {
   const _Total({required this.expenses});
 
   final List<Expense> expenses;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final double total = expenses.fold<double>(
       0,
       (double sum, Expense e) => sum + e.amount,
@@ -108,9 +113,7 @@ class _Total extends StatelessWidget {
           const SizedBox(width: 13),
           Expanded(
             child: LabeledValue(
-              label:
-                  '${expenses.length} GASTO'
-                  '${expenses.length == 1 ? '' : 'S'}',
+              label: ref.watch(stringsProvider).expenses.count(expenses.length),
               value: Fmt.money(total),
               color: AppColors.warning,
             ),
@@ -129,6 +132,7 @@ class _ExpenseCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AuthUser? user = ref.watch(currentUserProvider);
+    final AppStrings strings = ref.watch(stringsProvider);
     final bool canUpdate = user?.can(Perm.expensesUpdate) ?? false;
     final bool canDelete = user?.can(Perm.expensesDelete) ?? false;
 
@@ -156,7 +160,9 @@ class _ExpenseCard extends ConsumerWidget {
                   children: <Widget>[
                     Expanded(
                       child: Text(
-                        expense.title.isEmpty ? 'Gasto' : expense.title,
+                        expense.title.isEmpty
+                            ? strings.expenses.untitled
+                            : expense.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -191,7 +197,7 @@ class _ExpenseCard extends ConsumerWidget {
           ),
           if (canDelete)
             IconButton(
-              tooltip: 'Eliminar',
+              tooltip: strings.common.delete,
               icon: const Icon(Icons.delete_outline_rounded, size: 19),
               color: AppColors.textDisabled,
               onPressed: () => _delete(context, ref),
@@ -202,19 +208,18 @@ class _ExpenseCard extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final ExpensesStrings strings = ref.read(stringsProvider).expenses;
     final bool confirmed = await confirmDestructive(
       context,
-      title: 'Eliminar gasto',
-      message:
-          'Se eliminará «${expense.title}» por '
-          '${Fmt.money(expense.amount)}.',
+      title: strings.deleteTitle,
+      message: strings.deleteBody(expense.title, Fmt.money(expense.amount)),
     );
     if (!confirmed || !context.mounted) return;
 
     final bool ok = await runWithFeedback(
       context,
       action: () => ref.read(expensesRepositoryProvider).delete(expense.id),
-      successMessage: 'Gasto eliminado',
+      successMessage: strings.deleted,
     );
     if (ok) ref.invalidate(projectExpensesProvider(expense.projectId));
   }

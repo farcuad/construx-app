@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/i18n/locale_controller.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/validators.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -82,7 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!ok || !mounted) return;
     // La navegación la resuelve el `redirect` del router al cambiar el estado
     // de autenticación; aquí solo se confirma al usuario.
-    showAppSnackBar(context, 'Bienvenido de nuevo');
+    showAppSnackBar(context, ref.read(stringsProvider).auth.welcomeBack);
   }
 
   @override
@@ -146,7 +147,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const SizedBox(height: 22),
                         NeonButton(
-                          label: 'Iniciar sesión',
+                          label: ref.watch(stringsProvider).auth.signIn,
                           icon: Icons.login_rounded,
                           isLoading: isSubmitting,
                           onPressed: _loadingRemembered ? null : _submit,
@@ -166,11 +167,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-class _Header extends StatelessWidget {
+class _Header extends ConsumerWidget {
   const _Header();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // En pantallas bajas (o con el teclado abierto) el logotipo se encoge para
     // que el botón de entrar siga alcanzable sin hacer scroll.
     final bool compact = MediaQuery.sizeOf(context).height < 700;
@@ -190,10 +191,10 @@ class _Header extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
-          'Gestiona obras, presupuestos y equipos\ndesde un solo lugar',
+        Text(
+          ref.watch(stringsProvider).auth.tagline,
           textAlign: TextAlign.center,
-          style: TextStyle(
+          style: const TextStyle(
             color: AppColors.textSecondary,
             fontSize: 14.5,
             height: 1.45,
@@ -204,7 +205,7 @@ class _Header extends StatelessWidget {
   }
 }
 
-class _EmailField extends StatelessWidget {
+class _EmailField extends ConsumerWidget {
   const _EmailField({
     required this.controller,
     required this.enabled,
@@ -216,7 +217,7 @@ class _EmailField extends StatelessWidget {
   final VoidCallback onSubmitted;
 
   @override
-  Widget build(BuildContext context) => TextFormField(
+  Widget build(BuildContext context, WidgetRef ref) => TextFormField(
     controller: controller,
     enabled: enabled,
     keyboardType: TextInputType.emailAddress,
@@ -228,15 +229,15 @@ class _EmailField extends StatelessWidget {
     ],
     validator: Validators.email,
     onFieldSubmitted: (_) => onSubmitted(),
-    decoration: const InputDecoration(
-      labelText: 'Correo electrónico',
-      hintText: 'tucorreo@empresa.com',
-      prefixIcon: Icon(Icons.alternate_email_rounded, size: 20),
+    decoration: InputDecoration(
+      labelText: ref.watch(stringsProvider).common.email,
+      hintText: ref.watch(stringsProvider).auth.emailHint,
+      prefixIcon: const Icon(Icons.alternate_email_rounded, size: 20),
     ),
   );
 }
 
-class _PasswordField extends StatelessWidget {
+class _PasswordField extends ConsumerWidget {
   const _PasswordField({
     required this.controller,
     required this.focusNode,
@@ -254,7 +255,7 @@ class _PasswordField extends StatelessWidget {
   final VoidCallback onSubmitted;
 
   @override
-  Widget build(BuildContext context) => TextFormField(
+  Widget build(BuildContext context, WidgetRef ref) => TextFormField(
     controller: controller,
     focusNode: focusNode,
     enabled: enabled,
@@ -264,12 +265,14 @@ class _PasswordField extends StatelessWidget {
     validator: Validators.password,
     onFieldSubmitted: (_) => onSubmitted(),
     decoration: InputDecoration(
-      labelText: 'Contraseña',
+      labelText: ref.watch(stringsProvider).auth.password,
       hintText: '••••••••',
       prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
       suffixIcon: IconButton(
         onPressed: onToggleObscure,
-        tooltip: obscure ? 'Mostrar contraseña' : 'Ocultar contraseña',
+        tooltip: obscure
+            ? ref.watch(stringsProvider).auth.showPassword
+            : ref.watch(stringsProvider).auth.hidePassword,
         icon: Icon(
           obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
           size: 20,
@@ -280,7 +283,7 @@ class _PasswordField extends StatelessWidget {
 }
 
 /// Fila «Recordar datos». Toda la fila es pulsable, no solo la casilla.
-class _RememberMeRow extends StatelessWidget {
+class _RememberMeRow extends ConsumerWidget {
   const _RememberMeRow({
     required this.value,
     required this.enabled,
@@ -292,7 +295,7 @@ class _RememberMeRow extends StatelessWidget {
   final ValueChanged<bool> onChanged;
 
   @override
-  Widget build(BuildContext context) => InkWell(
+  Widget build(BuildContext context, WidgetRef ref) => InkWell(
     borderRadius: const BorderRadius.all(Radius.circular(10)),
     onTap: enabled ? () => onChanged(!value) : null,
     child: Padding(
@@ -306,10 +309,10 @@ class _RememberMeRow extends StatelessWidget {
                 : null,
           ),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Text(
-              'Recordar datos',
-              style: TextStyle(
+              ref.watch(stringsProvider).auth.rememberMe,
+              style: const TextStyle(
                 color: AppColors.textPrimary,
                 fontSize: 14.5,
                 fontWeight: FontWeight.w500,
@@ -317,18 +320,18 @@ class _RememberMeRow extends StatelessWidget {
             ),
           ),
           if (value)
-            const Row(
+            Row(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                Icon(
+                const Icon(
                   Icons.shield_moon_outlined,
                   size: 15,
                   color: AppColors.cyanNeon,
                 ),
-                SizedBox(width: 5),
+                const SizedBox(width: 5),
                 Text(
-                  'Cifrado',
-                  style: TextStyle(
+                  ref.watch(stringsProvider).auth.encrypted,
+                  style: const TextStyle(
                     color: AppColors.cyanNeon,
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
@@ -342,23 +345,23 @@ class _RememberMeRow extends StatelessWidget {
   );
 }
 
-class _Footer extends StatelessWidget {
+class _Footer extends ConsumerWidget {
   const _Footer();
 
   @override
-  Widget build(BuildContext context) => const Row(
+  Widget build(BuildContext context, WidgetRef ref) => Row(
     mainAxisAlignment: MainAxisAlignment.center,
     children: <Widget>[
-      Icon(Icons.lock_rounded, size: 13, color: AppColors.textDisabled),
-      SizedBox(width: 6),
+      const Icon(Icons.lock_rounded, size: 13, color: AppColors.textDisabled),
+      const SizedBox(width: 6),
       // `Flexible` + ellipsis: el texto se adapta a pantallas estrechas y a
       // escalas de fuente grandes en lugar de desbordar la fila.
       Flexible(
         child: Text(
-          'Conexión segura · Datos cifrados en el dispositivo',
+          ref.watch(stringsProvider).auth.footer,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: AppColors.textDisabled, fontSize: 11.5),
+          style: const TextStyle(color: AppColors.textDisabled, fontSize: 11.5),
         ),
       ),
     ],

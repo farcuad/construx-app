@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/resources_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../core/widgets/data_widgets.dart';
@@ -23,25 +25,31 @@ class InventoryScreen extends ConsumerWidget {
   static const String routePath = '/inventory';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => DefaultTabController(
-    length: 2,
-    child: ModuleScaffold(
-      title: 'Inventario',
-      currentPath: routePath,
-      onRefresh: () {
-        ref.invalidate(warehousesProvider);
-        ref.invalidate(materialsProvider);
-        ref.invalidate(warehouseStockProvider);
-      },
-      bottom: const TabBar(
-        tabs: <Widget>[
-          Tab(text: 'Existencias'),
-          Tab(text: 'Materiales'),
-        ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final InventoryStrings strings = ref.watch(stringsProvider).inventory;
+
+    return DefaultTabController(
+      length: 2,
+      child: ModuleScaffold(
+        title: 'Inventario',
+        currentPath: routePath,
+        onRefresh: () {
+          ref.invalidate(warehousesProvider);
+          ref.invalidate(materialsProvider);
+          ref.invalidate(warehouseStockProvider);
+        },
+        bottom: TabBar(
+          tabs: <Widget>[
+            Tab(text: strings.tabStock),
+            Tab(text: strings.tabMaterials),
+          ],
+        ),
+        body: const TabBarView(
+          children: <Widget>[_StockTab(), _MaterialsTab()],
+        ),
       ),
-      body: const TabBarView(children: <Widget>[_StockTab(), _MaterialsTab()]),
-    ),
-  );
+    );
+  }
 }
 
 class _StockTab extends ConsumerWidget {
@@ -52,17 +60,18 @@ class _StockTab extends ConsumerWidget {
     final AsyncValue<List<Warehouse>> warehouses = ref.watch(
       warehousesProvider,
     );
+    final InventoryStrings strings = ref.watch(stringsProvider).inventory;
 
     return AsyncSection<List<Warehouse>>(
       value: warehouses,
-      errorMessage: 'No se pudieron cargar los almacenes.',
+      errorMessage: strings.warehousesError,
       onRetry: () => ref.invalidate(warehousesProvider),
       builder: (List<Warehouse> list) {
         if (list.isEmpty) {
-          return const EmptyState(
+          return EmptyState(
             icon: Icons.warehouse_outlined,
-            title: 'Sin almacenes',
-            message: 'Crea un almacén para poder controlar existencias.',
+            title: strings.noWarehousesTitle,
+            message: strings.noWarehousesMessage,
           );
         }
 
@@ -154,16 +163,17 @@ class _StockList extends ConsumerWidget {
     final AsyncValue<List<StockItem>> stock = ref.watch(
       warehouseStockProvider(warehouse.id),
     );
+    final InventoryStrings strings = ref.watch(stringsProvider).inventory;
 
     return AsyncSection<List<StockItem>>(
       value: stock,
-      errorMessage: 'No se pudieron cargar las existencias.',
+      errorMessage: strings.stockError,
       onRetry: () => ref.invalidate(warehouseStockProvider(warehouse.id)),
       builder: (List<StockItem> data) => data.isEmpty
           ? EmptyState(
               icon: Icons.inventory_2_outlined,
-              title: 'Almacén vacío',
-              message: '«${warehouse.name}» no tiene existencias registradas.',
+              title: strings.emptyWarehouseTitle,
+              message: strings.emptyWarehouseFor(warehouse.name),
             )
           : ModuleList(
               itemCount: data.length,
@@ -188,7 +198,7 @@ class _StockList extends ConsumerWidget {
                           children: <Widget>[
                             Text(
                               item.materialName.isEmpty
-                                  ? 'Material'
+                                  ? strings.unnamedMaterial
                                   : item.materialName,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -237,16 +247,17 @@ class _MaterialsTab extends ConsumerWidget {
     final AsyncValue<List<InventoryMaterial>> materials = ref.watch(
       materialsProvider,
     );
+    final InventoryStrings strings = ref.watch(stringsProvider).inventory;
 
     return AsyncSection<List<InventoryMaterial>>(
       value: materials,
-      errorMessage: 'No se pudieron cargar los materiales.',
+      errorMessage: strings.materialsError,
       onRetry: () => ref.invalidate(materialsProvider),
       builder: (List<InventoryMaterial> data) => data.isEmpty
-          ? const EmptyState(
+          ? EmptyState(
               icon: Icons.category_outlined,
-              title: 'Sin materiales',
-              message: 'El catálogo de materiales está vacío.',
+              title: strings.noMaterialsTitle,
+              message: strings.noMaterialsMessage,
             )
           : ModuleList(
               itemCount: data.length,

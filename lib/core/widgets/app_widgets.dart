@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../i18n/app_strings.dart';
+import '../i18n/locale_controller.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 
@@ -111,25 +114,29 @@ class EmptyState extends StatelessWidget {
 }
 
 /// Vista de error a pantalla completa con acción de reintento.
-class ErrorView extends StatelessWidget {
+class ErrorView extends ConsumerWidget {
   const ErrorView({required this.message, this.onRetry, super.key});
 
   final String message;
   final VoidCallback? onRetry;
 
   @override
-  Widget build(BuildContext context) => EmptyState(
-    icon: Icons.wifi_tethering_error_rounded,
-    title: 'Algo salió mal',
-    message: message,
-    action: onRetry == null
-        ? null
-        : OutlinedButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh_rounded, size: 18),
-            label: const Text('Reintentar'),
-          ),
-  );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AppStrings strings = ref.watch(stringsProvider);
+
+    return EmptyState(
+      icon: Icons.wifi_tethering_error_rounded,
+      title: strings.somethingWentWrong,
+      message: message,
+      action: onRetry == null
+          ? null
+          : OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: Text(strings.retry),
+            ),
+    );
+  }
 }
 
 /// Indicador de carga centrado.

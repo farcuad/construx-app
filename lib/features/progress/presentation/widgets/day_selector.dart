@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/i18n/locale_controller.dart';
+import '../../../../core/i18n/sections/site_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
 
@@ -16,6 +18,7 @@ class DaySelector extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final DayStrings strings = ref.watch(stringsProvider).day;
     final DateTime day = ref.watch(dayProvider);
     final DateTime today = DateTime.now();
     // No se puede avanzar más allá de hoy: no hay datos del futuro.
@@ -32,7 +35,7 @@ class DaySelector extends ConsumerWidget {
         child: Row(
           children: <Widget>[
             IconButton(
-              tooltip: 'Día anterior',
+              tooltip: strings.previous,
               icon: const Icon(Icons.chevron_left_rounded),
               color: AppColors.textSecondary,
               onPressed: () => _shift(ref, day, -1),
@@ -47,7 +50,9 @@ class DaySelector extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       Text(
-                        _isSameDay(day, today) ? 'HOY' : 'FECHA',
+                        _isSameDay(day, today)
+                            ? strings.todayUpper
+                            : strings.dateUpper,
                         style: const TextStyle(
                           color: AppColors.textDisabled,
                           fontSize: 9.5,
@@ -70,7 +75,7 @@ class DaySelector extends ConsumerWidget {
               ),
             ),
             IconButton(
-              tooltip: 'Día siguiente',
+              tooltip: strings.next,
               icon: const Icon(Icons.chevron_right_rounded),
               color: canGoForward
                   ? AppColors.textSecondary

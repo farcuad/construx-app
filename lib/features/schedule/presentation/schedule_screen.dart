@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/site_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -24,7 +26,7 @@ class ScheduleScreen extends ConsumerWidget {
     currentPath: routePath,
     onRefresh: () => ref.invalidate(projectScheduleProvider),
     body: ProjectScope(
-      emptyMessage: 'El cronograma se planifica por obra.',
+      emptyMessage: ref.watch(stringsProvider).schedule.needsProject,
       builder: (BuildContext context, Project project) =>
           _ScheduleList(project: project),
     ),
@@ -41,16 +43,17 @@ class _ScheduleList extends ConsumerWidget {
     final AsyncValue<List<ScheduleTask>> tasks = ref.watch(
       projectScheduleProvider(project.id),
     );
+    final ScheduleStrings strings = ref.watch(stringsProvider).schedule;
 
     return AsyncSection<List<ScheduleTask>>(
       value: tasks,
-      errorMessage: 'No se pudo cargar el cronograma.',
+      errorMessage: strings.loadError,
       onRetry: () => ref.invalidate(projectScheduleProvider(project.id)),
       builder: (List<ScheduleTask> data) => data.isEmpty
           ? EmptyState(
               icon: Icons.calendar_month_rounded,
-              title: 'Sin tareas',
-              message: '«${project.name}» no tiene tareas planificadas.',
+              title: strings.emptyTitle,
+              message: strings.emptyFor(project.name),
             )
           : ModuleList(
               itemCount: data.length,
@@ -65,13 +68,14 @@ class _ScheduleList extends ConsumerWidget {
 }
 
 /// Avance global: media simple del porcentaje de todas las tareas.
-class _Summary extends StatelessWidget {
+class _Summary extends ConsumerWidget {
   const _Summary({required this.tasks});
 
   final List<ScheduleTask> tasks;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ScheduleStrings strings = ref.watch(stringsProvider).schedule;
     final int done = tasks.where((ScheduleTask t) => t.isDone).length;
     final double average =
         tasks.fold<double>(0, (double s, ScheduleTask t) => s + t.progress) /
@@ -84,10 +88,10 @@ class _Summary extends StatelessWidget {
         children: <Widget>[
           Row(
             children: <Widget>[
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Avance del cronograma',
-                  style: TextStyle(
+                  strings.overallProgress,
+                  style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12.5,
                     fontWeight: FontWeight.w600,
@@ -104,8 +108,7 @@ class _Summary extends StatelessWidget {
           ProgressBar(percent: average, color: AppColors.orange),
           const SizedBox(height: 10),
           Text(
-            '$done de ${tasks.length} tarea${tasks.length == 1 ? '' : 's'} '
-            'terminada${done == 1 ? '' : 's'}',
+            strings.progressOf(done, tasks.length),
             style: const TextStyle(
               color: AppColors.textDisabled,
               fontSize: 11.5,
@@ -117,7 +120,7 @@ class _Summary extends StatelessWidget {
   }
 }
 
-class _TaskCard extends StatelessWidget {
+class _TaskCard extends ConsumerWidget {
   const _TaskCard({required this.task});
 
   final ScheduleTask task;
@@ -129,7 +132,8 @@ class _TaskCard extends StatelessWidget {
   };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ScheduleStrings strings = ref.watch(stringsProvider).schedule;
     // Una tarea sin terminar cuya fecha de fin ya pasó va en rojo: es lo que
     // el jefe de obra necesita ver primero.
     final DateTime? end = task.endDate;
@@ -145,7 +149,7 @@ class _TaskCard extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  task.name.isEmpty ? 'Tarea' : task.name,
+                  task.name.isEmpty ? strings.untitled : task.name,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -158,7 +162,7 @@ class _TaskCard extends StatelessWidget {
               const SizedBox(width: 8),
               StatusChip(
                 label: late
-                    ? 'Atrasada'
+                    ? strings.late
                     : (task.status.isEmpty ? '—' : task.status),
                 color: color,
               ),

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/site_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -19,28 +22,32 @@ class ContractorsScreen extends ConsumerWidget {
   static const String routePath = '/contractors';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => DefaultTabController(
-    length: 3,
-    child: ModuleScaffold(
-      title: 'Contratistas',
-      currentPath: routePath,
-      onRefresh: () {
-        ref.invalidate(contractorsProvider);
-        ref.invalidate(projectContractorContractsProvider);
-        ref.invalidate(contractorPaymentsProvider);
-      },
-      bottom: const TabBar(
-        tabs: <Widget>[
-          Tab(text: 'Empresas'),
-          Tab(text: 'Contratos'),
-          Tab(text: 'Pagos'),
-        ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ContractorsStrings strings = ref.watch(stringsProvider).contractors;
+
+    return DefaultTabController(
+      length: 3,
+      child: ModuleScaffold(
+        title: 'Contratistas',
+        currentPath: routePath,
+        onRefresh: () {
+          ref.invalidate(contractorsProvider);
+          ref.invalidate(projectContractorContractsProvider);
+          ref.invalidate(contractorPaymentsProvider);
+        },
+        bottom: TabBar(
+          tabs: <Widget>[
+            Tab(text: strings.tabCompanies),
+            Tab(text: strings.tabContracts),
+            Tab(text: strings.tabPayments),
+          ],
+        ),
+        body: const TabBarView(
+          children: <Widget>[_CompaniesTab(), _ContractsTab(), _PaymentsTab()],
+        ),
       ),
-      body: const TabBarView(
-        children: <Widget>[_CompaniesTab(), _ContractsTab(), _PaymentsTab()],
-      ),
-    ),
-  );
+    );
+  }
 }
 
 class _CompaniesTab extends ConsumerWidget {
@@ -51,16 +58,18 @@ class _CompaniesTab extends ConsumerWidget {
     final AsyncValue<List<Contractor>> contractors = ref.watch(
       contractorsProvider,
     );
+    final AppStrings all = ref.watch(stringsProvider);
+    final ContractorsStrings strings = all.contractors;
 
     return AsyncSection<List<Contractor>>(
       value: contractors,
-      errorMessage: 'No se pudieron cargar los contratistas.',
+      errorMessage: strings.companiesError,
       onRetry: () => ref.invalidate(contractorsProvider),
       builder: (List<Contractor> data) => data.isEmpty
-          ? const EmptyState(
+          ? EmptyState(
               icon: Icons.groups_rounded,
-              title: 'Sin contratistas',
-              message: 'Aquí aparecerán las empresas subcontratadas.',
+              title: strings.companiesEmptyTitle,
+              message: strings.companiesEmptyMessage,
             )
           : ModuleList(
               itemCount: data.length,
@@ -97,8 +106,8 @@ class _CompaniesTab extends ConsumerWidget {
                                   ),
                                 ),
                                 if (!c.isActive)
-                                  const StatusChip(
-                                    label: 'Inactivo',
+                                  StatusChip(
+                                    label: all.common.inactive,
                                     color: AppColors.textDisabled,
                                   ),
                               ],
@@ -106,7 +115,7 @@ class _CompaniesTab extends ConsumerWidget {
                             if (c.nit.isNotEmpty)
                               InfoLine(
                                 icon: Icons.badge_outlined,
-                                text: 'NIT ${c.nit}',
+                                text: strings.taxIdOf(c.nit),
                               ),
                             if (c.representative.isNotEmpty)
                               InfoLine(
@@ -135,24 +144,23 @@ class _ContractsTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => ProjectScope(
-    emptyMessage: 'Los contratos se firman por obra. Crea la primera.',
+    emptyMessage: ref.watch(stringsProvider).contractors.needsProject,
     builder: (BuildContext context, Project project) {
       final AsyncValue<List<ContractorContract>> contracts = ref.watch(
         projectContractorContractsProvider(project.id),
       );
+      final ContractorsStrings strings = ref.watch(stringsProvider).contractors;
 
       return AsyncSection<List<ContractorContract>>(
         value: contracts,
-        errorMessage: 'No se pudieron cargar los contratos.',
+        errorMessage: strings.contractsError,
         onRetry: () =>
             ref.invalidate(projectContractorContractsProvider(project.id)),
         builder: (List<ContractorContract> data) => data.isEmpty
             ? EmptyState(
                 icon: Icons.assignment_outlined,
-                title: 'Sin contratos',
-                message:
-                    '«${project.name}» no tiene contratos de destajo '
-                    'registrados.',
+                title: strings.contractsEmptyTitle,
+                message: strings.contractsEmptyFor(project.name),
               )
             : ModuleList(
                 itemCount: data.length,
@@ -167,13 +175,14 @@ class _ContractsTab extends ConsumerWidget {
   );
 }
 
-class _ContractCard extends StatelessWidget {
+class _ContractCard extends ConsumerWidget {
   const _ContractCard({required this.contract});
 
   final ContractorContract contract;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AppStrings strings = ref.watch(stringsProvider);
     final Color statusColor = switch (contract.status) {
       ContractorContractStatus.active => AppColors.success,
       ContractorContractStatus.finished => AppColors.textSecondary,
@@ -193,7 +202,9 @@ class _ContractCard extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: Text(
-                  contract.title.isEmpty ? 'Contrato' : contract.title,
+                  contract.title.isEmpty
+                      ? strings.contractors.untitledContract
+                      : contract.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -217,14 +228,14 @@ class _ContractCard extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: LabeledValue(
-                  label: 'Pagado',
+                  label: strings.common.paid,
                   value: Fmt.money(paid),
                   color: AppColors.success,
                 ),
               ),
               Expanded(
                 child: LabeledValue(
-                  label: 'Saldo',
+                  label: strings.common.balance,
                   value: Fmt.money(contract.balance),
                   color: contract.balance > 0
                       ? AppColors.warning
@@ -233,7 +244,7 @@ class _ContractCard extends StatelessWidget {
               ),
               Expanded(
                 child: LabeledValue(
-                  label: 'Total',
+                  label: strings.common.total,
                   value: Fmt.money(contract.totalAmount),
                   alignEnd: true,
                 ),
@@ -262,15 +273,17 @@ class _PaymentsTab extends ConsumerWidget {
       contractorPaymentsProvider,
     );
 
+    final ContractorsStrings strings = ref.watch(stringsProvider).contractors;
+
     return AsyncSection<List<ContractorPayment>>(
       value: payments,
-      errorMessage: 'No se pudieron cargar los pagos.',
+      errorMessage: strings.paymentsError,
       onRetry: () => ref.invalidate(contractorPaymentsProvider),
       builder: (List<ContractorPayment> data) => data.isEmpty
-          ? const EmptyState(
+          ? EmptyState(
               icon: Icons.payments_outlined,
-              title: 'Sin pagos',
-              message: 'Todavía no se ha pagado ninguna valuación.',
+              title: strings.paymentsEmptyTitle,
+              message: strings.paymentsEmptyMessage,
             )
           : ModuleList(
               itemCount: data.length,

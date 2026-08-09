@@ -96,7 +96,11 @@ void main() {
 
     // Etiquetas de las siete métricas del endpoint.
     expect(find.text('Presupuesto total'), findsOneWidget);
-    expect(find.text('Gastos'), findsOneWidget);
+    expect(
+      find.text('Gastos'),
+      findsWidgets,
+      reason: 'la tarjeta de gastos y la pestaña de gastos se llaman igual',
+    );
     expect(find.text('Compras'), findsOneWidget);
     expect(find.text('Facturado'), findsOneWidget);
     expect(find.text('Cobrado'), findsOneWidget);

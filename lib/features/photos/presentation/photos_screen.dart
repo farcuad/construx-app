@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/site_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -27,7 +30,7 @@ class PhotosScreen extends ConsumerWidget {
     currentPath: routePath,
     onRefresh: () => ref.invalidate(projectPhotosProvider),
     body: ProjectScope(
-      emptyMessage: 'Las fotos se agrupan por obra.',
+      emptyMessage: ref.watch(stringsProvider).photos.needsProject,
       builder: (BuildContext context, Project project) =>
           _PhotosGrid(project: project),
     ),
@@ -44,16 +47,17 @@ class _PhotosGrid extends ConsumerWidget {
     final AsyncValue<List<ProjectPhoto>> photos = ref.watch(
       projectPhotosProvider(project.id),
     );
+    final PhotosStrings strings = ref.watch(stringsProvider).photos;
 
     return AsyncSection<List<ProjectPhoto>>(
       value: photos,
-      errorMessage: 'No se pudieron cargar las fotos.',
+      errorMessage: strings.loadError,
       onRetry: () => ref.invalidate(projectPhotosProvider(project.id)),
       builder: (List<ProjectPhoto> data) => data.isEmpty
           ? EmptyState(
               icon: Icons.photo_camera_rounded,
-              title: 'Sin fotos',
-              message: '«${project.name}» todavía no tiene fotos de avance.',
+              title: strings.emptyTitle,
+              message: strings.emptyFor(project.name),
             )
           : RefreshIndicator(
               color: AppColors.orangeNeon,
@@ -86,6 +90,7 @@ class _PhotoTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AuthUser? user = ref.watch(currentUserProvider);
+    final AppStrings strings = ref.watch(stringsProvider);
     final bool canDelete = user?.can(Perm.photosDelete) ?? false;
 
     return ClipRRect(
@@ -185,7 +190,7 @@ class _PhotoTile extends ConsumerWidget {
               right: 0,
               top: 0,
               child: IconButton(
-                tooltip: 'Eliminar',
+                tooltip: strings.common.delete,
                 icon: const Icon(Icons.delete_outline_rounded, size: 19),
                 color: Colors.white70,
                 onPressed: () => _delete(context, ref),
@@ -197,17 +202,18 @@ class _PhotoTile extends ConsumerWidget {
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
+    final PhotosStrings strings = ref.read(stringsProvider).photos;
     final bool confirmed = await confirmDestructive(
       context,
-      title: 'Eliminar foto',
-      message: 'Se borrará del registro y del almacenamiento.',
+      title: strings.deleteTitle,
+      message: strings.deleteMessage,
     );
     if (!confirmed || !context.mounted) return;
 
     final bool ok = await runWithFeedback(
       context,
       action: () => ref.read(photosRepositoryProvider).deleteWithFile(photo),
-      successMessage: 'Foto eliminada',
+      successMessage: strings.deleted,
     );
     if (ok) ref.invalidate(projectPhotosProvider(photo.projectId));
   }

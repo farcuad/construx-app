@@ -17,6 +17,12 @@ abstract final class StorageKeys {
 
   /// Contraseña recordada (cifrada por el keystore/keychain del sistema).
   static const String rememberedPassword = 'auth.remembered_password';
+
+  /// Código del idioma elegido en Ajustes (`es`, `pt`, `en`).
+  ///
+  /// No es un secreto, pero se guarda aquí para no arrastrar un segundo
+  /// mecanismo de persistencia por un solo valor.
+  static const String language = 'app.language';
 }
 
 /// Abstracción sobre el almacenamiento cifrado del dispositivo.

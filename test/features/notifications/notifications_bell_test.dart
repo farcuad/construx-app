@@ -6,12 +6,14 @@ import 'package:http/testing.dart';
 import 'package:mi_app_constructora/app.dart';
 import 'package:mi_app_constructora/core/network/api_client.dart';
 import 'package:mi_app_constructora/core/providers.dart';
+import 'package:mi_app_constructora/core/router/app_router.dart';
 import 'package:mi_app_constructora/core/storage/secure_store.dart';
 import 'package:mi_app_constructora/features/auth/application/auth_controller.dart';
 import 'package:mi_app_constructora/features/home/domain/app_module.dart';
+import 'package:mi_app_constructora/features/home/presentation/home_screen.dart';
 import 'package:mi_app_constructora/features/home/presentation/widgets/app_drawer.dart';
-import 'package:mi_app_constructora/features/notifications/presentation/notifications_screen.dart';
 import 'package:mi_app_constructora/features/notifications/presentation/widgets/notifications_bell.dart';
+import 'package:mi_app_constructora/features/notifications/presentation/widgets/notifications_panel.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -37,6 +39,7 @@ void main() {
     WidgetTester tester, {
     List<String> permissions = const <String>['*'],
     List<Map<String, dynamic>> inbox = const <Map<String, dynamic>>[],
+    void Function(ProviderContainer container)? onReady,
   }) async {
     tester.view.physicalSize = const Size(1000, 2000);
     tester.view.devicePixelRatio = 1;
@@ -90,6 +93,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    onReady?.call(container);
+    await tester.pumpAndSettle();
     return paths;
   }
 
@@ -114,23 +119,21 @@ void main() {
     );
   });
 
-  testWidgets('cerrar sesión ya no está en el menú lateral', (
+  testWidgets('cerrar sesión no está ni en la cabecera ni en el menú', (
     WidgetTester tester,
   ) async {
     await pumpHome(tester);
 
-    // En la cabecera sí.
-    expect(find.byTooltip('Cerrar sesión'), findsOneWidget);
+    // Ahora vive en Ajustes, a un toque en la barra inferior.
+    expect(find.byTooltip('Cerrar sesión'), findsNothing);
 
     await tester.tap(find.byTooltip('Abrir menú'));
     await tester.pumpAndSettle();
 
-    // El de la cabecera sigue en el árbol detrás del cajón; lo que no debe
-    // haber es un segundo botón *dentro* del menú.
     expect(
       find.descendant(
         of: find.byType(AppDrawer),
-        matching: find.byTooltip('Cerrar sesión'),
+        matching: find.text('Cerrar sesión'),
       ),
       findsNothing,
     );
@@ -167,14 +170,50 @@ void main() {
     expect(find.byTooltip('Avisos'), findsOneWidget);
   });
 
-  testWidgets('la campana abre la bandeja', (WidgetTester tester) async {
+  testWidgets('la campana abre un cuadro, no una pantalla', (
+    WidgetTester tester,
+  ) async {
     await pumpHome(tester, inbox: <Map<String, dynamic>>[notificationJson()]);
 
     await tester.tap(find.byType(NotificationsBell));
     await tester.pumpAndSettle();
 
-    expect(find.byType(NotificationsScreen), findsOneWidget);
+    expect(find.byType(NotificationsPanel), findsOneWidget);
     expect(find.text('Orden de compra pendiente'), findsOneWidget);
+    // Lo importante del cuadro: el panel sigue debajo, no se ha navegado.
+    expect(find.byType(HomeScreen), findsOneWidget);
+  });
+
+  testWidgets('el cuadro se cierra y devuelve la pantalla de antes', (
+    WidgetTester tester,
+  ) async {
+    await pumpHome(tester, inbox: <Map<String, dynamic>>[notificationJson()]);
+
+    await tester.tap(find.byType(NotificationsBell));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Cerrar'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(NotificationsPanel), findsNothing);
+    expect(find.byType(HomeScreen), findsOneWidget);
+  });
+
+  testWidgets('la campana también está en la barra de los módulos', (
+    WidgetTester tester,
+  ) async {
+    await pumpHome(
+      tester,
+      inbox: <Map<String, dynamic>>[notificationJson()],
+      onReady: (ProviderContainer container) =>
+          container.read(routerProvider).go('/suppliers'),
+    );
+
+    expect(find.byType(NotificationsBell), findsOneWidget);
+    expect(
+      find.text('1'),
+      findsOneWidget,
+      reason: 'el contador es el mismo en todas las pantallas',
+    );
   });
 
   testWidgets('sin permiso no hay campana ni petición a la bandeja', (

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/app_config.dart';
+import '../../../../core/i18n/app_strings.dart';
+import '../../../../core/i18n/locale_controller.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_widgets.dart';
 import '../../../../core/widgets/brand_mark.dart';
@@ -32,6 +34,7 @@ class AppDrawer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AuthUser? user = ref.watch(currentUserProvider);
     final List<AppModule> modules = ref.watch(visibleModulesProvider);
+    final AppStrings strings = ref.watch(stringsProvider);
 
     return Drawer(
       width: 292,
@@ -44,11 +47,11 @@ class AppDrawer extends ConsumerWidget {
         bottom: false,
         child: Column(
           children: <Widget>[
-            const Padding(
-              padding: EdgeInsets.fromLTRB(18, 20, 18, 18),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 20, 18, 18),
               child: BrandLockup(
                 title: AppConfig.appName,
-                subtitle: 'GESTIÓN DE OBRA',
+                subtitle: strings.brandSubtitle,
                 logoSize: 38,
               ),
             ),
@@ -63,7 +66,7 @@ class AppDrawer extends ConsumerWidget {
                   if (index == 0) {
                     return _NavTile(
                       icon: Icons.space_dashboard_rounded,
-                      title: 'Panel',
+                      title: strings.panel,
                       routePath: HomeScreen.routePath,
                       accent: AppColors.orangeNeon,
                       selected: currentPath == HomeScreen.routePath,
@@ -72,7 +75,7 @@ class AppDrawer extends ConsumerWidget {
                   final AppModule module = modules[index - 1];
                   return _NavTile(
                     icon: module.icon,
-                    title: module.title,
+                    title: strings.module(module.id, module.title),
                     routePath: module.routePath,
                     accent: module.accent ?? AppColors.orange,
                     selected:
@@ -83,7 +86,7 @@ class AppDrawer extends ConsumerWidget {
               ),
             ),
             const Divider(),
-            if (user != null) _UserFooter(user: user),
+            if (user != null) _UserFooter(user: user, strings: strings),
           ],
         ),
       ),
@@ -200,9 +203,10 @@ class _NavTile extends StatelessWidget {
 /// Sin botón de salir: cerrar sesión se hace desde la cabecera del panel, y
 /// tenerlo en dos sitios solo multiplica las formas de pulsarlo sin querer.
 class _UserFooter extends StatelessWidget {
-  const _UserFooter({required this.user});
+  const _UserFooter({required this.user, required this.strings});
 
   final AuthUser user;
+  final AppStrings strings;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -248,7 +252,7 @@ class _UserFooter extends StatelessWidget {
                 ),
               ),
               Text(
-                user.role.isEmpty ? 'Sin rol' : user.role,
+                user.role.isEmpty ? strings.noRole : user.role,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(

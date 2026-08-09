@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/finance_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -31,7 +34,7 @@ class PurchasesScreen extends ConsumerWidget {
       ref.invalidate(suppliersProvider);
     },
     body: ProjectScope(
-      emptyMessage: 'Las órdenes de compra se emiten para una obra.',
+      emptyMessage: ref.watch(stringsProvider).purchases.needsProject,
       builder: (BuildContext context, Project project) =>
           _PurchasesList(project: project),
     ),
@@ -50,16 +53,17 @@ class _PurchasesList extends ConsumerWidget {
     );
     // Índice id→nombre, para no recorrer la lista de proveedores por cada fila.
     final Map<String, String> supplierNames = ref.watch(supplierNamesProvider);
+    final PurchasesStrings strings = ref.watch(stringsProvider).purchases;
 
     return AsyncSection<List<PurchaseOrder>>(
       value: orders,
-      errorMessage: 'No se pudieron cargar las órdenes de compra.',
+      errorMessage: strings.loadError,
       onRetry: () => ref.invalidate(projectPurchasesProvider(project.id)),
       builder: (List<PurchaseOrder> data) => data.isEmpty
           ? EmptyState(
               icon: Icons.shopping_cart_checkout_rounded,
-              title: 'Sin órdenes de compra',
-              message: '«${project.name}» no tiene compras registradas.',
+              title: strings.emptyTitle,
+              message: strings.emptyFor(project.name),
             )
           : ModuleList(
               itemCount: data.length,
@@ -90,6 +94,7 @@ class _OrderCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AuthUser? user = ref.watch(currentUserProvider);
+    final AppStrings strings = ref.watch(stringsProvider);
     final bool canApprove =
         (user?.can(Perm.purchasesApprove) ?? false) &&
         order.status == PurchaseStatus.pending;
@@ -114,7 +119,7 @@ class _OrderCard extends ConsumerWidget {
                       children: <Widget>[
                         Expanded(
                           child: Text(
-                            supplierName ?? 'Proveedor sin asignar',
+                            supplierName ?? strings.purchases.noSupplier,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -133,13 +138,13 @@ class _OrderCard extends ConsumerWidget {
                     ),
                     InfoLine(
                       icon: Icons.local_shipping_outlined,
-                      text: 'Entrega ${Fmt.date(order.deliveryDate)}',
+                      text: strings.purchases.deliveryOn(
+                        Fmt.date(order.deliveryDate),
+                      ),
                     ),
                     InfoLine(
                       icon: Icons.inventory_2_outlined,
-                      text:
-                          '${order.items.length} línea'
-                          '${order.items.length == 1 ? '' : 's'}',
+                      text: strings.purchases.lines(order.items.length),
                     ),
                     if (order.notes.isNotEmpty)
                       InfoLine(icon: Icons.notes_rounded, text: order.notes),
@@ -153,7 +158,7 @@ class _OrderCard extends ConsumerWidget {
             children: <Widget>[
               Expanded(
                 child: LabeledValue(
-                  label: 'TOTAL',
+                  label: strings.common.totalUpper,
                   value: Fmt.money(order.totalAmount),
                   color: AppColors.orangeNeon,
                 ),
@@ -162,7 +167,7 @@ class _OrderCard extends ConsumerWidget {
                 FilledButton.icon(
                   onPressed: () => _approve(context, ref),
                   icon: const Icon(Icons.check_rounded, size: 17),
-                  label: const Text('Aprobar'),
+                  label: Text(strings.purchases.approve),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -181,7 +186,7 @@ class _OrderCard extends ConsumerWidget {
     final bool ok = await runWithFeedback(
       context,
       action: () => ref.read(purchasesRepositoryProvider).approve(order.id),
-      successMessage: 'Orden aprobada',
+      successMessage: ref.read(stringsProvider).purchases.approved,
     );
     if (ok) ref.invalidate(projectPurchasesProvider(order.projectId));
   }

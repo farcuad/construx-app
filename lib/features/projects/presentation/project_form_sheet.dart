@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/admin_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/validators.dart';
@@ -77,7 +80,9 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
       initialDate: initial,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
-      helpText: isStart ? 'Fecha de inicio' : 'Fecha de fin',
+      helpText: isStart
+          ? ref.read(stringsProvider).projects.startDateHelp
+          : ref.read(stringsProvider).projects.endDateHelp,
     );
     if (picked == null) return;
     setState(() {
@@ -97,7 +102,9 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
     if (_startDate != null &&
         _endDate != null &&
         _endDate!.isBefore(_startDate!)) {
-      setState(() => _error = 'La fecha de fin debe ser posterior al inicio.');
+      setState(
+        () => _error = ref.read(stringsProvider).projects.endBeforeStart,
+      );
       return;
     }
 
@@ -131,7 +138,9 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
       Navigator.of(context).pop();
       showAppSnackBar(
         context,
-        _isEditing ? 'Proyecto actualizado' : 'Proyecto creado',
+        _isEditing
+            ? ref.read(stringsProvider).projects.updated
+            : ref.read(stringsProvider).projects.created,
       );
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -146,6 +155,8 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
   Widget build(BuildContext context) {
     final List<Client> clients =
         ref.watch(clientsControllerProvider).valueOrNull ?? const <Client>[];
+    final AppStrings all = ref.watch(stringsProvider);
+    final ProjectsStrings strings = all.projects;
 
     return Padding(
       // Deja el formulario por encima del teclado.
@@ -161,7 +172,7 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
               const _SheetHandle(),
               const SizedBox(height: 14),
               Text(
-                _isEditing ? 'Editar proyecto' : 'Nuevo proyecto',
+                _isEditing ? strings.formEdit : strings.formNew,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 20,
@@ -180,13 +191,11 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
                 controller: _nameController,
                 enabled: !_isSaving,
                 textCapitalization: TextCapitalization.sentences,
-                validator: (String? v) => Validators.required(
-                  v,
-                  message: 'Ingresa el nombre de la obra',
-                ),
-                decoration: const InputDecoration(
-                  labelText: 'Nombre del proyecto',
-                  prefixIcon: Icon(Icons.apartment_rounded, size: 20),
+                validator: (String? v) =>
+                    Validators.required(v, message: strings.nameRequired),
+                decoration: InputDecoration(
+                  labelText: strings.name,
+                  prefixIcon: const Icon(Icons.apartment_rounded, size: 20),
                 ),
               ),
               const SizedBox(height: 14),
@@ -196,14 +205,12 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
                     : null,
                 isExpanded: true,
                 dropdownColor: AppColors.surfaceHigh,
-                decoration: const InputDecoration(
-                  labelText: 'Cliente',
-                  prefixIcon: Icon(Icons.handshake_outlined, size: 20),
+                decoration: InputDecoration(
+                  labelText: all.common.client,
+                  prefixIcon: const Icon(Icons.handshake_outlined, size: 20),
                 ),
                 hint: Text(
-                  clients.isEmpty
-                      ? 'No hay clientes registrados'
-                      : 'Selecciona un cliente',
+                  clients.isEmpty ? strings.noClients : strings.pickClient,
                   style: const TextStyle(color: AppColors.textDisabled),
                 ),
                 items: <DropdownMenuItem<String>>[
@@ -222,9 +229,9 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
                 controller: _locationController,
                 enabled: !_isSaving,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  labelText: 'Ubicación',
-                  prefixIcon: Icon(Icons.place_outlined, size: 20),
+                decoration: InputDecoration(
+                  labelText: all.common.location,
+                  prefixIcon: const Icon(Icons.place_outlined, size: 20),
                 ),
               ),
               const SizedBox(height: 14),
@@ -239,9 +246,9 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
                 ],
                 validator: (String? v) =>
                     Validators.amount(v, isRequired: false),
-                decoration: const InputDecoration(
-                  labelText: 'Presupuesto',
-                  prefixIcon: Icon(Icons.attach_money_rounded, size: 20),
+                decoration: InputDecoration(
+                  labelText: all.common.budget,
+                  prefixIcon: const Icon(Icons.attach_money_rounded, size: 20),
                 ),
               ),
               const SizedBox(height: 14),
@@ -249,7 +256,7 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
                 children: <Widget>[
                   Expanded(
                     child: _DateField(
-                      label: 'Inicio',
+                      label: all.common.start,
                       value: _startDate,
                       enabled: !_isSaving,
                       onTap: () => _pickDate(isStart: true),
@@ -258,7 +265,7 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _DateField(
-                      label: 'Fin',
+                      label: all.common.end,
                       value: _endDate,
                       enabled: !_isSaving,
                       onTap: () => _pickDate(isStart: false),
@@ -268,7 +275,7 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
               ),
               const SizedBox(height: 24),
               NeonButton(
-                label: _isEditing ? 'Guardar cambios' : 'Crear proyecto',
+                label: _isEditing ? all.common.saveChanges : strings.submit,
                 icon: Icons.check_rounded,
                 isLoading: _isSaving,
                 onPressed: _save,
@@ -297,7 +304,7 @@ class _SheetHandle extends StatelessWidget {
   );
 }
 
-class _DateField extends StatelessWidget {
+class _DateField extends ConsumerWidget {
   const _DateField({
     required this.label,
     required this.value,
@@ -311,7 +318,7 @@ class _DateField extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) => InkWell(
+  Widget build(BuildContext context, WidgetRef ref) => InkWell(
     onTap: enabled ? onTap : null,
     borderRadius: const BorderRadius.all(Radius.circular(14)),
     child: InputDecorator(
@@ -320,7 +327,9 @@ class _DateField extends StatelessWidget {
         prefixIcon: const Icon(Icons.event_outlined, size: 20),
       ),
       child: Text(
-        value == null ? 'Sin definir' : Fmt.date(value),
+        value == null
+            ? ref.watch(stringsProvider).projects.undefined
+            : Fmt.date(value),
         style: TextStyle(
           color: value == null ? AppColors.textDisabled : AppColors.textPrimary,
           fontSize: 14,

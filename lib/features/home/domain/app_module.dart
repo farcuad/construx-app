@@ -170,6 +170,15 @@ const List<AppModule> kAppModules = <AppModule>[
   ),
 ];
 
+/// El módulo cuya pantalla vive en [path], o `null` si esa ruta no es la de un
+/// módulo (el panel, los ajustes, una subruta de detalle…).
+AppModule? moduleForPath(String path) {
+  for (final AppModule module in kAppModules) {
+    if (module.routePath == path) return module;
+  }
+  return null;
+}
+
 /// Módulos visibles para [user], preservando el orden del catálogo.
 List<AppModule> modulesFor(AuthUser user) => kAppModules
     .where((AppModule m) => m.isVisibleFor(user))

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/site_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/queries.dart';
@@ -33,7 +35,7 @@ class ProgressScreen extends ConsumerWidget {
     currentPath: routePath,
     onRefresh: () => ref.invalidate(dailyReportProvider),
     body: ProjectScope(
-      emptyMessage: 'El avance se reporta por obra.',
+      emptyMessage: ref.watch(stringsProvider).progress.needsProject,
       builder: (BuildContext context, Project project) => Column(
         children: <Widget>[
           DaySelector(dayProvider: progressDayProvider),
@@ -65,18 +67,18 @@ class _Report extends ConsumerWidget {
         t.id: t.name,
     };
 
+    final ProgressStrings strings = ref.watch(stringsProvider).progress;
+
     return AsyncSection<DailyReport?>(
       value: report,
-      errorMessage: 'No se pudo cargar el reporte del día.',
+      errorMessage: strings.loadError,
       onRetry: () => ref.invalidate(dailyReportProvider(query)),
       builder: (DailyReport? data) {
         if (data == null) {
-          return const EmptyState(
+          return EmptyState(
             icon: Icons.event_busy_rounded,
-            title: 'Sin reporte ese día',
-            message:
-                'No se registró avance en la fecha elegida. Prueba con otro '
-                'día.',
+            title: strings.emptyTitle,
+            message: strings.emptyMessage,
           );
         }
 
@@ -91,7 +93,7 @@ class _Report extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    taskNames[entry.taskId] ?? 'Tarea',
+                    taskNames[entry.taskId] ?? strings.unnamedTask,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -123,7 +125,7 @@ class _Report extends ConsumerWidget {
                   if (entry.quantityExecuted > 0)
                     InfoLine(
                       icon: Icons.straighten_rounded,
-                      text: 'Ejecutado: ${entry.quantityExecuted}',
+                      text: strings.executedOf('${entry.quantityExecuted}'),
                       top: 8,
                     ),
                   if (entry.notes.isNotEmpty)
@@ -138,13 +140,13 @@ class _Report extends ConsumerWidget {
   }
 }
 
-class _Header extends StatelessWidget {
+class _Header extends ConsumerWidget {
   const _Header({required this.report});
 
   final DailyReport report;
 
   @override
-  Widget build(BuildContext context) => AppCard(
+  Widget build(BuildContext context, WidgetRef ref) => AppCard(
     glowColor: AppColors.orange,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,7 +161,7 @@ class _Header extends StatelessWidget {
             const SizedBox(width: 13),
             Expanded(
               child: LabeledValue(
-                label: 'REPORTE DEL DÍA',
+                label: ref.watch(stringsProvider).progress.reportOfDayUpper,
                 value: Fmt.date(report.reportDate),
               ),
             ),

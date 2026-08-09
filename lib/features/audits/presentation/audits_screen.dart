@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/admin_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -19,6 +21,7 @@ class AuditsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<List<AuditLog>> logs = ref.watch(auditLogsProvider);
+    final AuditsStrings strings = ref.watch(stringsProvider).audits;
 
     return ModuleScaffold(
       title: 'Auditoría',
@@ -26,15 +29,13 @@ class AuditsScreen extends ConsumerWidget {
       onRefresh: () => ref.invalidate(auditLogsProvider),
       body: AsyncSection<List<AuditLog>>(
         value: logs,
-        errorMessage: 'No se pudo cargar el registro de auditoría.',
+        errorMessage: strings.loadError,
         onRetry: () => ref.invalidate(auditLogsProvider),
         builder: (List<AuditLog> data) => data.isEmpty
-            ? const EmptyState(
+            ? EmptyState(
                 icon: Icons.fact_check_rounded,
-                title: 'Sin movimientos registrados',
-                message:
-                    'Aquí queda constancia de quién crea, modifica o elimina '
-                    'información en el sistema.',
+                title: strings.emptyTitle,
+                message: strings.emptyMessage,
               )
             : ModuleList(
                 itemCount: data.length,
@@ -47,7 +48,7 @@ class AuditsScreen extends ConsumerWidget {
   }
 }
 
-class _LogCard extends StatelessWidget {
+class _LogCard extends ConsumerWidget {
   const _LogCard({required this.log});
 
   final AuditLog log;
@@ -61,7 +62,7 @@ class _LogCard extends StatelessWidget {
   };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final (Color color, IconData icon) = _look;
     final int changed = log.newValues.length;
 
@@ -104,9 +105,7 @@ class _LogCard extends StatelessWidget {
                 if (changed > 0)
                   InfoLine(
                     icon: Icons.data_object_rounded,
-                    text:
-                        '$changed campo${changed == 1 ? '' : 's'} con valor '
-                        'nuevo',
+                    text: ref.watch(stringsProvider).audits.changed(changed),
                   ),
               ],
             ),

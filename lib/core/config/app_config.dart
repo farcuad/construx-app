@@ -66,4 +66,9 @@ abstract final class AppConfig {
 
   /// Nombre visible de la aplicación.
   static const String appName = 'Construx';
+
+  /// Versión que se muestra en Ajustes. Debe ir a la par con la de
+  /// `pubspec.yaml`; se escribe aquí para no depender de un plugin de
+  /// plataforma solo por una línea de texto.
+  static const String appVersion = '1.0.0';
 }

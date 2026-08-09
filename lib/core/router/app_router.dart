@@ -15,7 +15,6 @@ import '../../features/expenses/presentation/expenses_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/inventory/presentation/inventory_screen.dart';
 import '../../features/invoices/presentation/invoices_screen.dart';
-import '../../features/notifications/presentation/notifications_screen.dart';
 import '../../features/personnel/presentation/personnel_screen.dart';
 import '../../features/photos/presentation/photos_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
@@ -23,6 +22,8 @@ import '../../features/projects/presentation/project_detail_screen.dart';
 import '../../features/projects/presentation/projects_screen.dart';
 import '../../features/purchases/presentation/purchases_screen.dart';
 import '../../features/schedule/presentation/schedule_screen.dart';
+import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/settings/presentation/terms_screen.dart';
 import '../../features/suppliers/presentation/suppliers_screen.dart';
 import '../../features/users/presentation/users_screen.dart';
 import '../widgets/app_widgets.dart';
@@ -58,11 +59,19 @@ class SplashScreen extends StatelessWidget {
   );
 }
 
-/// Atajo para declarar una ruta de módulo sin repetir la firma del `builder`.
+/// Página sin transición.
+///
+/// La navegación de la app es plana —el menú y la barra inferior saltan de una
+/// pantalla a otra con `go`, sin apilar— y una animación de deslizamiento en un
+/// salto lateral se ve fuera de sitio, además de retrasar el primer frame de la
+/// pantalla nueva. Se usa en todas las rutas.
+Page<void> _page(Widget child) => NoTransitionPage<void>(child: child);
+
+/// Atajo para declarar una ruta de módulo sin repetir la firma del constructor.
 GoRoute _module(String path, String name, Widget Function() build) => GoRoute(
   path: path,
   name: name,
-  builder: (BuildContext context, GoRouterState state) => build(),
+  pageBuilder: (BuildContext context, GoRouterState state) => _page(build()),
 );
 
 /// Los módulos del ERP, en el mismo orden que el menú lateral.
@@ -130,11 +139,6 @@ final List<GoRoute> _moduleRoutes = <GoRoute>[
     DocumentsScreen.new,
   ),
   _module(UsersScreen.routePath, UsersScreen.routeName, UsersScreen.new),
-  _module(
-    NotificationsScreen.routePath,
-    NotificationsScreen.routeName,
-    NotificationsScreen.new,
-  ),
   _module(AuditsScreen.routePath, AuditsScreen.routeName, AuditsScreen.new),
 ];
 
@@ -179,42 +183,58 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
     routes: <RouteBase>[
       GoRoute(
         path: SplashScreen.routePath,
-        builder: (BuildContext context, GoRouterState state) =>
-            const SplashScreen(),
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _page(const SplashScreen()),
       ),
       GoRoute(
         path: LoginScreen.routePath,
         name: LoginScreen.routeName,
-        builder: (BuildContext context, GoRouterState state) =>
-            const LoginScreen(),
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _page(const LoginScreen()),
       ),
       GoRoute(
         path: HomeScreen.routePath,
         name: HomeScreen.routeName,
-        builder: (BuildContext context, GoRouterState state) =>
-            const HomeScreen(),
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _page(const HomeScreen()),
       ),
       GoRoute(
         path: ProjectsScreen.routePath,
         name: ProjectsScreen.routeName,
-        builder: (BuildContext context, GoRouterState state) =>
-            const ProjectsScreen(),
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _page(const ProjectsScreen()),
         routes: <RouteBase>[
           GoRoute(
             path: ':projectId',
             name: ProjectDetailScreen.routeName,
-            builder: (BuildContext context, GoRouterState state) =>
-                ProjectDetailScreen(
-                  projectId: state.pathParameters['projectId']!,
-                ),
+            pageBuilder: (BuildContext context, GoRouterState state) => _page(
+              ProjectDetailScreen(
+                projectId: state.pathParameters['projectId']!,
+              ),
+            ),
           ),
         ],
       ),
       GoRoute(
         path: ClientsScreen.routePath,
         name: ClientsScreen.routeName,
-        builder: (BuildContext context, GoRouterState state) =>
-            const ClientsScreen(),
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _page(const ClientsScreen()),
+      ),
+      GoRoute(
+        path: SettingsScreen.routePath,
+        name: SettingsScreen.routeName,
+        pageBuilder: (BuildContext context, GoRouterState state) =>
+            _page(const SettingsScreen()),
+        routes: <RouteBase>[
+          // Anidada bajo ajustes para que al volver se vuelva ahí, no al panel.
+          GoRoute(
+            path: 'terms',
+            name: TermsScreen.routeName,
+            pageBuilder: (BuildContext context, GoRouterState state) =>
+                _page(const TermsScreen()),
+          ),
+        ],
       ),
       // Módulos de primer nivel. Van planos y no anidados bajo el panel: el
       // menú lateral salta de uno a otro con `go`, sin apilar rutas.

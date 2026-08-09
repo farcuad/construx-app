@@ -5,6 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'app.dart';
 import 'core/config/app_config.dart';
+import 'core/i18n/app_language.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,9 +14,12 @@ Future<void> main() async {
   // app las lee a través de `AppConfig`.
   await AppConfig.load();
 
-  // Símbolos de fecha en español; `Fmt` los usa de forma perezosa, así que
-  // deben estar cargados antes del primer `build`.
-  await initializeDateFormatting('es');
+  // Símbolos de fecha de los idiomas que ofrece la app. `Fmt` los usa de forma
+  // perezosa, así que deben estar cargados antes del primer `build`; cargarlos
+  // aquí evita además un salto al cambiar de idioma en Ajustes.
+  for (final AppLanguage language in AppLanguage.values) {
+    await initializeDateFormatting(language.code);
+  }
 
   // Barra de estado transparente e iconos claros sobre el fondo negro.
   SystemChrome.setSystemUIOverlayStyle(

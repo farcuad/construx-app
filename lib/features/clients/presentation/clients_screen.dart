@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/admin_strings.dart';
+import '../../../core/widgets/data_widgets.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
-import '../../../core/widgets/neon_background.dart';
 import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/auth_user.dart';
 import '../../auth/domain/permissions.dart';
-import '../../home/presentation/widgets/app_drawer.dart';
+import '../../home/presentation/widgets/module_scaffold.dart';
 import '../application/clients_controller.dart';
 import '../domain/client.dart';
 import 'client_form_sheet.dart';
@@ -26,44 +29,33 @@ class ClientsScreen extends ConsumerWidget {
       clientsControllerProvider,
     );
     final AuthUser? user = ref.watch(currentUserProvider);
+    final AppStrings strings = ref.watch(stringsProvider);
     final bool canCreate = user?.can(Perm.clientsCreate) ?? false;
 
-    return Scaffold(
-      drawer: const AppDrawer(currentPath: routePath),
-      appBar: AppBar(
-        title: const Text('Clientes'),
-        actions: <Widget>[
-          IconButton(
-            tooltip: 'Actualizar',
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () =>
-                ref.read(clientsControllerProvider.notifier).refresh(),
-          ),
-        ],
-      ),
+    return ModuleScaffold(
+      title: 'Clientes',
+      currentPath: routePath,
+      onRefresh: () => ref.read(clientsControllerProvider.notifier).refresh(),
       floatingActionButton: canCreate
           ? FloatingActionButton.extended(
               onPressed: () => showClientFormSheet(context),
               icon: const Icon(Icons.person_add_alt_rounded),
-              label: const Text('Nuevo'),
+              label: Text(strings.common.newItem),
             )
           : null,
-      body: NeonBackground(
-        child: switch (clients) {
-          AsyncData<List<Client>>(:final List<Client> value) => _ClientsList(
-            clients: value,
-            canCreate: canCreate,
-          ),
-          AsyncError<List<Client>>(:final Object error) => ErrorView(
-            message: error is ApiException
-                ? error.message
-                : 'No se pudieron cargar los clientes.',
-            onRetry: () =>
-                ref.read(clientsControllerProvider.notifier).refresh(),
-          ),
-          _ => const LoadingView(),
-        },
-      ),
+      body: switch (clients) {
+        AsyncData<List<Client>>(:final List<Client> value) => _ClientsList(
+          clients: value,
+          canCreate: canCreate,
+        ),
+        AsyncError<List<Client>>(:final Object error) => ErrorView(
+          message: error is ApiException
+              ? error.message
+              : strings.clients.loadError,
+          onRetry: () => ref.read(clientsControllerProvider.notifier).refresh(),
+        ),
+        _ => const LoadingView(),
+      },
     );
   }
 }
@@ -76,13 +68,13 @@ class _ClientsList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final ClientsStrings strings = ref.watch(stringsProvider).clients;
+
     if (clients.isEmpty) {
       return EmptyState(
         icon: Icons.handshake_rounded,
-        title: 'Aún no hay clientes',
-        message: canCreate
-            ? 'Registra tu primer cliente para poder asociarlo a un proyecto.'
-            : 'Cuando tu empresa registre clientes, aparecerán aquí.',
+        title: strings.emptyTitle,
+        message: canCreate ? strings.emptyCanCreate : strings.emptyReadOnly,
       );
     }
 
@@ -110,6 +102,7 @@ class _ClientCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AuthUser? user = ref.watch(currentUserProvider);
+    final AppStrings strings = ref.watch(stringsProvider);
     final bool canUpdate = user?.can(Perm.clientsUpdate) ?? false;
     final bool canDelete = user?.can(Perm.clientsDelete) ?? false;
 
@@ -153,7 +146,10 @@ class _ClientCard extends ConsumerWidget {
                   ),
                 ),
                 if (client.nit.isNotEmpty)
-                  _Line(icon: Icons.badge_outlined, text: 'NIT ${client.nit}'),
+                  _Line(
+                    icon: Icons.badge_outlined,
+                    text: strings.clients.taxIdOf(client.nit),
+                  ),
                 if (client.email.isNotEmpty)
                   _Line(icon: Icons.mail_outline_rounded, text: client.email),
                 if (client.phone.isNotEmpty)
@@ -163,7 +159,7 @@ class _ClientCard extends ConsumerWidget {
           ),
           if (canDelete)
             IconButton(
-              tooltip: 'Eliminar',
+              tooltip: strings.common.delete,
               icon: const Icon(Icons.delete_outline_rounded, size: 19),
               color: AppColors.textDisabled,
               onPressed: () => _confirmDelete(context, ref),
@@ -174,29 +170,17 @@ class _ClientCard extends ConsumerWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('Eliminar cliente'),
-        content: Text('Se eliminará «${client.name}».'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.danger),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
+    final ClientsStrings strings = ref.read(stringsProvider).clients;
+    final bool confirmed = await confirmDestructive(
+      context,
+      title: strings.deleteTitle,
+      message: strings.deleteBody(client.name),
     );
-    if (!(confirmed ?? false) || !context.mounted) return;
+    if (!confirmed || !context.mounted) return;
 
     try {
       await ref.read(clientsControllerProvider.notifier).delete(client.id);
-      if (context.mounted) showAppSnackBar(context, 'Cliente eliminado');
+      if (context.mounted) showAppSnackBar(context, strings.deleted);
     } on ApiException catch (e) {
       if (context.mounted) showAppSnackBar(context, e.message, isError: true);
     }

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/api_exception.dart';
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/finance_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/validators.dart';
@@ -76,7 +79,6 @@ class _ExpenseFormSheetState extends ConsumerState<_ExpenseFormSheet> {
       firstDate: DateTime(now.year - 5),
       // Un gasto no puede ser futuro: se registra lo ya pagado.
       lastDate: now,
-      locale: const Locale('es'),
     );
     if (picked != null) setState(() => _date = picked);
   }
@@ -118,10 +120,8 @@ class _ExpenseFormSheetState extends ConsumerState<_ExpenseFormSheet> {
       ref.invalidate(projectExpensesProvider(widget.projectId));
       if (!mounted) return;
       Navigator.of(context).pop();
-      showAppSnackBar(
-        context,
-        _isEditing ? 'Gasto actualizado' : 'Gasto registrado',
-      );
+      final ExpensesStrings strings = ref.read(stringsProvider).expenses;
+      showAppSnackBar(context, _isEditing ? strings.updated : strings.created);
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -132,106 +132,111 @@ class _ExpenseFormSheetState extends ConsumerState<_ExpenseFormSheet> {
   }
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-    child: SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Center(
-              child: Container(
-                width: 42,
-                height: 4,
-                decoration: const BoxDecoration(
-                  color: AppColors.border,
-                  borderRadius: BorderRadius.all(Radius.circular(2)),
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              _isEditing ? 'Editar gasto' : 'Nuevo gasto',
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 20),
-            if (_error != null) ...<Widget>[
-              ErrorBanner(
-                message: _error!,
-                onDismiss: () => setState(() => _error = null),
-              ),
-              const SizedBox(height: 16),
-            ],
-            TextFormField(
-              controller: _title,
-              enabled: !_isSaving,
-              textCapitalization: TextCapitalization.sentences,
-              validator: (String? v) =>
-                  Validators.required(v, message: 'Ingresa el concepto'),
-              decoration: const InputDecoration(
-                labelText: 'Concepto',
-                prefixIcon: Icon(Icons.label_outline_rounded, size: 20),
-              ),
-            ),
-            const SizedBox(height: 14),
-            TextFormField(
-              controller: _amount,
-              enabled: !_isSaving,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              validator: Validators.amount,
-              decoration: const InputDecoration(
-                labelText: 'Monto',
-                prefixIcon: Icon(Icons.payments_outlined, size: 20),
-              ),
-            ),
-            const SizedBox(height: 14),
-            InkWell(
-              onTap: _isSaving ? null : _pickDate,
-              borderRadius: const BorderRadius.all(Radius.circular(14)),
-              child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Fecha del gasto',
-                  prefixIcon: Icon(Icons.event_rounded, size: 20),
-                ),
-                child: Text(
-                  Fmt.date(_date),
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 15,
+  Widget build(BuildContext context) {
+    final AppStrings all = ref.watch(stringsProvider);
+    final ExpensesStrings strings = all.expenses;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Center(
+                child: Container(
+                  width: 42,
+                  height: 4,
+                  decoration: const BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.all(Radius.circular(2)),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 14),
-            TextFormField(
-              controller: _description,
-              enabled: !_isSaving,
-              maxLines: 3,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                labelText: 'Descripción (opcional)',
-                alignLabelWithHint: true,
+              const SizedBox(height: 14),
+              Text(
+                _isEditing ? strings.formEdit : strings.formNew,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
-            NeonButton(
-              label: _isEditing ? 'Guardar cambios' : 'Registrar gasto',
-              icon: Icons.check_rounded,
-              isLoading: _isSaving,
-              onPressed: _save,
-            ),
-          ],
+              const SizedBox(height: 20),
+              if (_error != null) ...<Widget>[
+                ErrorBanner(
+                  message: _error!,
+                  onDismiss: () => setState(() => _error = null),
+                ),
+                const SizedBox(height: 16),
+              ],
+              TextFormField(
+                controller: _title,
+                enabled: !_isSaving,
+                textCapitalization: TextCapitalization.sentences,
+                validator: (String? v) =>
+                    Validators.required(v, message: strings.conceptRequired),
+                decoration: InputDecoration(
+                  labelText: strings.concept,
+                  prefixIcon: const Icon(Icons.label_outline_rounded, size: 20),
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _amount,
+                enabled: !_isSaving,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                validator: Validators.amount,
+                decoration: InputDecoration(
+                  labelText: all.common.amount,
+                  prefixIcon: const Icon(Icons.payments_outlined, size: 20),
+                ),
+              ),
+              const SizedBox(height: 14),
+              InkWell(
+                onTap: _isSaving ? null : _pickDate,
+                borderRadius: const BorderRadius.all(Radius.circular(14)),
+                child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: strings.expenseDate,
+                    prefixIcon: const Icon(Icons.event_rounded, size: 20),
+                  ),
+                  child: Text(
+                    Fmt.date(_date),
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _description,
+                enabled: !_isSaving,
+                maxLines: 3,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: InputDecoration(
+                  labelText: all.common.descriptionOptional,
+                  alignLabelWithHint: true,
+                ),
+              ),
+              const SizedBox(height: 24),
+              NeonButton(
+                label: _isEditing ? all.common.saveChanges : strings.submit,
+                icon: Icons.check_rounded,
+                isLoading: _isSaving,
+                onPressed: _save,
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }

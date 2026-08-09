@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/finance_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -27,7 +30,7 @@ class InvoicesScreen extends ConsumerWidget {
     currentPath: routePath,
     onRefresh: () => ref.invalidate(projectInvoicesProvider),
     body: ProjectScope(
-      emptyMessage: 'Las facturas se emiten contra una obra.',
+      emptyMessage: ref.watch(stringsProvider).invoices.needsProject,
       builder: (BuildContext context, Project project) =>
           _InvoicesList(project: project),
     ),
@@ -44,16 +47,17 @@ class _InvoicesList extends ConsumerWidget {
     final AsyncValue<List<Invoice>> invoices = ref.watch(
       projectInvoicesProvider(project.id),
     );
+    final InvoicesStrings strings = ref.watch(stringsProvider).invoices;
 
     return AsyncSection<List<Invoice>>(
       value: invoices,
-      errorMessage: 'No se pudieron cargar las facturas.',
+      errorMessage: strings.loadError,
       onRetry: () => ref.invalidate(projectInvoicesProvider(project.id)),
       builder: (List<Invoice> data) => data.isEmpty
           ? EmptyState(
               icon: Icons.receipt_long_rounded,
-              title: 'Sin facturas',
-              message: '«${project.name}» no tiene facturas registradas.',
+              title: strings.emptyTitle,
+              message: strings.emptyFor(project.name),
             )
           : ModuleList(
               itemCount: data.length,
@@ -68,13 +72,14 @@ class _InvoicesList extends ConsumerWidget {
 }
 
 /// Cuánto se ha emitido y cuánto queda por cobrar.
-class _Summary extends StatelessWidget {
+class _Summary extends ConsumerWidget {
   const _Summary({required this.invoices});
 
   final List<Invoice> invoices;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final InvoicesStrings strings = ref.watch(stringsProvider).invoices;
     double issued = 0;
     double pending = 0;
     for (final Invoice invoice in invoices) {
@@ -89,14 +94,14 @@ class _Summary extends StatelessWidget {
         children: <Widget>[
           Expanded(
             child: LabeledValue(
-              label: 'EMITIDO',
+              label: strings.issuedUpper,
               value: Fmt.money(issued),
               color: AppColors.orangeNeon,
             ),
           ),
           Expanded(
             child: LabeledValue(
-              label: 'PENDIENTE DE COBRO',
+              label: strings.pendingCollectionUpper,
               value: Fmt.money(pending),
               color: pending > 0 ? AppColors.warning : AppColors.success,
               alignEnd: true,
@@ -115,21 +120,25 @@ class _InvoiceCard extends ConsumerWidget {
 
   /// El vencimiento manda sobre el estado: una factura «emitida» pero vencida
   /// se pinta en rojo, que es la información accionable.
-  (Color, String) get _badge {
-    if (invoice.isCancelled) return (AppColors.textDisabled, 'Anulada');
-    if (invoice.isPaid) return (AppColors.success, 'Pagada');
-    if (invoice.isOverdue) return (AppColors.danger, 'Vencida');
+  (Color, String) _badge(InvoicesStrings strings) {
+    if (invoice.isCancelled) {
+      return (AppColors.textDisabled, strings.cancelled);
+    }
+    if (invoice.isPaid) return (AppColors.success, strings.paidStatus);
+    if (invoice.isOverdue) return (AppColors.danger, strings.overdue);
     return (AppColors.warning, invoice.status.isEmpty ? '—' : invoice.status);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AuthUser? user = ref.watch(currentUserProvider);
+    final AppStrings all = ref.watch(stringsProvider);
+    final InvoicesStrings strings = all.invoices;
     final bool canCancel =
         (user?.can(Perm.invoicesCancel) ?? false) &&
         !invoice.isCancelled &&
         !invoice.isPaid;
-    final (Color color, String label) = _badge;
+    final (Color color, String label) = _badge(strings);
 
     return AppCard(
       child: Column(
@@ -149,7 +158,7 @@ class _InvoiceCard extends ConsumerWidget {
                         Expanded(
                           child: Text(
                             invoice.invoiceNumber.isEmpty
-                                ? 'Sin número'
+                                ? strings.noNumber
                                 : invoice.invoiceNumber,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -170,9 +179,10 @@ class _InvoiceCard extends ConsumerWidget {
                     ),
                     InfoLine(
                       icon: Icons.event_rounded,
-                      text:
-                          'Emitida ${Fmt.date(invoice.issueDate)} · '
-                          'vence ${Fmt.date(invoice.dueDate)}',
+                      text: strings.datesOf(
+                        Fmt.date(invoice.issueDate),
+                        Fmt.date(invoice.dueDate),
+                      ),
                       color: invoice.isOverdue ? AppColors.danger : null,
                     ),
                   ],
@@ -185,13 +195,13 @@ class _InvoiceCard extends ConsumerWidget {
             children: <Widget>[
               Expanded(
                 child: LabeledValue(
-                  label: 'TOTAL',
+                  label: all.common.totalUpper,
                   value: Fmt.money(invoice.totalAmount),
                 ),
               ),
               Expanded(
                 child: LabeledValue(
-                  label: 'PENDIENTE',
+                  label: strings.pendingUpper,
                   value: Fmt.money(invoice.remainingAmount),
                   color: invoice.remainingAmount > 0
                       ? AppColors.warning
@@ -204,7 +214,7 @@ class _InvoiceCard extends ConsumerWidget {
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.danger,
                   ),
-                  child: const Text('Anular'),
+                  child: Text(strings.cancel),
                 ),
             ],
           ),
@@ -214,20 +224,19 @@ class _InvoiceCard extends ConsumerWidget {
   }
 
   Future<void> _cancel(BuildContext context, WidgetRef ref) async {
+    final InvoicesStrings strings = ref.read(stringsProvider).invoices;
     final bool confirmed = await confirmDestructive(
       context,
-      title: 'Anular factura',
-      message:
-          'Se anulará la factura ${invoice.invoiceNumber}. '
-          'Esta acción queda registrada en la auditoría.',
-      confirmLabel: 'Anular',
+      title: strings.cancelTitle,
+      message: strings.cancelBody(invoice.invoiceNumber),
+      confirmLabel: strings.cancel,
     );
     if (!confirmed || !context.mounted) return;
 
     final bool ok = await runWithFeedback(
       context,
       action: () => ref.read(invoicesRepositoryProvider).cancel(invoice.id),
-      successMessage: 'Factura anulada',
+      successMessage: strings.cancelDone,
     );
     if (ok) ref.invalidate(projectInvoicesProvider(invoice.projectId));
   }

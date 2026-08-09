@@ -6,21 +6,44 @@ import 'package:intl/intl.dart';
 /// por eso se crean una sola vez a nivel de clase.
 abstract final class Fmt {
   static final DateFormat _apiDate = DateFormat('yyyy-MM-dd');
-  static final DateFormat _displayDate = DateFormat('dd MMM yyyy', 'es');
-  static final DateFormat _displayDateTime = DateFormat(
-    'dd MMM yyyy · HH:mm',
-    'es',
-  );
-  static final NumberFormat _currency = NumberFormat.currency(
-    locale: 'es',
-    symbol: r'$',
-    decimalDigits: 0,
-  );
-  static final NumberFormat _compact = NumberFormat.compactCurrency(
-    locale: 'es',
+
+  /// Idioma en que se muestran fechas y montos.
+  ///
+  /// Es estado global mutable a propósito: los formateadores son caros y se
+  /// consultan desde cualquier `build`, así que se comparten. Solo lo escribe
+  /// `LocaleController` al cambiar de idioma.
+  static String _locale = 'es';
+
+  static DateFormat _displayDate = _dateFormat();
+  static DateFormat _displayDateTime = _dateTimeFormat();
+  static NumberFormat _currency = _currencyFormat();
+  static NumberFormat _compact = _compactFormat();
+
+  static DateFormat _dateFormat() => DateFormat('dd MMM yyyy', _locale);
+  static DateFormat _dateTimeFormat() =>
+      DateFormat('dd MMM yyyy · HH:mm', _locale);
+  static NumberFormat _currencyFormat() =>
+      NumberFormat.currency(locale: _locale, symbol: r'$', decimalDigits: 0);
+  static NumberFormat _compactFormat() => NumberFormat.compactCurrency(
+    locale: _locale,
     symbol: r'$',
     decimalDigits: 1,
   );
+
+  /// Cambia el idioma y rehace los formateadores.
+  ///
+  /// Los símbolos de fecha del idioma deben estar cargados (`main` llama a
+  /// `initializeDateFormatting` para los tres que ofrece la app).
+  static set locale(String code) {
+    if (code == _locale) return;
+    _locale = code;
+    _displayDate = _dateFormat();
+    _displayDateTime = _dateTimeFormat();
+    _currency = _currencyFormat();
+    _compact = _compactFormat();
+  }
+
+  static String get locale => _locale;
 
   /// Fecha en el formato `YYYY-MM-DD` que usan los campos solo-fecha de la API
   /// (`expense_date`, `delivery_date`, `payment_date`…).

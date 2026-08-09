@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/locale_controller.dart';
+import '../../../core/i18n/sections/site_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/queries.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -32,7 +34,7 @@ class AttendanceScreen extends ConsumerWidget {
     currentPath: routePath,
     onRefresh: () => ref.invalidate(attendanceProvider),
     body: ProjectScope(
-      emptyMessage: 'La lista se pasa por obra.',
+      emptyMessage: ref.watch(stringsProvider).attendance.needsProject,
       builder: (BuildContext context, Project project) => Column(
         children: <Widget>[
           DaySelector(dayProvider: attendanceDayProvider),
@@ -63,16 +65,18 @@ class _Sheet extends ConsumerWidget {
         e.id: e.fullName,
     };
 
+    final AttendanceStrings strings = ref.watch(stringsProvider).attendance;
+
     return AsyncSection<Attendance?>(
       value: attendance,
-      errorMessage: 'No se pudo cargar la asistencia.',
+      errorMessage: strings.loadError,
       onRetry: () => ref.invalidate(attendanceProvider(query)),
       builder: (Attendance? data) {
         if (data == null || data.logs.isEmpty) {
-          return const EmptyState(
+          return EmptyState(
             icon: Icons.how_to_reg_rounded,
-            title: 'Sin lista ese día',
-            message: 'No se pasó lista en la fecha elegida.',
+            title: strings.emptyTitle,
+            message: strings.emptyMessage,
           );
         }
 
@@ -98,7 +102,7 @@ class _Sheet extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text(
-                          names[log.employeeId] ?? 'Empleado',
+                          names[log.employeeId] ?? strings.unnamedEmployee,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -120,11 +124,17 @@ class _Sheet extends ConsumerWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: <Widget>[
-                      StatusChip(label: log.status.label, color: color),
+                      StatusChip(
+                        label: strings.status(
+                          log.status.apiValue,
+                          log.status.label,
+                        ),
+                        color: color,
+                      ),
                       if (log.hoursWorked > 0) ...<Widget>[
                         const SizedBox(height: 4),
                         Text(
-                          '${_hours(log.hoursWorked)} h',
+                          '${_hours(log.hoursWorked)} ${strings.hourSuffix}',
                           style: const TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 11.5,
@@ -144,13 +154,14 @@ class _Sheet extends ConsumerWidget {
   }
 }
 
-class _Summary extends StatelessWidget {
+class _Summary extends ConsumerWidget {
   const _Summary({required this.attendance});
 
   final Attendance attendance;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AttendanceStrings strings = ref.watch(stringsProvider).attendance;
     final int total = attendance.logs.length;
     final int present = attendance.presentCount;
     final double rate = total == 0 ? 0 : present / total * 100;
@@ -161,8 +172,8 @@ class _Summary extends StatelessWidget {
         children: <Widget>[
           Expanded(
             child: LabeledValue(
-              label: 'PRESENTES',
-              value: '$present de $total',
+              label: strings.presentUpper,
+              value: strings.countOf(present, total),
               color: present == total
                   ? AppColors.success
                   : AppColors.orangeNeon,
@@ -170,13 +181,13 @@ class _Summary extends StatelessWidget {
           ),
           Expanded(
             child: LabeledValue(
-              label: 'ASISTENCIA',
+              label: strings.rateUpper,
               value: '${rate.toStringAsFixed(0)}%',
             ),
           ),
           Expanded(
             child: LabeledValue(
-              label: 'HORAS',
+              label: strings.hoursUpper,
               value: _hours(attendance.totalHours),
               alignEnd: true,
             ),

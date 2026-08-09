@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/config/app_config.dart';
+import 'core/i18n/app_language.dart';
+import 'core/i18n/locale_controller.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_assets.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/application/auth_controller.dart';
+import 'features/notifications/presentation/widgets/notifications_sync.dart';
 
 /// Raíz de la aplicación.
 ///
@@ -46,6 +49,7 @@ class _ConstructoraAppState extends ConsumerState<ConstructoraApp> {
   @override
   Widget build(BuildContext context) {
     final GoRouter router = ref.watch(routerProvider);
+    final AppLanguage language = ref.watch(localeControllerProvider);
 
     return MaterialApp.router(
       title: AppConfig.appName,
@@ -54,8 +58,10 @@ class _ConstructoraAppState extends ConsumerState<ConstructoraApp> {
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.dark,
       routerConfig: router,
-      locale: const Locale('es'),
-      supportedLocales: const <Locale>[Locale('es'), Locale('en')],
+      // El idioma lo manda Ajustes, no el del sistema: la app se usa en obra y
+      // el trabajador puede querer una lengua distinta a la del teléfono.
+      locale: language.locale,
+      supportedLocales: AppLanguage.supportedLocales,
       localizationsDelegates: const <LocalizationsDelegate<Object>>[
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -72,7 +78,9 @@ class _ConstructoraAppState extends ConsumerState<ConstructoraApp> {
               maxScaleFactor: 1.25,
             ),
           ),
-          child: child ?? const SizedBox.shrink(),
+          // Por encima del router: la conexión de avisos vive mientras dure la
+          // sesión, no mientras dure la pantalla que muestra la campana.
+          child: NotificationsSync(child: child ?? const SizedBox.shrink()),
         );
       },
     );
