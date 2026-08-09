@@ -10,10 +10,9 @@ class AuditsRepository {
   final ApiClient _api;
 
   /// `GET /audits-logs` — historial de la empresa del token.
-  Future<List<AuditLog>> fetchAll() async =>
-      (await _api.getList('/audits-logs'))
-          .map(AuditLog.fromJson)
-          .toList(growable: false);
+  Future<List<AuditLog>> fetchAll() async => (await _api.getList(
+    '/audits-logs',
+  )).map(AuditLog.fromJson).toList(growable: false);
 
   /// `POST /audits-logs` — deja constancia de un cambio.
   ///

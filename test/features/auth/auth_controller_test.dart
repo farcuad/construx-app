@@ -81,10 +81,9 @@ void main() {
   test('un login fallido expone el mensaje del backend', () async {
     final ProviderContainer container = buildContainer(
       MockClient(
-        (_) async => jsonResponse(
-          <String, String>{'message': 'Credenciales Incorrectas'},
-          status: 401,
-        ),
+        (_) async => jsonResponse(<String, String>{
+          'message': 'Credenciales Incorrectas',
+        }, status: 401),
       ),
     );
 
@@ -128,22 +127,25 @@ void main() {
     expect(container.read(authControllerProvider).errorMessage, isNull);
   });
 
-  test('el login recuerda las credenciales cuando se marca la casilla', () async {
-    final ProviderContainer container = buildContainer(
-      MockClient((_) async => jsonResponse(loginResponse())),
-    );
+  test(
+    'el login recuerda las credenciales cuando se marca la casilla',
+    () async {
+      final ProviderContainer container = buildContainer(
+        MockClient((_) async => jsonResponse(loginResponse())),
+      );
 
-    await container
-        .read(authControllerProvider.notifier)
-        .login(
-          email: 'andres@xyz.com',
-          password: 'claveSegura123',
-          rememberMe: true,
-        );
+      await container
+          .read(authControllerProvider.notifier)
+          .login(
+            email: 'andres@xyz.com',
+            password: 'claveSegura123',
+            rememberMe: true,
+          );
 
-    expect(store.snapshot[StorageKeys.rememberMe], '1');
-    expect(store.snapshot[StorageKeys.rememberedEmail], 'andres@xyz.com');
-  });
+      expect(store.snapshot[StorageKeys.rememberMe], '1');
+      expect(store.snapshot[StorageKeys.rememberedEmail], 'andres@xyz.com');
+    },
+  );
 
   test('logout limpia la sesión pero conserva lo recordado', () async {
     final ProviderContainer container = buildContainer(

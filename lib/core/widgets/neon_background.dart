@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-/// Fondo negro con dos halos naranjas difusos.
+/// Fondo negro con dos halos naranjas muy difusos.
+///
+/// Son deliberadamente tenues: dan profundidad al negro plano sin teñir el
+/// contenido. Si se nota que «hay una luz», está demasiado subido.
 ///
 /// Se pinta con [CustomPainter] en lugar de con `Container` + `BoxShadow`
 /// porque así el degradado vive en una sola capa de pintura y no fuerza
@@ -39,14 +42,14 @@ class _GlowPainter extends CustomPainter {
       center: Offset(size.width * 0.12, size.height * 0.06),
       radius: size.shortestSide * 0.85,
       color: AppColors.orange,
-      opacity: 0.20,
+      opacity: 0.085,
     );
     _halo(
       canvas,
       center: Offset(size.width * 0.95, size.height * 0.82),
       radius: size.shortestSide * 0.75,
       color: AppColors.orangeDeep,
-      opacity: 0.14,
+      opacity: 0.055,
     );
   }
 
@@ -63,7 +66,10 @@ class _GlowPainter extends CustomPainter {
       radius,
       Paint()
         ..shader = RadialGradient(
-          colors: <Color>[color.withValues(alpha: opacity), Colors.transparent],
+          colors: <Color>[
+            color.withValues(alpha: opacity),
+            Colors.transparent,
+          ],
         ).createShader(rect),
     );
   }

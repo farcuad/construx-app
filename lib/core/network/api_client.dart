@@ -139,7 +139,10 @@ class ApiClient {
     );
   }
 
-  Map<String, String> _headers({required bool authenticated, bool hasBody = false}) {
+  Map<String, String> _headers({
+    required bool authenticated,
+    bool hasBody = false,
+  }) {
     final Map<String, String> headers = <String, String>{
       'Accept': _jsonHeaders['Accept']!,
       if (hasBody) 'Content-Type': _jsonHeaders['Content-Type']!,
@@ -163,8 +166,10 @@ class ApiClient {
   }) async {
     final Uri uri = _uri(path, query);
     final bool hasBody = body != null;
-    final http.Request request = http.Request(method, uri)
-      ..headers.addAll(_headers(authenticated: authenticated, hasBody: hasBody));
+    final http.Request request = http.Request(
+      method,
+      uri,
+    )..headers.addAll(_headers(authenticated: authenticated, hasBody: hasBody));
     if (hasBody) request.body = jsonEncode(body);
 
     final http.Response response;
@@ -252,9 +257,7 @@ class ApiClient {
   static List<Map<String, dynamic>> _asList(Object? decoded) {
     if (decoded == null) return const <Map<String, dynamic>>[];
     if (decoded is List) {
-      return decoded
-          .whereType<Map<String, dynamic>>()
-          .toList(growable: false);
+      return decoded.whereType<Map<String, dynamic>>().toList(growable: false);
     }
     throw const ParseException('Se esperaba una lista JSON del servidor.');
   }

@@ -7,7 +7,10 @@ import 'package:intl/intl.dart';
 abstract final class Fmt {
   static final DateFormat _apiDate = DateFormat('yyyy-MM-dd');
   static final DateFormat _displayDate = DateFormat('dd MMM yyyy', 'es');
-  static final DateFormat _displayDateTime = DateFormat('dd MMM yyyy · HH:mm', 'es');
+  static final DateFormat _displayDateTime = DateFormat(
+    'dd MMM yyyy · HH:mm',
+    'es',
+  );
   static final NumberFormat _currency = NumberFormat.currency(
     locale: 'es',
     symbol: r'$',

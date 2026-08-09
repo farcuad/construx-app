@@ -10,10 +10,9 @@ class InventoryRepository {
   // ── Materiales ──────────────────────────────────────────────────────────
 
   /// `GET /materials`.
-  Future<List<InventoryMaterial>> fetchMaterials() async =>
-      (await _api.getList('/materials'))
-          .map(InventoryMaterial.fromJson)
-          .toList(growable: false);
+  Future<List<InventoryMaterial>> fetchMaterials() async => (await _api.getList(
+    '/materials',
+  )).map(InventoryMaterial.fromJson).toList(growable: false);
 
   /// `POST /materials`.
   Future<InventoryMaterial> createMaterial(InventoryMaterial material) async =>
@@ -36,10 +35,9 @@ class InventoryRepository {
   // ── Almacenes ───────────────────────────────────────────────────────────
 
   /// `GET /warehouses`.
-  Future<List<Warehouse>> fetchWarehouses() async =>
-      (await _api.getList('/warehouses'))
-          .map(Warehouse.fromJson)
-          .toList(growable: false);
+  Future<List<Warehouse>> fetchWarehouses() async => (await _api.getList(
+    '/warehouses',
+  )).map(Warehouse.fromJson).toList(growable: false);
 
   /// `POST /warehouses`.
   Future<Warehouse> createWarehouse(Warehouse warehouse) async =>
@@ -55,10 +53,7 @@ class InventoryRepository {
   }) async => Warehouse.fromJson(
     await _api.put(
       '/warehouses/$id',
-      body: <String, dynamic>{
-        'name': ?name,
-        'location': ?location,
-      },
+      body: <String, dynamic>{'name': ?name, 'location': ?location},
     ),
   );
 
@@ -75,7 +70,7 @@ class InventoryRepository {
 
   /// `GET /inventory/stock/{warehouse_id}` — existencias por material.
   Future<List<StockItem>> fetchStock(String warehouseId) async =>
-      (await _api.getList('/inventory/stock/$warehouseId'))
-          .map(StockItem.fromJson)
-          .toList(growable: false);
+      (await _api.getList(
+        '/inventory/stock/$warehouseId',
+      )).map(StockItem.fromJson).toList(growable: false);
 }

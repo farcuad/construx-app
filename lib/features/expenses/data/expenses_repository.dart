@@ -10,9 +10,9 @@ class ExpensesRepository {
 
   /// `GET /expenses/{project_id}`.
   Future<List<Expense>> fetchByProject(String projectId) async =>
-      (await _api.getList('/expenses/$projectId'))
-          .map(Expense.fromJson)
-          .toList(growable: false);
+      (await _api.getList(
+        '/expenses/$projectId',
+      )).map(Expense.fromJson).toList(growable: false);
 
   /// `POST /expenses`.
   Future<Expense> create(Expense expense) async => Expense.fromJson(

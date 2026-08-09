@@ -16,8 +16,8 @@ final Provider<PhotosRepository> photosRepositoryProvider =
 
 /// `GET /photos/{project_id}`, cacheado por proyecto.
 final AutoDisposeFutureProviderFamily<List<ProjectPhoto>, String>
-projectPhotosProvider =
-    FutureProvider.autoDispose.family<List<ProjectPhoto>, String>(
+projectPhotosProvider = FutureProvider.autoDispose
+    .family<List<ProjectPhoto>, String>(
       (Ref ref, String projectId) =>
           ref.watch(photosRepositoryProvider).fetchByProject(projectId),
     );

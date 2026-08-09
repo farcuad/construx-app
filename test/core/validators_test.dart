@@ -67,8 +67,10 @@ void main() {
     });
 
     test('usa el mensaje personalizado', () {
-      expect(Validators.required('', message: 'Falta el nombre'),
-          'Falta el nombre');
+      expect(
+        Validators.required('', message: 'Falta el nombre'),
+        'Falta el nombre',
+      );
     });
   });
 

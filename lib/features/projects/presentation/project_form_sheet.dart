@@ -16,15 +16,13 @@ import '../domain/project.dart';
 /// Abre el formulario de proyecto como hoja inferior.
 ///
 /// Con [project] edita; sin él, crea.
-Future<void> showProjectFormSheet(
-  BuildContext context, {
-  Project? project,
-}) => showModalBottomSheet<void>(
-  context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  builder: (BuildContext context) => _ProjectFormSheet(project: project),
-);
+Future<void> showProjectFormSheet(BuildContext context, {Project? project}) =>
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (BuildContext context) => _ProjectFormSheet(project: project),
+    );
 
 class _ProjectFormSheet extends ConsumerStatefulWidget {
   const _ProjectFormSheet({this.project});
@@ -56,9 +54,7 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
     _nameController = TextEditingController(text: project?.name ?? '');
     _locationController = TextEditingController(text: project?.location ?? '');
     _budgetController = TextEditingController(
-      text: project?.budget == null
-          ? ''
-          : project!.budget!.toStringAsFixed(0),
+      text: project?.budget == null ? '' : project!.budget!.toStringAsFixed(0),
     );
     _clientId = project?.clientId;
     _startDate = project?.startDate;
@@ -153,9 +149,7 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
 
     return Padding(
       // Deja el formulario por encima del teclado.
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.viewInsetsOf(context).bottom,
-      ),
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
         child: Form(
@@ -186,8 +180,10 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
                 controller: _nameController,
                 enabled: !_isSaving,
                 textCapitalization: TextCapitalization.sentences,
-                validator: (String? v) =>
-                    Validators.required(v, message: 'Ingresa el nombre de la obra'),
+                validator: (String? v) => Validators.required(
+                  v,
+                  message: 'Ingresa el nombre de la obra',
+                ),
                 decoration: const InputDecoration(
                   labelText: 'Nombre del proyecto',
                   prefixIcon: Icon(Icons.apartment_rounded, size: 20),
@@ -205,7 +201,9 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
                   prefixIcon: Icon(Icons.handshake_outlined, size: 20),
                 ),
                 hint: Text(
-                  clients.isEmpty ? 'No hay clientes registrados' : 'Selecciona un cliente',
+                  clients.isEmpty
+                      ? 'No hay clientes registrados'
+                      : 'Selecciona un cliente',
                   style: const TextStyle(color: AppColors.textDisabled),
                 ),
                 items: <DropdownMenuItem<String>>[

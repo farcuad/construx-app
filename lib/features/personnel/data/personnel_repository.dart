@@ -13,10 +13,9 @@ class PersonnelRepository {
   // ── Cargos ──────────────────────────────────────────────────────────────
 
   /// `GET /positions`.
-  Future<List<Position>> fetchPositions() async =>
-      (await _api.getList('/positions'))
-          .map(Position.fromJson)
-          .toList(growable: false);
+  Future<List<Position>> fetchPositions() async => (await _api.getList(
+    '/positions',
+  )).map(Position.fromJson).toList(growable: false);
 
   /// `POST /positions`.
   Future<Position> createPosition(Position position) async => Position.fromJson(
@@ -34,10 +33,9 @@ class PersonnelRepository {
   // ── Empleados ───────────────────────────────────────────────────────────
 
   /// `GET /employees`.
-  Future<List<Employee>> fetchEmployees() async =>
-      (await _api.getList('/employees'))
-          .map(Employee.fromJson)
-          .toList(growable: false);
+  Future<List<Employee>> fetchEmployees() async => (await _api.getList(
+    '/employees',
+  )).map(Employee.fromJson).toList(growable: false);
 
   /// `POST /employees`.
   Future<Employee> createEmployee(Employee employee) async => Employee.fromJson(
@@ -56,9 +54,9 @@ class PersonnelRepository {
 
   /// `GET /contracts/{project_id}`.
   Future<List<LaborContract>> fetchContracts(String projectId) async =>
-      (await _api.getList('/contracts/$projectId'))
-          .map(LaborContract.fromJson)
-          .toList(growable: false);
+      (await _api.getList(
+        '/contracts/$projectId',
+      )).map(LaborContract.fromJson).toList(growable: false);
 
   /// `POST /contracts`.
   Future<LaborContract> createContract(LaborContract contract) async =>

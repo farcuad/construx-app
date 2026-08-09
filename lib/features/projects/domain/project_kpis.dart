@@ -40,8 +40,8 @@ class ProjectKpis {
   }
 
   /// `true` si el gasto comprometido supera el presupuesto.
-  bool get isOverBudget => totalBudget > 0 &&
-      (totalExpenses + totalPurchased) > totalBudget;
+  bool get isOverBudget =>
+      totalBudget > 0 && (totalExpenses + totalPurchased) > totalBudget;
 
   factory ProjectKpis.fromJson(Map<String, dynamic> json) => ProjectKpis(
     projectId: json['project_id'] as String? ?? '',

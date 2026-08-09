@@ -9,9 +9,9 @@ class ScheduleRepository {
 
   /// `GET /schedule/{project_id}`.
   Future<List<ScheduleTask>> fetchByProject(String projectId) async =>
-      (await _api.getList('/schedule/$projectId'))
-          .map(ScheduleTask.fromJson)
-          .toList(growable: false);
+      (await _api.getList(
+        '/schedule/$projectId',
+      )).map(ScheduleTask.fromJson).toList(growable: false);
 
   /// `POST /schedule/tasks`.
   Future<ScheduleTask> create(ScheduleTask task) async => ScheduleTask.fromJson(

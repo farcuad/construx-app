@@ -18,8 +18,9 @@ class ProjectsRepository {
   ///
   /// Puede fallar con `402` si el plan de suscripción alcanzó su límite de
   /// proyectos.
-  Future<Project> create(Project project) async =>
-      Project.fromJson(await _api.post('/projects', body: project.toRequestBody()));
+  Future<Project> create(Project project) async => Project.fromJson(
+    await _api.post('/projects', body: project.toRequestBody()),
+  );
 
   /// `PUT /projects/{id}`.
   Future<Project> update(Project project) async => Project.fromJson(
@@ -31,6 +32,7 @@ class ProjectsRepository {
   Future<void> delete(String id) => _api.delete('/projects/$id');
 
   /// `GET /dashboard/financial/{project_id}`.
-  Future<ProjectKpis> fetchKpis(String projectId) async =>
-      ProjectKpis.fromJson(await _api.getObject('/dashboard/financial/$projectId'));
+  Future<ProjectKpis> fetchKpis(String projectId) async => ProjectKpis.fromJson(
+    await _api.getObject('/dashboard/financial/$projectId'),
+  );
 }

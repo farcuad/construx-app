@@ -13,9 +13,9 @@ class PurchasesRepository {
 
   /// `GET /purcharse/{project_id}`.
   Future<List<PurchaseOrder>> fetchByProject(String projectId) async =>
-      (await _api.getList('/purcharse/$projectId'))
-          .map(PurchaseOrder.fromJson)
-          .toList(growable: false);
+      (await _api.getList(
+        '/purcharse/$projectId',
+      )).map(PurchaseOrder.fromJson).toList(growable: false);
 
   /// `POST /purcharse` — crea la orden con sus líneas.
   Future<PurchaseOrder> create(PurchaseOrder order) async =>

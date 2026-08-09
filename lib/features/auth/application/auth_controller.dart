@@ -160,10 +160,7 @@ class AuthController extends Notifier<AuthState> {
       await _repository.setRememberedCredentials(null);
     }
     _applyToken(null);
-    state = AuthState(
-      status: AuthStatus.unauthenticated,
-      errorMessage: reason,
-    );
+    state = AuthState(status: AuthStatus.unauthenticated, errorMessage: reason);
   }
 
   /// Limpia el error mostrado en el formulario.
@@ -185,5 +182,6 @@ final NotifierProvider<AuthController, AuthState> authControllerProvider =
 /// Usuario actual (o `null`). Provider derivado para que los widgets que solo
 /// necesitan el usuario no se reconstruyan al cambiar `isSubmitting`.
 final Provider<AuthUser?> currentUserProvider = Provider<AuthUser?>(
-  (Ref ref) => ref.watch(authControllerProvider.select((AuthState s) => s.user)),
+  (Ref ref) =>
+      ref.watch(authControllerProvider.select((AuthState s) => s.user)),
 );

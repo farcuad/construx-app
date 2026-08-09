@@ -90,8 +90,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(HomeScreen), findsOneWidget);
+    // La cabecera identifica a la persona con su nombre y su correo; el rol se
+    // consulta en el menú lateral.
     expect(find.text('Andrés Pérez'), findsOneWidget);
-    expect(find.text('Administrador'), findsOneWidget);
+    expect(find.text('andres@xyz.com'), findsOneWidget);
   });
 
   testWidgets('el panel es el tablero financiero, no la rejilla de módulos', (

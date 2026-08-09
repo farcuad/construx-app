@@ -60,10 +60,7 @@ void main() {
 
       expect(store.snapshot[StorageKeys.rememberMe], '1');
       expect(store.snapshot[StorageKeys.rememberedEmail], 'andres@xyz.com');
-      expect(
-        store.snapshot[StorageKeys.rememberedPassword],
-        'claveSegura123',
-      );
+      expect(store.snapshot[StorageKeys.rememberedPassword], 'claveSegura123');
     });
 
     test('sin rememberMe borra credenciales guardadas antes', () async {
@@ -87,28 +84,30 @@ void main() {
       );
     });
 
-    test('propaga UnauthorizedException con credenciales incorrectas', () async {
-      final AuthRepository repository = buildRepository(
-        MockClient(
-          (_) async => jsonResponse(
-            <String, String>{'message': 'Credenciales Incorrectas'},
-            status: 401,
+    test(
+      'propaga UnauthorizedException con credenciales incorrectas',
+      () async {
+        final AuthRepository repository = buildRepository(
+          MockClient(
+            (_) async => jsonResponse(<String, String>{
+              'message': 'Credenciales Incorrectas',
+            }, status: 401),
           ),
-        ),
-      );
+        );
 
-      await expectLater(
-        repository.login(email: 'a@b.com', password: 'mala'),
-        throwsA(
-          isA<UnauthorizedException>().having(
-            (UnauthorizedException e) => e.message,
-            'message',
-            'Credenciales Incorrectas',
+        await expectLater(
+          repository.login(email: 'a@b.com', password: 'mala'),
+          throwsA(
+            isA<UnauthorizedException>().having(
+              (UnauthorizedException e) => e.message,
+              'message',
+              'Credenciales Incorrectas',
+            ),
           ),
-        ),
-      );
-      expect(store.snapshot, isEmpty, reason: 'no debe persistir nada');
-    });
+        );
+        expect(store.snapshot, isEmpty, reason: 'no debe persistir nada');
+      },
+    );
 
     test('lanza ParseSessionException si falta el token', () async {
       final AuthRepository repository = buildRepository(
@@ -205,8 +204,8 @@ void main() {
         const RememberedCredentials(email: 'a@b.com', password: 'clave'),
       );
 
-      final RememberedCredentials? saved =
-          await repository.rememberedCredentials();
+      final RememberedCredentials? saved = await repository
+          .rememberedCredentials();
 
       expect(saved?.email, 'a@b.com');
       expect(saved?.password, 'clave');

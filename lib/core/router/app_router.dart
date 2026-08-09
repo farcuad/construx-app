@@ -2,12 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/attendance/presentation/attendance_screen.dart';
+import '../../features/audits/presentation/audits_screen.dart';
 import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
+import '../../features/budgets/presentation/budgets_screen.dart';
 import '../../features/clients/presentation/clients_screen.dart';
+import '../../features/contractors/presentation/contractors_screen.dart';
+import '../../features/documents/presentation/documents_screen.dart';
+import '../../features/equipment/presentation/equipment_screen.dart';
+import '../../features/expenses/presentation/expenses_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/inventory/presentation/inventory_screen.dart';
+import '../../features/invoices/presentation/invoices_screen.dart';
+import '../../features/notifications/presentation/notifications_screen.dart';
+import '../../features/personnel/presentation/personnel_screen.dart';
+import '../../features/photos/presentation/photos_screen.dart';
+import '../../features/progress/presentation/progress_screen.dart';
 import '../../features/projects/presentation/project_detail_screen.dart';
 import '../../features/projects/presentation/projects_screen.dart';
+import '../../features/purchases/presentation/purchases_screen.dart';
+import '../../features/schedule/presentation/schedule_screen.dart';
+import '../../features/suppliers/presentation/suppliers_screen.dart';
+import '../../features/users/presentation/users_screen.dart';
 import '../widgets/app_widgets.dart';
 import '../widgets/brand_mark.dart';
 import '../widgets/neon_background.dart';
@@ -40,6 +57,86 @@ class SplashScreen extends StatelessWidget {
     ),
   );
 }
+
+/// Atajo para declarar una ruta de módulo sin repetir la firma del `builder`.
+GoRoute _module(String path, String name, Widget Function() build) => GoRoute(
+  path: path,
+  name: name,
+  builder: (BuildContext context, GoRouterState state) => build(),
+);
+
+/// Los módulos del ERP, en el mismo orden que el menú lateral.
+final List<GoRoute> _moduleRoutes = <GoRoute>[
+  _module(BudgetsScreen.routePath, BudgetsScreen.routeName, BudgetsScreen.new),
+  _module(
+    ExpensesScreen.routePath,
+    ExpensesScreen.routeName,
+    ExpensesScreen.new,
+  ),
+  _module(
+    PurchasesScreen.routePath,
+    PurchasesScreen.routeName,
+    PurchasesScreen.new,
+  ),
+  _module(
+    SuppliersScreen.routePath,
+    SuppliersScreen.routeName,
+    SuppliersScreen.new,
+  ),
+  _module(
+    InventoryScreen.routePath,
+    InventoryScreen.routeName,
+    InventoryScreen.new,
+  ),
+  _module(
+    EquipmentScreen.routePath,
+    EquipmentScreen.routeName,
+    EquipmentScreen.new,
+  ),
+  _module(
+    PersonnelScreen.routePath,
+    PersonnelScreen.routeName,
+    PersonnelScreen.new,
+  ),
+  _module(
+    AttendanceScreen.routePath,
+    AttendanceScreen.routeName,
+    AttendanceScreen.new,
+  ),
+  _module(
+    ContractorsScreen.routePath,
+    ContractorsScreen.routeName,
+    ContractorsScreen.new,
+  ),
+  _module(
+    ScheduleScreen.routePath,
+    ScheduleScreen.routeName,
+    ScheduleScreen.new,
+  ),
+  _module(
+    ProgressScreen.routePath,
+    ProgressScreen.routeName,
+    ProgressScreen.new,
+  ),
+  _module(PhotosScreen.routePath, PhotosScreen.routeName, PhotosScreen.new),
+  _module(
+    InvoicesScreen.routePath,
+    InvoicesScreen.routeName,
+    InvoicesScreen.new,
+  ),
+  _module(
+    DocumentsScreen.routePath,
+    DocumentsScreen.routeName,
+    DocumentsScreen.new,
+  ),
+  _module(UsersScreen.routePath, UsersScreen.routeName, UsersScreen.new),
+  _module(
+    NotificationsScreen.routePath,
+    NotificationsScreen.routeName,
+    NotificationsScreen.new,
+  ),
+  _module(AuditsScreen.routePath, AuditsScreen.routeName, AuditsScreen.new),
+];
 
 /// Router de la app.
 ///
@@ -119,6 +216,9 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         builder: (BuildContext context, GoRouterState state) =>
             const ClientsScreen(),
       ),
+      // Módulos de primer nivel. Van planos y no anidados bajo el panel: el
+      // menú lateral salta de uno a otro con `go`, sin apilar rutas.
+      ..._moduleRoutes,
     ],
     errorBuilder: (BuildContext context, GoRouterState state) => Scaffold(
       appBar: AppBar(title: const Text('Página no encontrada')),

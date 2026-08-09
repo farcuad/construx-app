@@ -11,8 +11,8 @@ final Provider<InvoicesRepository> invoicesRepositoryProvider =
 
 /// `GET /invoices/project/{project_id}`, cacheado por proyecto.
 final AutoDisposeFutureProviderFamily<List<Invoice>, String>
-projectInvoicesProvider =
-    FutureProvider.autoDispose.family<List<Invoice>, String>(
+projectInvoicesProvider = FutureProvider.autoDispose
+    .family<List<Invoice>, String>(
       (Ref ref, String projectId) =>
           ref.watch(invoicesRepositoryProvider).fetchByProject(projectId),
     );
@@ -26,8 +26,8 @@ final AutoDisposeFutureProviderFamily<Invoice, String> invoiceDetailProvider =
 
 /// `GET /invoices/payments/{invoice_id}`.
 final AutoDisposeFutureProviderFamily<List<Payment>, String>
-invoicePaymentsProvider =
-    FutureProvider.autoDispose.family<List<Payment>, String>(
+invoicePaymentsProvider = FutureProvider.autoDispose
+    .family<List<Payment>, String>(
       (Ref ref, String invoiceId) =>
           ref.watch(invoicesRepositoryProvider).fetchPayments(invoiceId),
     );

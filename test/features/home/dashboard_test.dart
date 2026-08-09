@@ -206,9 +206,9 @@ void main() {
 
     expect(find.text('Sin acceso al tablero'), findsOneWidget);
     expect(
-      requested.map((Uri u) => u.path).where(
-        (String p) => p.startsWith('/dashboard/'),
-      ),
+      requested
+          .map((Uri u) => u.path)
+          .where((String p) => p.startsWith('/dashboard/')),
       isEmpty,
       reason: 'no tiene sentido gastar una petición que dará 403',
     );

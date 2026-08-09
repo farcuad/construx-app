@@ -3,13 +3,13 @@
 abstract final class Validators {
   /// Patrón de email deliberadamente permisivo: la validación real la hace el
   /// backend; aquí solo se atrapan errores obvios de tecleo.
-  static final RegExp _email = RegExp(
-    r'^[\w.+-]+@[\w-]+(\.[\w-]+)+$',
-  );
+  static final RegExp _email = RegExp(r'^[\w.+-]+@[\w-]+(\.[\w-]+)+$');
 
   /// Campo obligatorio.
-  static String? required(String? value, {String message = 'Campo obligatorio'}) =>
-      (value == null || value.trim().isEmpty) ? message : null;
+  static String? required(
+    String? value, {
+    String message = 'Campo obligatorio',
+  }) => (value == null || value.trim().isEmpty) ? message : null;
 
   /// Email obligatorio y con formato válido.
   static String? email(String? value) {

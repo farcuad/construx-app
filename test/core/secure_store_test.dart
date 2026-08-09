@@ -42,9 +42,9 @@ void main() {
     });
 
     test('se puede sembrar con datos iniciales', () async {
-      final InMemorySecureStore seeded = InMemorySecureStore(
-        <String, String>{StorageKeys.rememberMe: '1'},
-      );
+      final InMemorySecureStore seeded = InMemorySecureStore(<String, String>{
+        StorageKeys.rememberMe: '1',
+      });
       expect(await seeded.read(StorageKeys.rememberMe), '1');
     });
 

@@ -5,7 +5,7 @@ App Flutter del ERP de constructoras **Construx**. Consume la API documentada en
 
 - **Backend:** el de `API_URL` en el [`.env`](#configuración-el-env) (sin prefijo `/api`)
 - **Archivos:** Supabase Storage, para las fotos de obra
-- **Tema:** negro + naranja con acentos neón
+- **Tema:** negro + naranja, con el neón contenido a los acentos
 - **Estado:** Riverpod · **Navegación:** go_router · **HTTP:** package:http
 
 > **Es la app de los trabajadores.** El alta de empresas y el panel del
@@ -26,7 +26,7 @@ App Flutter del ERP de constructoras **Construx**. Consume la API documentada en
 cp .env.example .env        # y rellena los valores
 flutter pub get
 flutter run                 # depuración en el dispositivo conectado
-flutter test                # 300 pruebas
+flutter test                # 331 pruebas
 flutter analyze             # análisis estático
 ```
 
@@ -136,17 +136,28 @@ La pantalla de inicio ya no es una rejilla de módulos, sino el **tablero
 financiero del proyecto seleccionado**. Funciona así:
 
 1. `GET /projects` trae las obras de la empresa.
-2. El selector de arriba elige una; por defecto, la primera de la lista.
+2. El desplegable de arriba —un `DropdownButton`, al estilo de un `<select>`—
+   elige una; por defecto, la primera de la lista.
 3. `GET /dashboard/financial/{project_id}` devuelve las siete cifras que se
    pintan en tarjetas: presupuesto total, gastos, compras, facturado, cobrado,
    pagado a proveedores y variación financiera.
 4. Encima de las tarjetas, una barra muestra el **presupuesto consumido**
    (`gastos + compras` ÷ `presupuesto`) y avisa en rojo si se pasa.
 
-El proyecto activo lo resuelve `activeProjectProvider`, que se **deriva** de la
-lista y de la selección en lugar de guardarse aparte. Así el panel nunca queda
-apuntando a un proyecto recién borrado y no hace falta un
+La cabecera muestra **nombre y correo** de quien ha iniciado sesión, sin saludo
+ni avatar: identifica a la persona y deja el ancho para lo que importa. El rol
+se consulta en el menú lateral. A la derecha van la **campana de avisos** y el
+botón de cerrar sesión.
+
+El proyecto activo lo resuelve `activeProjectProvider`
+(`lib/features/projects/application/project_scope.dart`), que se **deriva** de
+la lista y de la selección en lugar de guardarse aparte. Así el panel nunca
+queda apuntando a un proyecto recién borrado y no hace falta un
 `addPostFrameCallback` para elegir el primero al cargar.
+
+**La selección es una sola para toda la app.** Si eliges una obra en el panel y
+entras en Gastos, Cronograma o Fotos, ves esa misma obra sin volver a elegirla;
+cambiarla en cualquier módulo la cambia en todos.
 
 Si el rol no tiene `dashboard:read`, la pantalla lo dice y **no lanza la
 petición**: sería un `403` seguro.
@@ -157,18 +168,42 @@ petición**: sería un `403` seguro.
 
 `AppDrawer` (`lib/features/home/presentation/widgets/app_drawer.dart`) lista
 **todos los módulos del ERP**, filtrados por los permisos del usuario, y marca
-en naranja el que está abierto. Los módulos que aún no tienen pantalla salen
-atenuados con la etiqueta «Pronto» y avisan al tocarlos en lugar de navegar
-(su capa de datos sí está lista, ver más abajo).
+en naranja el que está abierto. **Todos tienen pantalla**: un administrador
+(permiso `*`) entra en los dieciocho. Los **avisos no están en el menú**: se
+abren desde la campana de la cabecera. El mecanismo de «Pronto» sigue en el
+código por si se añade un módulo nuevo, y hay una prueba que falla si algún
+módulo del catálogo se queda sin `routePath`.
 
-Se monta como `Scaffold.drawer` en cada pantalla de primer nivel (panel,
-proyectos, clientes). Esas pantallas ya no llevan flecha de volver: desde el
+El pie del menú dice quién ha iniciado sesión y con qué rol, pero **no** lleva
+botón de salir: cerrar sesión se hace desde la cabecera del panel, y tenerlo en
+dos sitios solo multiplica las formas de pulsarlo sin querer.
+
+Se monta como `Scaffold.drawer` en cada pantalla de primer nivel. Esas
+pantallas ya no llevan flecha de volver: desde el
 panel se navega con `go`, así que no hay pila que desapilar y el cajón es el
 único camino de vuelta. Las subpantallas (p. ej. el detalle de un proyecto) sí
 conservan la flecha.
 
 La lista sale de `visibleModulesProvider`, que Riverpod recalcula solo al
 cambiar de usuario, de modo que el panel y el menú comparten el mismo cálculo.
+
+---
+
+## Cuánto neón
+
+El neón está concentrado, no repartido. Las reglas que sigue el tema:
+
+- `AppColors.glow()` tiene una opacidad por defecto **baja** (0,20). Súbela solo
+  en el elemento más importante de una pantalla.
+- El **único** resplandor claramente visible es el del botón principal
+  (`NeonButton`): es la acción que se busca con la vista.
+- El fondo (`NeonBackground`) pinta dos halos naranjas al 8,5 % y al 5,5 %.
+  Dan profundidad al negro plano; si se nota que «hay una luz», están altos.
+- El turquesa (`cyanNeon`) se rebajó de `#22E0D6` a `#5FBDB4`, y los colores
+  semánticos (verde, ámbar, rojo) se desaturaron: eran lo que más hacía ver la
+  app «ciberpunk».
+- Las tarjetas usan borde, no brillo. `AppCard(glowColor: …)` es la excepción,
+  reservada a las de resumen.
 
 ---
 
@@ -276,32 +311,49 @@ con el verbo y la URL documentados.
 | Módulo | Endpoints | Datos | Pantalla |
 |---|---|---|---|
 | Autenticación | `/login` | ✅ | login ✅ |
-| Usuarios y roles | `/users`, `/roles` | ✅ | 🔜 |
-| Proyectos | `/projects` | ✅ | ✅ |
-| Clientes | `/clients` | ✅ | ✅ |
-| Dashboard financiero | `/dashboard/financial/{project_id}` | ✅ | ✅ (el panel) |
-| Presupuestos | `/budgets` | ✅ | 🔜 |
-| Gastos | `/expenses` | ✅ | 🔜 |
-| Órdenes de compra | `/purcharse` | ✅ | 🔜 |
-| Proveedores | `/supplier` | ✅ | 🔜 |
-| Inventario | `/materials`, `/warehouses`, `/inventory/*` | ✅ | 🔜 |
-| Maquinaria | `/equipment/*` | ✅ | 🔜 |
-| Personal | `/positions`, `/employees`, `/contracts` | ✅ | 🔜 |
-| Asistencia | `/attendance/*` | ✅ | 🔜 |
-| Contratistas | `/contractors/*` | ✅ | 🔜 |
-| Cronograma | `/schedule/*` | ✅ | 🔜 |
-| Avance de obra | `/progress/*` | ✅ | 🔜 |
-| Fotos | `/photos` + Supabase Storage | ✅ | 🔜 |
-| Facturación y pagos | `/invoices/*` | ✅ | 🔜 |
-| Documentos y versiones | `/documents/*` | ✅ | 🔜 |
-| Notificaciones (REST + WebSocket) | `/notifications`, `/notifications/ws` | ✅ | 🔜 |
-| Auditoría | `/audits-logs` | ✅ | 🔜 |
-| Suscripción | `/subscriptions/me` | ✅ | 🔜 |
+| Dashboard financiero | `/dashboard/financial/{project_id}` | ✅ | ✅ el panel |
+| Proyectos | `/projects` | ✅ | ✅ lista + alta/edición |
+| Clientes | `/clients` | ✅ | ✅ lista + alta/edición |
+| Gastos | `/expenses` | ✅ | ✅ lista + alta/edición + baja |
+| Presupuestos | `/budgets` | ✅ | ✅ lista desplegable por partidas + baja |
+| Órdenes de compra | `/purcharse` | ✅ | ✅ lista + aprobar |
+| Proveedores | `/supplier` | ✅ | ✅ lista + baja |
+| Inventario | `/materials`, `/warehouses`, `/inventory/*` | ✅ | ✅ existencias por almacén + materiales |
+| Maquinaria | `/equipment/*` | ✅ | ✅ lista + ficha con asignaciones y mantenimientos |
+| Personal | `/positions`, `/employees`, `/contracts` | ✅ | ✅ empleados, cargos y contratos |
+| Asistencia | `/attendance/*` | ✅ | ✅ lista del día + resumen |
+| Contratistas | `/contractors/*` | ✅ | ✅ empresas, contratos y pagos |
+| Cronograma | `/schedule/*` | ✅ | ✅ tareas con avance y atrasos |
+| Avance de obra | `/progress/*` | ✅ | ✅ reporte diario |
+| Fotos | `/photos` + Supabase Storage | ✅ | ✅ galería + baja |
+| Facturación y pagos | `/invoices/*` | ✅ | ✅ lista + anular |
+| Documentos y versiones | `/documents/*` | ✅ | ✅ lista + historial de versiones |
+| Usuarios y roles | `/users`, `/roles` | ✅ | ✅ lista + baja |
+| Notificaciones (REST + WebSocket) | `/notifications`, `/notifications/ws` | ✅ | ✅ campana + bandeja |
+| Auditoría | `/audits-logs` | ✅ | ✅ registro |
+| Suscripción | `/subscriptions/me` | ✅ | — se consume al mostrar los 402 |
 
-Los módulos sin pantalla ya salen en el menú lateral como «Pronto». Añadir una
-es escribir la carpeta `presentation/` y registrar su `routePath` en
-`lib/features/home/domain/app_module.dart`; el repositorio y los providers ya
-están hechos. `ProjectsScreen` + `ProjectsController` sirven de plantilla.
+Las pantallas comparten un andamio: `ModuleScaffold` (barra, menú lateral,
+recargar), `AsyncSection` (carga / error con reintento / dato) y `ProjectScope`,
+que pone el selector de obra arriba y resuelve de una vez los casos de «aún no
+hay proyectos» y «todavía cargando». Añadir un módulo nuevo es escribir su
+`presentation/`, registrar su ruta en `lib/core/router/app_router.dart` y su
+`routePath` en `lib/features/home/domain/app_module.dart`.
+
+**Lo que falta por módulo** son formularios de alta: por ahora crean y editan
+Proyectos, Clientes y Gastos. El resto son de consulta, más las acciones que el
+backend expone como una sola llamada (aprobar una orden, anular una factura,
+marcar un aviso como leído, dar de baja). Los repositorios ya tienen el `POST` y
+el `PUT` de todos, así que cada formulario es trabajo de pantalla, no de datos.
+
+**Las fotos aún no se suben desde la app:** `PhotosRepository.upload()` recibe
+los bytes ya leídos y falta enganchar un selector de imagen (`image_picker`).
+La galería, el borrado y todo el camino a Supabase sí funcionan.
+
+**Las rutas no comprueban permisos.** El menú solo muestra lo que el rol puede
+ver, pero entrar por URL a `/users` sin `users:read` monta la pantalla y deja
+que el backend responda `403`. Es aceptable porque el backend es la autoridad,
+pero si se quiere cortar antes, el sitio es el `redirect` del router.
 
 ### Detalles de la API que conviene no «corregir»
 
@@ -324,8 +376,21 @@ están hechos. `ProjectsScreen` + `ProjectsController` sirven de plantilla.
 `/notifications/ws` se implementa con `web_socket_channel` (paquete Dart puro,
 sin código nativo). El token viaja como `?token=`, la alternativa que el propio
 backend acepta, porque el handshake de un WebSocket no admite cabeceras propias
-en todas las plataformas. `notificationsStreamProvider` es `autoDispose`: al
-salir de la pantalla se cierra el socket.
+en todas las plataformas.
+
+Quien lo escucha es la **campana de la cabecera del panel**
+(`NotificationsBell`): mientras está montada mantiene la conexión abierta, y
+cada aviso que entra invalida la bandeja, con lo que el distintivo de no leídos
+se actualiza solo. La pantalla de avisos escucha lo mismo mientras está abierta.
+
+`notificationsStreamProvider` es `autoDispose`, así que al salir del panel —o de
+la bandeja— **se cierra el socket**: no se sostiene una conexión desde una
+pantalla que no la usa. La contrapartida es que estando en otro módulo no hay
+avisos en vivo; si algún día hacen falta, el sitio es subir el provider por
+encima del router o convertirlo en `keepAlive`.
+
+Sin el permiso `notifications:read` la campana no se dibuja **ni pide la
+bandeja**: sería un `403` en cada arranque.
 
 ---
 
@@ -352,7 +417,9 @@ flutter test test/features/auth   # login, sesión, permisos
 | `test/features/models_test.dart` | parseo de los payloads de ejemplo de la documentación y formato de fechas |
 | `test/features/projects/…` · `test/features/clients/…` | repositorios y modelos |
 | `test/features/app_module_test.dart` | filtrado de módulos por rol |
-| `test/features/home/app_drawer_test.dart` | menú lateral: listado, permisos, navegación, módulos «Pronto» |
+| `test/features/home/app_drawer_test.dart` | menú lateral: listado completo, permisos, navegación, que ningún módulo quede sin ruta |
+| `test/features/modules_test.dart` | las 18 pantallas de módulo: que cada ruta monte la suya, que las de obra pidan la obra activa y que cambiarla las recargue |
+| `test/features/notifications/notifications_bell_test.dart` | campana: distintivo de no leídos, apertura de la bandeja, ausencia sin permiso, y que ni los avisos ni el logout estén en el menú |
 | `test/features/home/dashboard_test.dart` | panel: las 7 cifras, selector de proyecto, consumo de presupuesto, sobrecoste, permisos |
 | `test/app_test.dart` | arranque completo: splash → login → panel |
 

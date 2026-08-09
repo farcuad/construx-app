@@ -6,11 +6,7 @@ import '../../../core/utils/json.dart';
 /// Cargo con su salario base (`/positions`).
 @immutable
 class Position {
-  const Position({
-    required this.id,
-    required this.name,
-    this.baseSalary = 0,
-  });
+  const Position({required this.id, required this.name, this.baseSalary = 0});
 
   final String id;
   final String name;

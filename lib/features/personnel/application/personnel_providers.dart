@@ -23,8 +23,8 @@ final AutoDisposeFutureProvider<List<Position>> positionsProvider =
 
 /// `GET /contracts/{project_id}`, cacheado por proyecto.
 final AutoDisposeFutureProviderFamily<List<LaborContract>, String>
-projectContractsProvider =
-    FutureProvider.autoDispose.family<List<LaborContract>, String>(
+projectContractsProvider = FutureProvider.autoDispose
+    .family<List<LaborContract>, String>(
       (Ref ref, String projectId) =>
           ref.watch(personnelRepositoryProvider).fetchContracts(projectId),
     );

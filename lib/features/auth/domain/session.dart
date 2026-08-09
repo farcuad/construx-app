@@ -46,7 +46,9 @@ class Session {
     if (parts.length != 3) return null;
     try {
       final String normalized = base64Url.normalize(parts[1]);
-      final Object? decoded = jsonDecode(utf8.decode(base64Url.decode(normalized)));
+      final Object? decoded = jsonDecode(
+        utf8.decode(base64Url.decode(normalized)),
+      );
       return decoded is Map<String, dynamic> ? decoded : null;
     } on Object {
       return null;
@@ -57,10 +59,7 @@ class Session {
   static DateTime? decodeExpiry(String token) {
     final Object? exp = decodePayload(token)?['exp'];
     if (exp is! num) return null;
-    return DateTime.fromMillisecondsSinceEpoch(
-      exp.toInt() * 1000,
-      isUtc: true,
-    );
+    return DateTime.fromMillisecondsSinceEpoch(exp.toInt() * 1000, isUtc: true);
   }
 
   @override

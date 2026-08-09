@@ -17,12 +17,7 @@ String fakeJwt({
   final DateTime exp =
       expiresAt ?? DateTime.now().toUtc().add(const Duration(hours: 24));
   return '${segment(<String, dynamic>{'alg': 'HS256', 'typ': 'JWT'})}.'
-      '${segment(<String, dynamic>{
-        'user_id': userId,
-        'company_id': companyId,
-        'permissions': permissions,
-        'exp': exp.millisecondsSinceEpoch ~/ 1000,
-      })}.'
+      '${segment(<String, dynamic>{'user_id': userId, 'company_id': companyId, 'permissions': permissions, 'exp': exp.millisecondsSinceEpoch ~/ 1000})}.'
       'firma-de-prueba';
 }
 
@@ -94,8 +89,7 @@ class RecordedRequest {
   final String body;
 
   /// Cuerpo decodificado como objeto JSON.
-  Map<String, dynamic> get json =>
-      jsonDecode(body) as Map<String, dynamic>;
+  Map<String, dynamic> get json => jsonDecode(body) as Map<String, dynamic>;
 }
 
 /// Cliente HTTP falso que registra las peticiones y responde con [handler].

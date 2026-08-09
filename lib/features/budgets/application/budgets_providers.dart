@@ -11,7 +11,8 @@ final Provider<BudgetsRepository> budgetsRepositoryProvider =
 
 /// `GET /budgets/{project_id}`, cacheado por proyecto.
 final AutoDisposeFutureProviderFamily<List<Budget>, String>
-projectBudgetsProvider = FutureProvider.autoDispose.family<List<Budget>, String>(
-  (Ref ref, String projectId) =>
-      ref.watch(budgetsRepositoryProvider).fetchByProject(projectId),
-);
+projectBudgetsProvider = FutureProvider.autoDispose
+    .family<List<Budget>, String>(
+      (Ref ref, String projectId) =>
+          ref.watch(budgetsRepositoryProvider).fetchByProject(projectId),
+    );

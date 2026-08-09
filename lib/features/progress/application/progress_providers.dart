@@ -14,8 +14,8 @@ final Provider<ProgressRepository> progressRepositoryProvider =
 ///
 /// La clave se construye con [projectDateQuery].
 final AutoDisposeFutureProviderFamily<DailyReport?, ProjectDateQuery>
-dailyReportProvider =
-    FutureProvider.autoDispose.family<DailyReport?, ProjectDateQuery>(
+dailyReportProvider = FutureProvider.autoDispose
+    .family<DailyReport?, ProjectDateQuery>(
       (Ref ref, ProjectDateQuery query) => ref
           .watch(progressRepositoryProvider)
           .fetchByDate(query.projectId, query.date),

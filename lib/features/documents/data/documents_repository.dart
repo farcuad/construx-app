@@ -10,10 +10,9 @@ class DocumentsRepository {
   // ── Tipos ───────────────────────────────────────────────────────────────
 
   /// `GET /documents/types`.
-  Future<List<DocumentType>> fetchTypes() async =>
-      (await _api.getList('/documents/types'))
-          .map(DocumentType.fromJson)
-          .toList(growable: false);
+  Future<List<DocumentType>> fetchTypes() async => (await _api.getList(
+    '/documents/types',
+  )).map(DocumentType.fromJson).toList(growable: false);
 
   /// `POST /documents/types`.
   Future<DocumentType> createType({
@@ -27,17 +26,11 @@ class DocumentsRepository {
   );
 
   /// `PUT /documents/types/{id}` — responde solo con un mensaje.
-  Future<void> updateType(
-    String id, {
-    String? name,
-    String? description,
-  }) => _api.put(
-    '/documents/types/$id',
-    body: <String, dynamic>{
-      'name': ?name,
-      'description': ?description,
-    },
-  );
+  Future<void> updateType(String id, {String? name, String? description}) =>
+      _api.put(
+        '/documents/types/$id',
+        body: <String, dynamic>{'name': ?name, 'description': ?description},
+      );
 
   /// `DELETE /documents/types/{id}`.
   Future<void> deleteType(String id) => _api.delete('/documents/types/$id');
@@ -46,9 +39,9 @@ class DocumentsRepository {
 
   /// `GET /documents/project/{project_id}`.
   Future<List<ProjectDocument>> fetchByProject(String projectId) async =>
-      (await _api.getList('/documents/project/$projectId'))
-          .map(ProjectDocument.fromJson)
-          .toList(growable: false);
+      (await _api.getList(
+        '/documents/project/$projectId',
+      )).map(ProjectDocument.fromJson).toList(growable: false);
 
   /// `GET /documents/{id}` — el documento con su historial de versiones.
   Future<ProjectDocument> fetchById(String id) async =>
@@ -103,9 +96,9 @@ class DocumentsRepository {
 
   /// `GET /documents/versions/{document_id}`.
   Future<List<DocumentVersion>> fetchVersions(String documentId) async =>
-      (await _api.getList('/documents/versions/$documentId'))
-          .map(DocumentVersion.fromJson)
-          .toList(growable: false);
+      (await _api.getList(
+        '/documents/versions/$documentId',
+      )).map(DocumentVersion.fromJson).toList(growable: false);
 
   /// `POST /documents/versions` — sube una versión nueva.
   Future<DocumentVersion> addVersion(DocumentVersion version) async =>

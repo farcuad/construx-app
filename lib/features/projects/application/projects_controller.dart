@@ -16,7 +16,8 @@ final Provider<ProjectsRepository> projectsRepositoryProvider =
 /// `AsyncValue.guard`, evitando `try/catch` repartidos por la UI.
 class ProjectsController extends AsyncNotifier<List<Project>> {
   @override
-  Future<List<Project>> build() => ref.watch(projectsRepositoryProvider).fetchAll();
+  Future<List<Project>> build() =>
+      ref.watch(projectsRepositoryProvider).fetchAll();
 
   ProjectsRepository get _repository => ref.read(projectsRepositoryProvider);
 
@@ -40,7 +41,8 @@ class ProjectsController extends AsyncNotifier<List<Project>> {
     final Project updated = await _repository.update(project);
     final List<Project> current = state.valueOrNull ?? const <Project>[];
     state = AsyncValue<List<Project>>.data(<Project>[
-      for (final Project p in current) if (p.id == updated.id) updated else p,
+      for (final Project p in current)
+        if (p.id == updated.id) updated else p,
     ]);
     return updated;
   }

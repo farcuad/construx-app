@@ -58,7 +58,8 @@ void main() {
     return container;
   }
 
-  Finder emailField() => find.widgetWithText(TextFormField, 'Correo electrónico');
+  Finder emailField() =>
+      find.widgetWithText(TextFormField, 'Correo electrónico');
   Finder passwordField() => find.widgetWithText(TextFormField, 'Contraseña');
   Finder rememberCheckbox() => find.byType(Checkbox);
   Finder submitButton() => find.text('Iniciar sesión');
@@ -114,7 +115,11 @@ void main() {
     await tester.pump();
 
     expect(find.text('Correo electrónico inválido'), findsOneWidget);
-    expect(calls, 0, reason: 'no debe salir la petición si el email es inválido');
+    expect(
+      calls,
+      0,
+      reason: 'no debe salir la petición si el email es inválido',
+    );
   });
 
   testWidgets('valida la longitud de la contraseña', (
@@ -206,10 +211,9 @@ void main() {
     await pumpLogin(
       tester,
       MockClient(
-        (_) async => jsonResponse(
-          <String, String>{'message': 'Credenciales Incorrectas'},
-          status: 401,
-        ),
+        (_) async => jsonResponse(<String, String>{
+          'message': 'Credenciales Incorrectas',
+        }, status: 401),
       ),
     );
 
@@ -252,7 +256,10 @@ void main() {
     await tester.tap(submitButton());
     await tester.pump();
     // Con la petición en vuelo el botón muestra el spinner y no acepta taps.
-    await tester.tap(find.byType(CircularProgressIndicator), warnIfMissed: false);
+    await tester.tap(
+      find.byType(CircularProgressIndicator),
+      warnIfMissed: false,
+    );
     await tester.pumpAndSettle();
 
     expect(calls, 1);

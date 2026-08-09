@@ -16,7 +16,10 @@ void main() {
       modulesFor(u).map((AppModule m) => m.id).toList();
 
   test('el administrador ve todos los módulos', () {
-    expect(modulesFor(user(<String>[Perm.wildcard])), hasLength(kAppModules.length));
+    expect(
+      modulesFor(user(<String>[Perm.wildcard])),
+      hasLength(kAppModules.length),
+    );
   });
 
   test('un usuario sin permisos no ve ningún módulo', () {
@@ -55,8 +58,9 @@ void main() {
   });
 
   test('proyectos y clientes ya tienen pantalla; el resto está pendiente', () {
-    final Iterable<AppModule> available =
-        kAppModules.where((AppModule m) => m.isAvailable);
+    final Iterable<AppModule> available = kAppModules.where(
+      (AppModule m) => m.isAvailable,
+    );
 
     expect(
       available.map((AppModule m) => m.id),

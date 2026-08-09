@@ -39,9 +39,10 @@ final Provider<ApiClient> apiClientProvider = Provider<ApiClient>((Ref ref) {
 });
 
 /// Repositorio de autenticación.
-final Provider<AuthRepository> authRepositoryProvider = Provider<AuthRepository>(
-  (Ref ref) => AuthRepository(
-    ref.watch(apiClientProvider),
-    ref.watch(secureStoreProvider),
-  ),
-);
+final Provider<AuthRepository> authRepositoryProvider =
+    Provider<AuthRepository>(
+      (Ref ref) => AuthRepository(
+        ref.watch(apiClientProvider),
+        ref.watch(secureStoreProvider),
+      ),
+    );

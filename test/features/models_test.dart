@@ -146,9 +146,21 @@ void main() {
         'project_id': 'p1',
         'date': '2026-08-08',
         'logs': <Map<String, dynamic>>[
-          <String, dynamic>{'employee_id': 'e1', 'status': 'Present', 'hours_worked': 8},
-          <String, dynamic>{'employee_id': 'e2', 'status': 'Late', 'hours_worked': 6},
-          <String, dynamic>{'employee_id': 'e3', 'status': 'Absent', 'hours_worked': 0},
+          <String, dynamic>{
+            'employee_id': 'e1',
+            'status': 'Present',
+            'hours_worked': 8,
+          },
+          <String, dynamic>{
+            'employee_id': 'e2',
+            'status': 'Late',
+            'hours_worked': 6,
+          },
+          <String, dynamic>{
+            'employee_id': 'e3',
+            'status': 'Absent',
+            'hours_worked': 0,
+          },
         ],
       });
 
@@ -218,16 +230,15 @@ void main() {
 
   group('Contratistas', () {
     test('la proporción pagada sale del saldo restante', () {
-      final ContractorContract contract = ContractorContract.fromJson(
-        <String, dynamic>{
-          'id': 'cc1',
-          'contractor_id': 'ct1',
-          'project_id': 'p1',
-          'title': 'Cimentación',
-          'total_amount': 50000000,
-          'balance': 40000000,
-        },
-      );
+      final ContractorContract contract =
+          ContractorContract.fromJson(<String, dynamic>{
+            'id': 'cc1',
+            'contractor_id': 'ct1',
+            'project_id': 'p1',
+            'title': 'Cimentación',
+            'total_amount': 50000000,
+            'balance': 40000000,
+          });
 
       expect(contract.paidRatio, 0.2);
     });
@@ -278,18 +289,20 @@ void main() {
       expect(sub.isActive, isTrue);
     });
 
-    test('los días restantes salen del fin de prueba si no hay fin de plan', () {
-      final CompanySubscription sub = CompanySubscription.fromJson(
-        <String, dynamic>{
-          'id': 's1',
-          'status': 'trial',
-          'trial_end_date': DateTime.now()
-              .add(const Duration(days: 10, hours: 1))
-              .toIso8601String(),
-        },
-      );
+    test(
+      'los días restantes salen del fin de prueba si no hay fin de plan',
+      () {
+        final CompanySubscription sub =
+            CompanySubscription.fromJson(<String, dynamic>{
+              'id': 's1',
+              'status': 'trial',
+              'trial_end_date': DateTime.now()
+                  .add(const Duration(days: 10, hours: 1))
+                  .toIso8601String(),
+            });
 
-      expect(sub.daysRemaining, 10);
-    });
+        expect(sub.daysRemaining, 10);
+      },
+    );
   });
 }

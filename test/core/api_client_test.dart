@@ -149,21 +149,24 @@ void main() {
       await expectLater(api.delete('/positions/1'), completes);
     });
 
-    test('decodifica UTF-8 aunque falte el charset en el content-type', () async {
-      final ApiClient api = ApiClient(
-        baseUrl: baseUrl,
-        httpClient: MockClient(
-          (_) async => http.Response.bytes(
-            utf8.encode(jsonEncode(<String, dynamic>{'name': 'Bogotá D.C.'})),
-            200,
-            headers: <String, String>{'content-type': 'application/json'},
+    test(
+      'decodifica UTF-8 aunque falte el charset en el content-type',
+      () async {
+        final ApiClient api = ApiClient(
+          baseUrl: baseUrl,
+          httpClient: MockClient(
+            (_) async => http.Response.bytes(
+              utf8.encode(jsonEncode(<String, dynamic>{'name': 'Bogotá D.C.'})),
+              200,
+              headers: <String, String>{'content-type': 'application/json'},
+            ),
           ),
-        ),
-      );
+        );
 
-      final Map<String, dynamic> body = await api.getObject('/projects/1');
-      expect(body['name'], 'Bogotá D.C.');
-    });
+        final Map<String, dynamic> body = await api.getObject('/projects/1');
+        expect(body['name'], 'Bogotá D.C.');
+      },
+    );
   });
 
   group('ApiClient · errores', () {
@@ -180,11 +183,7 @@ void main() {
       await expectLater(
         api.getObject('/projects'),
         throwsA(
-          isA<T>().having(
-            (T e) => e.message,
-            'message',
-            expectedMessage,
-          ),
+          isA<T>().having((T e) => e.message, 'message', expectedMessage),
         ),
       );
     }
@@ -217,7 +216,8 @@ void main() {
       await expectError<ConflictException>(
         409,
         '',
-        expectedMessage: 'La operación entra en conflicto con datos existentes.',
+        expectedMessage:
+            'La operación entra en conflicto con datos existentes.',
       );
     });
 
@@ -309,10 +309,9 @@ void main() {
         baseUrl: baseUrl,
         onUnauthorized: () => calls++,
         httpClient: MockClient(
-          (_) async => jsonResponse(
-            <String, String>{'message': 'Credenciales Incorrectas'},
-            status: 401,
-          ),
+          (_) async => jsonResponse(<String, String>{
+            'message': 'Credenciales Incorrectas',
+          }, status: 401),
         ),
       );
 

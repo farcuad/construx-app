@@ -8,16 +8,14 @@ class UsersRepository {
   final ApiClient _api;
 
   /// `GET /roles` — roles asignables (el backend excluye `Administrador`).
-  Future<List<CompanyRole>> fetchRoles() async =>
-      (await _api.getList('/roles')).map(CompanyRole.fromJson).toList(
-        growable: false,
-      );
+  Future<List<CompanyRole>> fetchRoles() async => (await _api.getList(
+    '/roles',
+  )).map(CompanyRole.fromJson).toList(growable: false);
 
   /// `GET /users` — usuarios de la empresa, sin el administrador.
-  Future<List<CompanyUser>> fetchUsers() async =>
-      (await _api.getList('/users')).map(CompanyUser.fromJson).toList(
-        growable: false,
-      );
+  Future<List<CompanyUser>> fetchUsers() async => (await _api.getList(
+    '/users',
+  )).map(CompanyUser.fromJson).toList(growable: false);
 
   /// `POST /users` — crea el usuario y le asigna un rol.
   Future<CompanyUser> create({

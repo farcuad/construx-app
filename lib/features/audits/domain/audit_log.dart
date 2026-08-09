@@ -46,9 +46,8 @@ class AuditLog {
     createdAt: Fmt.parseDate(json['created_at']),
   );
 
-  static Map<String, dynamic> _map(Object? raw) => raw is Map<String, dynamic>
-      ? raw
-      : const <String, dynamic>{};
+  static Map<String, dynamic> _map(Object? raw) =>
+      raw is Map<String, dynamic> ? raw : const <String, dynamic>{};
 
   @override
   bool operator ==(Object other) =>

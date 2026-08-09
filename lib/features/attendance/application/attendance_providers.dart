@@ -14,8 +14,8 @@ final Provider<AttendanceRepository> attendanceRepositoryProvider =
 ///
 /// La clave se construye con [projectDateQuery].
 final AutoDisposeFutureProviderFamily<Attendance?, ProjectDateQuery>
-attendanceProvider =
-    FutureProvider.autoDispose.family<Attendance?, ProjectDateQuery>(
+attendanceProvider = FutureProvider.autoDispose
+    .family<Attendance?, ProjectDateQuery>(
       (Ref ref, ProjectDateQuery query) => ref
           .watch(attendanceRepositoryProvider)
           .fetchByDate(query.projectId, query.date),

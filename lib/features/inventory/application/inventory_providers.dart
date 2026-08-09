@@ -23,8 +23,8 @@ final AutoDisposeFutureProvider<List<Warehouse>> warehousesProvider =
 
 /// `GET /inventory/stock/{warehouse_id}`, cacheado por almacén.
 final AutoDisposeFutureProviderFamily<List<StockItem>, String>
-warehouseStockProvider =
-    FutureProvider.autoDispose.family<List<StockItem>, String>(
+warehouseStockProvider = FutureProvider.autoDispose
+    .family<List<StockItem>, String>(
       (Ref ref, String warehouseId) =>
           ref.watch(inventoryRepositoryProvider).fetchStock(warehouseId),
     );

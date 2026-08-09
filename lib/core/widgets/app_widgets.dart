@@ -20,8 +20,11 @@ class ErrorBanner extends StatelessWidget {
     ),
     child: Row(
       children: <Widget>[
-        const Icon(Icons.error_outline_rounded,
-            color: AppColors.danger, size: 20),
+        const Icon(
+          Icons.error_outline_rounded,
+          color: AppColors.danger,
+          size: 20,
+        ),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
@@ -35,8 +38,11 @@ class ErrorBanner extends StatelessWidget {
             behavior: HitTestBehavior.opaque,
             child: const Padding(
               padding: EdgeInsets.only(left: 8),
-              child: Icon(Icons.close_rounded,
-                  color: AppColors.danger, size: 18),
+              child: Icon(
+                Icons.close_rounded,
+                color: AppColors.danger,
+                size: 18,
+              ),
             ),
           ),
       ],
@@ -150,9 +156,9 @@ class StatusChip extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
     decoration: BoxDecoration(
-      color: color.withValues(alpha: 0.12),
+      color: color.withValues(alpha: 0.11),
       borderRadius: const BorderRadius.all(Radius.circular(999)),
-      border: Border.all(color: color.withValues(alpha: 0.45)),
+      border: Border.all(color: color.withValues(alpha: 0.30)),
     ),
     child: Text(
       label,
@@ -193,7 +199,7 @@ class AppCard extends StatelessWidget {
         border: Border.all(color: AppColors.border),
         boxShadow: glowColor == null
             ? null
-            : AppColors.glow(glowColor!, blur: 18, opacity: 0.16),
+            : AppColors.glow(glowColor!, blur: 16, opacity: 0.09),
       ),
       child: onTap == null
           ? content

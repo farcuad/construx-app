@@ -55,8 +55,10 @@ class ProjectsScreen extends ConsumerWidget {
           : null,
       body: NeonBackground(
         child: switch (projects) {
-          AsyncData<List<Project>>(:final List<Project> value) =>
-            _ProjectsList(projects: value, canCreate: canCreate),
+          AsyncData<List<Project>>(:final List<Project> value) => _ProjectsList(
+            projects: value,
+            canCreate: canCreate,
+          ),
           AsyncError<List<Project>>(:final Object error) => ErrorView(
             message: error is ApiException
                 ? error.message
@@ -162,10 +164,7 @@ class _ProjectCard extends ConsumerWidget {
           if (clientName != null)
             _MetaRow(icon: Icons.handshake_outlined, text: clientName!),
           if (project.location.isNotEmpty)
-            _MetaRow(
-              icon: Icons.place_outlined,
-              text: project.location,
-            ),
+            _MetaRow(icon: Icons.place_outlined, text: project.location),
           _MetaRow(
             icon: Icons.event_outlined,
             text:
@@ -227,51 +226,52 @@ class _ProjectMenu extends ConsumerWidget {
   final bool canDelete;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) =>
-      PopupMenuButton<_ProjectAction>(
-        icon: const Icon(Icons.more_vert_rounded, size: 20),
-        color: AppColors.surfaceHigh,
-        onSelected: (_ProjectAction action) => switch (action) {
-          _ProjectAction.edit => showProjectFormSheet(context, project: project),
-          _ProjectAction.delete => _confirmDelete(context, ref),
-        },
-        itemBuilder: (BuildContext context) => <PopupMenuEntry<_ProjectAction>>[
-          if (canUpdate)
-            const PopupMenuItem<_ProjectAction>(
-              value: _ProjectAction.edit,
-              child: ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                leading: Icon(Icons.edit_outlined, size: 19),
-                title: Text('Editar'),
-              ),
+  Widget build(
+    BuildContext context,
+    WidgetRef ref,
+  ) => PopupMenuButton<_ProjectAction>(
+    icon: const Icon(Icons.more_vert_rounded, size: 20),
+    color: AppColors.surfaceHigh,
+    onSelected: (_ProjectAction action) => switch (action) {
+      _ProjectAction.edit => showProjectFormSheet(context, project: project),
+      _ProjectAction.delete => _confirmDelete(context, ref),
+    },
+    itemBuilder: (BuildContext context) => <PopupMenuEntry<_ProjectAction>>[
+      if (canUpdate)
+        const PopupMenuItem<_ProjectAction>(
+          value: _ProjectAction.edit,
+          child: ListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.edit_outlined, size: 19),
+            title: Text('Editar'),
+          ),
+        ),
+      if (canDelete)
+        const PopupMenuItem<_ProjectAction>(
+          value: _ProjectAction.delete,
+          child: ListTile(
+            dense: true,
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(
+              Icons.delete_outline_rounded,
+              size: 19,
+              color: AppColors.danger,
             ),
-          if (canDelete)
-            const PopupMenuItem<_ProjectAction>(
-              value: _ProjectAction.delete,
-              child: ListTile(
-                dense: true,
-                contentPadding: EdgeInsets.zero,
-                leading: Icon(
-                  Icons.delete_outline_rounded,
-                  size: 19,
-                  color: AppColors.danger,
-                ),
-                title: Text(
-                  'Eliminar',
-                  style: TextStyle(color: AppColors.danger),
-                ),
-              ),
-            ),
-        ],
-      );
+            title: Text('Eliminar', style: TextStyle(color: AppColors.danger)),
+          ),
+        ),
+    ],
+  );
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) => AlertDialog(
         title: const Text('Eliminar proyecto'),
-        content: Text('Se eliminará «${project.name}». Esta acción no se puede deshacer.'),
+        content: Text(
+          'Se eliminará «${project.name}». Esta acción no se puede deshacer.',
+        ),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),

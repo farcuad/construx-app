@@ -12,7 +12,8 @@ final Provider<ClientsRepository> clientsRepositoryProvider =
 /// Lista de clientes de la empresa.
 class ClientsController extends AsyncNotifier<List<Client>> {
   @override
-  Future<List<Client>> build() => ref.watch(clientsRepositoryProvider).fetchAll();
+  Future<List<Client>> build() =>
+      ref.watch(clientsRepositoryProvider).fetchAll();
 
   ClientsRepository get _repository => ref.read(clientsRepositoryProvider);
 
@@ -33,7 +34,8 @@ class ClientsController extends AsyncNotifier<List<Client>> {
     final Client updated = await _repository.update(client);
     final List<Client> current = state.valueOrNull ?? const <Client>[];
     state = AsyncValue<List<Client>>.data(<Client>[
-      for (final Client c in current) if (c.id == updated.id) updated else c,
+      for (final Client c in current)
+        if (c.id == updated.id) updated else c,
     ]);
     return updated;
   }
@@ -59,7 +61,5 @@ final Provider<Map<String, String>> clientNamesProvider =
     Provider<Map<String, String>>((Ref ref) {
       final List<Client> clients =
           ref.watch(clientsControllerProvider).valueOrNull ?? const <Client>[];
-      return <String, String>{
-        for (final Client c in clients) c.id: c.name,
-      };
+      return <String, String>{for (final Client c in clients) c.id: c.name};
     });

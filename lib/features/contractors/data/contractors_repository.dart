@@ -10,10 +10,9 @@ class ContractorsRepository {
   // ── Contratistas ────────────────────────────────────────────────────────
 
   /// `GET /contractors`.
-  Future<List<Contractor>> fetchAll() async =>
-      (await _api.getList('/contractors'))
-          .map(Contractor.fromJson)
-          .toList(growable: false);
+  Future<List<Contractor>> fetchAll() async => (await _api.getList(
+    '/contractors',
+  )).map(Contractor.fromJson).toList(growable: false);
 
   /// `POST /contractors`.
   Future<Contractor> create(Contractor contractor) async => Contractor.fromJson(
@@ -35,9 +34,9 @@ class ContractorsRepository {
 
   /// `GET /contractors/contracts/{project_id}`.
   Future<List<ContractorContract>> fetchContracts(String projectId) async =>
-      (await _api.getList('/contractors/contracts/$projectId'))
-          .map(ContractorContract.fromJson)
-          .toList(growable: false);
+      (await _api.getList(
+        '/contractors/contracts/$projectId',
+      )).map(ContractorContract.fromJson).toList(growable: false);
 
   /// `POST /contractors/contracts` — el saldo arranca igual al total.
   Future<ContractorContract> createContract(
@@ -63,17 +62,13 @@ class ContractorsRepository {
   // ── Pagos ───────────────────────────────────────────────────────────────
 
   /// `GET /contractors/payments` — pagos de toda la empresa.
-  Future<List<ContractorPayment>> fetchPayments() async =>
-      (await _api.getList('/contractors/payments'))
-          .map(ContractorPayment.fromJson)
-          .toList(growable: false);
+  Future<List<ContractorPayment>> fetchPayments() async => (await _api.getList(
+    '/contractors/payments',
+  )).map(ContractorPayment.fromJson).toList(growable: false);
 
   /// `POST /contractors/payments` — descuenta del saldo del contrato.
   Future<ContractorPayment> registerPayment(ContractorPayment payment) async =>
       ContractorPayment.fromJson(
-        await _api.post(
-          '/contractors/payments',
-          body: payment.toRequestBody(),
-        ),
+        await _api.post('/contractors/payments', body: payment.toRequestBody()),
       );
 }

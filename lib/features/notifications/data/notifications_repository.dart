@@ -12,10 +12,9 @@ class NotificationsRepository {
   final ApiClient _api;
 
   /// `GET /notifications` — bandeja del usuario del token.
-  Future<List<AppNotification>> fetchInbox() async =>
-      (await _api.getList('/notifications'))
-          .map(AppNotification.fromJson)
-          .toList(growable: false);
+  Future<List<AppNotification>> fetchInbox() async => (await _api.getList(
+    '/notifications',
+  )).map(AppNotification.fromJson).toList(growable: false);
 
   /// `POST /notifications` — crea el aviso para [targetUsers].
   Future<AppNotification> create(

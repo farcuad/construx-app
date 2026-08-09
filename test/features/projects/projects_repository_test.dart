@@ -10,8 +10,9 @@ import 'package:mi_app_constructora/features/projects/domain/project_kpis.dart';
 import '../../helpers/test_helpers.dart';
 
 void main() {
-  ProjectsRepository buildRepository(http.Client client) =>
-      ProjectsRepository(ApiClient(baseUrl: 'https://api.test', httpClient: client));
+  ProjectsRepository buildRepository(http.Client client) => ProjectsRepository(
+    ApiClient(baseUrl: 'https://api.test', httpClient: client),
+  );
 
   Map<String, dynamic> projectJson({String id = 'p1'}) => <String, dynamic>{
     'id': id,
@@ -55,7 +56,8 @@ void main() {
     test('propaga el 402 de suscripción inactiva', () async {
       final ProjectsRepository repository = buildRepository(
         MockClient(
-          (_) async => textResponse('Suscripción inactiva o expirada', status: 402),
+          (_) async =>
+              textResponse('Suscripción inactiva o expirada', status: 402),
         ),
       );
 
@@ -114,7 +116,8 @@ void main() {
     test('propaga el 402 de límite de proyectos del plan', () async {
       final ProjectsRepository repository = buildRepository(
         MockClient(
-          (_) async => textResponse('Límite de proyectos alcanzado', status: 402),
+          (_) async =>
+              textResponse('Límite de proyectos alcanzado', status: 402),
         ),
       );
 
@@ -202,17 +205,20 @@ void main() {
       expect(kpis.isOverBudget, isFalse);
     });
 
-    test('detecta sobrecosto cuando gastos + compras superan el presupuesto', () {
-      final ProjectKpis kpis = ProjectKpis.fromJson(<String, dynamic>{
-        'project_id': 'p1',
-        'total_budget': 1000,
-        'total_expenses': 800,
-        'total_purchased': 400,
-      });
+    test(
+      'detecta sobrecosto cuando gastos + compras superan el presupuesto',
+      () {
+        final ProjectKpis kpis = ProjectKpis.fromJson(<String, dynamic>{
+          'project_id': 'p1',
+          'total_budget': 1000,
+          'total_expenses': 800,
+          'total_purchased': 400,
+        });
 
-      expect(kpis.isOverBudget, isTrue);
-      expect(kpis.budgetUsedPercent, 120);
-    });
+        expect(kpis.isOverBudget, isTrue);
+        expect(kpis.budgetUsedPercent, 120);
+      },
+    );
 
     test('sin presupuesto no calcula el porcentaje consumido', () {
       final ProjectKpis kpis = ProjectKpis.fromJson(<String, dynamic>{
@@ -263,7 +269,11 @@ void main() {
     });
 
     test('copyWith conserva el id y cambia solo lo indicado', () {
-      const Project project = Project(id: 'p1', name: 'Antigua', location: 'Cali');
+      const Project project = Project(
+        id: 'p1',
+        name: 'Antigua',
+        location: 'Cali',
+      );
       final Project updated = project.copyWith(name: 'Nueva');
 
       expect(updated.id, 'p1');

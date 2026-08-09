@@ -12,10 +12,9 @@ final Provider<NotificationsRepository> notificationsRepositoryProvider =
 
 /// `GET /notifications` — bandeja del usuario actual.
 final AutoDisposeFutureProvider<List<AppNotification>>
-notificationsInboxProvider =
-    FutureProvider.autoDispose<List<AppNotification>>(
-      (Ref ref) => ref.watch(notificationsRepositoryProvider).fetchInbox(),
-    );
+notificationsInboxProvider = FutureProvider.autoDispose<List<AppNotification>>(
+  (Ref ref) => ref.watch(notificationsRepositoryProvider).fetchInbox(),
+);
 
 /// Avisos en tiempo real (`GET /notifications/ws`).
 ///

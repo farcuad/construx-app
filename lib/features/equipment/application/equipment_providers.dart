@@ -23,16 +23,16 @@ final AutoDisposeFutureProvider<List<EquipmentType>> equipmentTypesProvider =
 
 /// `GET /equipment/assignments/{equipment_id}`.
 final AutoDisposeFutureProviderFamily<List<EquipmentAssignment>, String>
-equipmentAssignmentsProvider =
-    FutureProvider.autoDispose.family<List<EquipmentAssignment>, String>(
+equipmentAssignmentsProvider = FutureProvider.autoDispose
+    .family<List<EquipmentAssignment>, String>(
       (Ref ref, String equipmentId) =>
           ref.watch(equipmentRepositoryProvider).fetchAssignments(equipmentId),
     );
 
 /// `GET /equipment/maintenances/{equipment_id}`.
 final AutoDisposeFutureProviderFamily<List<MaintenanceRecord>, String>
-equipmentMaintenancesProvider =
-    FutureProvider.autoDispose.family<List<MaintenanceRecord>, String>(
+equipmentMaintenancesProvider = FutureProvider.autoDispose
+    .family<List<MaintenanceRecord>, String>(
       (Ref ref, String equipmentId) =>
           ref.watch(equipmentRepositoryProvider).fetchMaintenances(equipmentId),
     );

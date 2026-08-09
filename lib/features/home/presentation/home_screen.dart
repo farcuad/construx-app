@@ -11,13 +11,14 @@ import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/auth_user.dart';
 import '../../auth/domain/permissions.dart';
 import '../../auth/presentation/logout_dialog.dart';
+import '../../notifications/presentation/widgets/notifications_bell.dart';
+import '../../projects/application/project_scope.dart';
 import '../../projects/application/projects_controller.dart';
 import '../../projects/domain/project.dart';
 import '../../projects/domain/project_kpis.dart';
-import '../application/dashboard_controller.dart';
+import '../../projects/presentation/widgets/project_selector.dart';
 import 'widgets/app_drawer.dart';
 import 'widgets/kpi_card.dart';
-import 'widgets/project_selector.dart';
 
 /// Panel principal: indicadores financieros del proyecto seleccionado
 /// (`GET /dashboard/financial/{project_id}`).
@@ -51,7 +52,7 @@ class HomeScreen extends ConsumerWidget {
             child: CustomScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: <Widget>[
-                SliverToBoxAdapter(child: _Greeting(user: user)),
+                SliverToBoxAdapter(child: _Header(user: user)),
                 ..._buildDashboard(context, ref, user),
               ],
             ),
@@ -116,9 +117,9 @@ class HomeScreen extends ConsumerWidget {
     }
 
     return <Widget>[
-      SliverPadding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
-        sliver: SliverToBoxAdapter(child: ProjectSelector(project: project)),
+      const SliverPadding(
+        padding: EdgeInsets.fromLTRB(20, 0, 20, 18),
+        sliver: SliverToBoxAdapter(child: ProjectSelector()),
       ),
       if (!user.can(Perm.dashboardRead))
         _fill(
@@ -224,9 +225,7 @@ class HomeScreen extends ConsumerWidget {
         label: 'Variación financiera',
         amount: k.financialVariance,
         icon: Icons.balance_rounded,
-        accent: k.financialVariance >= 0
-            ? AppColors.success
-            : AppColors.danger,
+        accent: k.financialVariance >= 0 ? AppColors.success : AppColors.danger,
         footnote: k.financialVariance >= 0 ? 'A favor' : 'En contra',
       ),
     ];
@@ -389,14 +388,18 @@ class _Figure extends StatelessWidget {
   );
 }
 
-class _Greeting extends ConsumerWidget {
-  const _Greeting({required this.user});
+/// Cabecera del panel: quién ha iniciado sesión, sin más adornos.
+///
+/// Muestra nombre y correo —lo que identifica a la persona— en lugar de un
+/// saludo y unas iniciales, que ocupaban sitio sin decir nada.
+class _Header extends ConsumerWidget {
+  const _Header({required this.user});
 
   final AuthUser user;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => Padding(
-    padding: const EdgeInsets.fromLTRB(8, 14, 20, 22),
+    padding: const EdgeInsets.fromLTRB(8, 10, 12, 18),
     child: Row(
       children: <Widget>[
         IconButton(
@@ -405,40 +408,38 @@ class _Greeting extends ConsumerWidget {
           color: AppColors.textPrimary,
           onPressed: Scaffold.of(context).openDrawer,
         ),
-        const SizedBox(width: 2),
-        _Avatar(initials: user.initials),
-        const SizedBox(width: 14),
+        const SizedBox(width: 4),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              const Text(
-                'Hola,',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13.5,
-                ),
-              ),
-              const SizedBox(height: 2),
               Text(
-                user.name.isEmpty ? user.email : user.name,
+                user.name.isEmpty ? 'Sin nombre' : user.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: AppColors.textPrimary,
-                  fontSize: 20,
+                  fontSize: 19,
                   fontWeight: FontWeight.w800,
                   letterSpacing: -0.3,
                 ),
               ),
-              const SizedBox(height: 6),
-              StatusChip(
-                label: user.role.isEmpty ? 'Sin rol' : user.role,
-                color: user.isAdmin ? AppColors.orangeNeon : AppColors.cyanNeon,
+              const SizedBox(height: 2),
+              Text(
+                user.email,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
               ),
             ],
           ),
         ),
+        const SizedBox(width: 4),
+        const NotificationsBell(),
         IconButton(
           tooltip: 'Cerrar sesión',
           onPressed: () => confirmLogout(context, ref),
@@ -446,32 +447,6 @@ class _Greeting extends ConsumerWidget {
           color: AppColors.textSecondary,
         ),
       ],
-    ),
-  );
-}
-
-class _Avatar extends StatelessWidget {
-  const _Avatar({required this.initials});
-
-  final String initials;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    width: 50,
-    height: 50,
-    alignment: Alignment.center,
-    decoration: BoxDecoration(
-      gradient: AppColors.brandGradient,
-      shape: BoxShape.circle,
-      boxShadow: AppColors.glow(AppColors.orange, blur: 20, opacity: 0.35),
-    ),
-    child: Text(
-      initials,
-      style: const TextStyle(
-        color: Colors.black,
-        fontSize: 17,
-        fontWeight: FontWeight.w800,
-      ),
     ),
   );
 }

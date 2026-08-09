@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// Paleta de la aplicación: negro + naranja con acentos neón.
+/// Paleta de la aplicación: negro + naranja con acentos tenues.
+///
+/// El neón está deliberadamente contenido: los resplandores marcan jerarquía
+/// (el botón principal, el módulo activo) en lugar de cubrir toda la pantalla.
+/// Si un brillo no distingue nada, sobra.
 ///
 /// Todas las constantes son `const` para que el motor de Flutter pueda
 /// reutilizar las instancias sin asignar memoria en cada `build`.
@@ -25,16 +29,17 @@ abstract final class AppColors {
   /// Naranja profundo, para degradados.
   static const Color orangeDeep = Color(0xFFE1490B);
 
-  /// Naranja neón, para brillos y estados activos.
-  static const Color orangeNeon = Color(0xFFFF9E2C);
+  /// Naranja claro, para acentos y estados activos.
+  static const Color orangeNeon = Color(0xFFFFA246);
 
-  /// Acento neón frío, usado con moderación (métricas, badges).
-  static const Color cyanNeon = Color(0xFF22E0D6);
+  /// Acento frío, usado con moderación (métricas, badges). Rebajado desde el
+  /// turquesa saturado original, que era lo que más «ciberpunk» hacía ver todo.
+  static const Color cyanNeon = Color(0xFF5FBDB4);
 
   // ── Semánticos ──────────────────────────────────────────────────────────
-  static const Color success = Color(0xFF2BE08C);
-  static const Color warning = Color(0xFFFFC531);
-  static const Color danger = Color(0xFFFF3B5C);
+  static const Color success = Color(0xFF4CC98A);
+  static const Color warning = Color(0xFFE8B647);
+  static const Color danger = Color(0xFFE8556F);
 
   // ── Texto ───────────────────────────────────────────────────────────────
   static const Color textPrimary = Color(0xFFF5F5F7);
@@ -48,12 +53,16 @@ abstract final class AppColors {
     colors: <Color>[orangeNeon, orange, orangeDeep],
   );
 
-  /// Resplandor neón reutilizable. [opacity] controla la intensidad.
+  /// Resplandor reutilizable. [opacity] controla la intensidad.
+  ///
+  /// El valor por defecto es bajo a propósito: se busca insinuar el color, no
+  /// iluminar la pantalla. Súbelo solo en el elemento más importante de una
+  /// vista.
   static List<BoxShadow> glow(
     Color color, {
-    double blur = 24,
+    double blur = 20,
     double spread = 0,
-    double opacity = 0.45,
+    double opacity = 0.20,
   }) => <BoxShadow>[
     BoxShadow(
       color: color.withValues(alpha: opacity),

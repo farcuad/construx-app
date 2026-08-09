@@ -11,10 +11,9 @@ class SuppliersRepository {
   final ApiClient _api;
 
   /// `GET /supplier`.
-  Future<List<Supplier>> fetchAll() async =>
-      (await _api.getList('/supplier'))
-          .map(Supplier.fromJson)
-          .toList(growable: false);
+  Future<List<Supplier>> fetchAll() async => (await _api.getList(
+    '/supplier',
+  )).map(Supplier.fromJson).toList(growable: false);
 
   /// `POST /supplier`.
   Future<Supplier> create(Supplier supplier) async => Supplier.fromJson(

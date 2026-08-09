@@ -11,8 +11,8 @@ final Provider<ScheduleRepository> scheduleRepositoryProvider =
 
 /// `GET /schedule/{project_id}`, cacheado por proyecto.
 final AutoDisposeFutureProviderFamily<List<ScheduleTask>, String>
-projectScheduleProvider =
-    FutureProvider.autoDispose.family<List<ScheduleTask>, String>(
+projectScheduleProvider = FutureProvider.autoDispose
+    .family<List<ScheduleTask>, String>(
       (Ref ref, String projectId) =>
           ref.watch(scheduleRepositoryProvider).fetchByProject(projectId),
     );

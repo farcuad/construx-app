@@ -170,12 +170,9 @@ void main() {
       method: 'POST',
       path: '/users',
       response: emptyObject,
-      call: (ApiClient api) => UsersRepository(api).create(
-        name: 'María',
-        email: 'm@xyz.com',
-        password: 'x',
-        roleId: 'r1',
-      ),
+      call: (ApiClient api) => UsersRepository(
+        api,
+      ).create(name: 'María', email: 'm@xyz.com', password: 'x', roleId: 'r1'),
     ),
     (
       method: 'PUT',
@@ -371,13 +368,15 @@ void main() {
       method: 'POST',
       path: '/materials',
       response: emptyObject,
-      call: (ApiClient api) => InventoryRepository(api).createMaterial(material),
+      call: (ApiClient api) =>
+          InventoryRepository(api).createMaterial(material),
     ),
     (
       method: 'PUT',
       path: '/materials/m1',
       response: emptyObject,
-      call: (ApiClient api) => InventoryRepository(api).updateMaterial(material),
+      call: (ApiClient api) =>
+          InventoryRepository(api).updateMaterial(material),
     ),
     (
       method: 'DELETE',
@@ -436,7 +435,8 @@ void main() {
       method: 'POST',
       path: '/equipment/types',
       response: emptyObject,
-      call: (ApiClient api) => EquipmentRepository(api).createType('Excavadora'),
+      call: (ApiClient api) =>
+          EquipmentRepository(api).createType('Excavadora'),
     ),
     (
       method: 'GET',
@@ -472,8 +472,7 @@ void main() {
       method: 'GET',
       path: '/equipment/assignments/eq1',
       response: emptyList,
-      call: (ApiClient api) =>
-          EquipmentRepository(api).fetchAssignments('eq1'),
+      call: (ApiClient api) => EquipmentRepository(api).fetchAssignments('eq1'),
     ),
     (
       method: 'POST',
@@ -501,13 +500,15 @@ void main() {
       method: 'POST',
       path: '/positions',
       response: emptyObject,
-      call: (ApiClient api) => PersonnelRepository(api).createPosition(position),
+      call: (ApiClient api) =>
+          PersonnelRepository(api).createPosition(position),
     ),
     (
       method: 'PUT',
       path: '/positions/pos1',
       response: emptyObject,
-      call: (ApiClient api) => PersonnelRepository(api).updatePosition(position),
+      call: (ApiClient api) =>
+          PersonnelRepository(api).updatePosition(position),
     ),
     (
       method: 'DELETE',
@@ -525,13 +526,15 @@ void main() {
       method: 'POST',
       path: '/employees',
       response: emptyObject,
-      call: (ApiClient api) => PersonnelRepository(api).createEmployee(employee),
+      call: (ApiClient api) =>
+          PersonnelRepository(api).createEmployee(employee),
     ),
     (
       method: 'PUT',
       path: '/employees/emp1',
       response: emptyObject,
-      call: (ApiClient api) => PersonnelRepository(api).updateEmployee(employee),
+      call: (ApiClient api) =>
+          PersonnelRepository(api).updateEmployee(employee),
     ),
     (
       method: 'DELETE',
@@ -579,11 +582,9 @@ void main() {
       method: 'PUT',
       path: '/attendance/logs/l1',
       response: emptyObject,
-      call: (ApiClient api) => AttendanceRepository(api).updateLog(
-        'l1',
-        status: AttendanceStatus.present,
-        hoursWorked: 8,
-      ),
+      call: (ApiClient api) => AttendanceRepository(
+        api,
+      ).updateLog('l1', status: AttendanceStatus.present, hoursWorked: 8),
     ),
     (
       method: 'DELETE',
@@ -641,8 +642,7 @@ void main() {
       method: 'DELETE',
       path: '/contractors/contracts/cc1',
       response: null,
-      call: (ApiClient api) =>
-          ContractorsRepository(api).deleteContract('cc1'),
+      call: (ApiClient api) => ContractorsRepository(api).deleteContract('cc1'),
     ),
     (
       method: 'GET',
@@ -794,7 +794,8 @@ void main() {
       method: 'POST',
       path: '/documents/types',
       response: emptyObject,
-      call: (ApiClient api) => DocumentsRepository(api).createType(name: 'Acta'),
+      call: (ApiClient api) =>
+          DocumentsRepository(api).createType(name: 'Acta'),
     ),
     (
       method: 'PUT',
@@ -868,10 +869,9 @@ void main() {
       method: 'POST',
       path: '/notifications',
       response: emptyObject,
-      call: (ApiClient api) => NotificationsRepository(api).create(
-        notification,
-        targetUsers: const <String>['u1'],
-      ),
+      call: (ApiClient api) => NotificationsRepository(
+        api,
+      ).create(notification, targetUsers: const <String>['u1']),
     ),
     (
       method: 'PATCH',

@@ -8,7 +8,6 @@ import '../../../../core/widgets/app_widgets.dart';
 import '../../../../core/widgets/brand_mark.dart';
 import '../../../auth/application/auth_controller.dart';
 import '../../../auth/domain/auth_user.dart';
-import '../../../auth/presentation/logout_dialog.dart';
 import '../../application/modules_controller.dart';
 import '../../domain/app_module.dart';
 import '../home_screen.dart';
@@ -158,7 +157,7 @@ class _NavTile extends StatelessWidget {
                     color: accent,
                     borderRadius: const BorderRadius.all(Radius.circular(2)),
                     boxShadow: selected
-                        ? AppColors.glow(accent, blur: 8, opacity: 0.7)
+                        ? AppColors.glow(accent, blur: 7, opacity: 0.35)
                         : null,
                   ),
                 ),
@@ -196,18 +195,21 @@ class _NavTile extends StatelessWidget {
   }
 }
 
-/// Pie del menú: quién ha iniciado sesión y el botón de salir.
-class _UserFooter extends ConsumerWidget {
+/// Pie del menú: quién ha iniciado sesión y con qué rol.
+///
+/// Sin botón de salir: cerrar sesión se hace desde la cabecera del panel, y
+/// tenerlo en dos sitios solo multiplica las formas de pulsarlo sin querer.
+class _UserFooter extends StatelessWidget {
   const _UserFooter({required this.user});
 
   final AuthUser user;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Padding(
+  Widget build(BuildContext context) => Padding(
     padding: EdgeInsets.fromLTRB(
       14,
       12,
-      6,
+      14,
       12 + MediaQuery.paddingOf(context).bottom,
     ),
     child: Row(
@@ -259,16 +261,6 @@ class _UserFooter extends ConsumerWidget {
               ),
             ],
           ),
-        ),
-        IconButton(
-          tooltip: 'Cerrar sesión',
-          icon: const Icon(Icons.logout_rounded, size: 20),
-          color: AppColors.textSecondary,
-          onPressed: () {
-            final NavigatorState navigator = Navigator.of(context);
-            navigator.pop();
-            confirmLogout(navigator.context, ref);
-          },
         ),
       ],
     ),

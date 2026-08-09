@@ -64,8 +64,8 @@ class _Halo extends StatelessWidget {
       shape: BoxShape.circle,
       gradient: RadialGradient(
         colors: <Color>[
-          Color(0x4DFF6B1A), // AppColors.orange al 30 %
-          Color(0x1AFF9E2C), // AppColors.orangeNeon al 10 %
+          Color(0x24FF6B1A), // AppColors.orange al 14 %
+          Color(0x0DFFA246), // AppColors.orangeNeon al 5 %
           Colors.transparent,
         ],
         stops: <double>[0, 0.55, 1],

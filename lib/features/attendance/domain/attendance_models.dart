@@ -82,8 +82,10 @@ class Attendance {
       .length;
 
   /// Horas sumadas de la jornada.
-  double get totalHours =>
-      logs.fold<double>(0, (double sum, AttendanceLog l) => sum + l.hoursWorked);
+  double get totalHours => logs.fold<double>(
+    0,
+    (double sum, AttendanceLog l) => sum + l.hoursWorked,
+  );
 
   factory Attendance.fromJson(Map<String, dynamic> json) => Attendance(
     id: J.str(json['id']),

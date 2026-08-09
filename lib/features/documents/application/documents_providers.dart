@@ -17,16 +17,16 @@ final AutoDisposeFutureProvider<List<DocumentType>> documentTypesProvider =
 
 /// `GET /documents/project/{project_id}`, cacheado por proyecto.
 final AutoDisposeFutureProviderFamily<List<ProjectDocument>, String>
-projectDocumentsProvider =
-    FutureProvider.autoDispose.family<List<ProjectDocument>, String>(
+projectDocumentsProvider = FutureProvider.autoDispose
+    .family<List<ProjectDocument>, String>(
       (Ref ref, String projectId) =>
           ref.watch(documentsRepositoryProvider).fetchByProject(projectId),
     );
 
 /// `GET /documents/versions/{document_id}`.
 final AutoDisposeFutureProviderFamily<List<DocumentVersion>, String>
-documentVersionsProvider =
-    FutureProvider.autoDispose.family<List<DocumentVersion>, String>(
+documentVersionsProvider = FutureProvider.autoDispose
+    .family<List<DocumentVersion>, String>(
       (Ref ref, String documentId) =>
           ref.watch(documentsRepositoryProvider).fetchVersions(documentId),
     );

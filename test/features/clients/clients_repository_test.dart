@@ -9,8 +9,9 @@ import 'package:mi_app_constructora/features/clients/domain/client.dart';
 import '../../helpers/test_helpers.dart';
 
 void main() {
-  ClientsRepository buildRepository(http.Client client) =>
-      ClientsRepository(ApiClient(baseUrl: 'https://api.test', httpClient: client));
+  ClientsRepository buildRepository(http.Client client) => ClientsRepository(
+    ApiClient(baseUrl: 'https://api.test', httpClient: client),
+  );
 
   Map<String, dynamic> clientJson() => <String, dynamic>{
     'id': 'cli-1',

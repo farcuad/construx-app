@@ -271,9 +271,7 @@ class _PasswordField extends StatelessWidget {
         onPressed: onToggleObscure,
         tooltip: obscure ? 'Mostrar contraseña' : 'Ocultar contraseña',
         icon: Icon(
-          obscure
-              ? Icons.visibility_outlined
-              : Icons.visibility_off_outlined,
+          obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
           size: 20,
         ),
       ),

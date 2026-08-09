@@ -69,8 +69,7 @@ class _DetailBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AuthUser? user = ref.watch(currentUserProvider);
-    final String? clientName =
-        ref.watch(clientNamesProvider)[project.clientId];
+    final String? clientName = ref.watch(clientNamesProvider)[project.clientId];
     final bool canSeeKpis = user?.can(Perm.dashboardRead) ?? false;
 
     return ListView(
@@ -133,8 +132,11 @@ class _DetailBody extends ConsumerWidget {
           const AppCard(
             child: Row(
               children: <Widget>[
-                Icon(Icons.lock_outline_rounded,
-                    size: 18, color: AppColors.textDisabled),
+                Icon(
+                  Icons.lock_outline_rounded,
+                  size: 18,
+                  color: AppColors.textDisabled,
+                ),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -213,7 +215,9 @@ class _KpiGrid extends StatelessWidget {
       children: <Widget>[
         if (used != null) ...<Widget>[
           AppCard(
-            glowColor: kpis.isOverBudget ? AppColors.danger : AppColors.cyanNeon,
+            glowColor: kpis.isOverBudget
+                ? AppColors.danger
+                : AppColors.cyanNeon,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -379,10 +383,7 @@ class _InfoRow extends StatelessWidget {
         const SizedBox(width: 10),
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 13,
-          ),
+          style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
         ),
         const Spacer(),
         Flexible(

@@ -60,9 +60,7 @@ final class NetworkException extends ApiException {
 
 /// El servidor respondió algo que no se pudo interpretar como JSON.
 final class ParseException extends ApiException {
-  const ParseException([
-    super.message = 'Respuesta inesperada del servidor.',
-  ]);
+  const ParseException([super.message = 'Respuesta inesperada del servidor.']);
 }
 
 /// Falló la subida o el borrado de un archivo en Supabase Storage.

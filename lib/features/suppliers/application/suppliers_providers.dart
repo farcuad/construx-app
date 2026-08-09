@@ -21,7 +21,5 @@ final AutoDisposeProvider<Map<String, String>> supplierNamesProvider =
     Provider.autoDispose<Map<String, String>>((Ref ref) {
       final List<Supplier> suppliers =
           ref.watch(suppliersProvider).valueOrNull ?? const <Supplier>[];
-      return <String, String>{
-        for (final Supplier s in suppliers) s.id: s.name,
-      };
+      return <String, String>{for (final Supplier s in suppliers) s.id: s.name};
     });

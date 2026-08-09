@@ -10,26 +10,21 @@ class EquipmentRepository {
   // ── Tipos ───────────────────────────────────────────────────────────────
 
   /// `GET /equipment/types`.
-  Future<List<EquipmentType>> fetchTypes() async =>
-      (await _api.getList('/equipment/types'))
-          .map(EquipmentType.fromJson)
-          .toList(growable: false);
+  Future<List<EquipmentType>> fetchTypes() async => (await _api.getList(
+    '/equipment/types',
+  )).map(EquipmentType.fromJson).toList(growable: false);
 
   /// `POST /equipment/types`.
   Future<EquipmentType> createType(String name) async => EquipmentType.fromJson(
-    await _api.post(
-      '/equipment/types',
-      body: <String, dynamic>{'name': name},
-    ),
+    await _api.post('/equipment/types', body: <String, dynamic>{'name': name}),
   );
 
   // ── Maquinaria ──────────────────────────────────────────────────────────
 
   /// `GET /equipment`.
-  Future<List<Equipment>> fetchAll() async =>
-      (await _api.getList('/equipment'))
-          .map(Equipment.fromJson)
-          .toList(growable: false);
+  Future<List<Equipment>> fetchAll() async => (await _api.getList(
+    '/equipment',
+  )).map(Equipment.fromJson).toList(growable: false);
 
   /// `POST /equipment`.
   Future<Equipment> create(Equipment equipment) async => Equipment.fromJson(
@@ -59,10 +54,11 @@ class EquipmentRepository {
       );
 
   /// `GET /equipment/assignments/{equipment_id}`.
-  Future<List<EquipmentAssignment>> fetchAssignments(String equipmentId) async =>
-      (await _api.getList('/equipment/assignments/$equipmentId'))
-          .map(EquipmentAssignment.fromJson)
-          .toList(growable: false);
+  Future<List<EquipmentAssignment>> fetchAssignments(
+    String equipmentId,
+  ) async => (await _api.getList(
+    '/equipment/assignments/$equipmentId',
+  )).map(EquipmentAssignment.fromJson).toList(growable: false);
 
   // ── Mantenimientos ──────────────────────────────────────────────────────
 
@@ -75,7 +71,7 @@ class EquipmentRepository {
 
   /// `GET /equipment/maintenances/{equipment_id}`.
   Future<List<MaintenanceRecord>> fetchMaintenances(String equipmentId) async =>
-      (await _api.getList('/equipment/maintenances/$equipmentId'))
-          .map(MaintenanceRecord.fromJson)
-          .toList(growable: false);
+      (await _api.getList(
+        '/equipment/maintenances/$equipmentId',
+      )).map(MaintenanceRecord.fromJson).toList(growable: false);
 }

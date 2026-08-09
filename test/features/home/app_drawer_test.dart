@@ -7,7 +7,9 @@ import 'package:mi_app_constructora/core/network/api_client.dart';
 import 'package:mi_app_constructora/core/providers.dart';
 import 'package:mi_app_constructora/core/storage/secure_store.dart';
 import 'package:mi_app_constructora/features/auth/application/auth_controller.dart';
+import 'package:mi_app_constructora/features/budgets/presentation/budgets_screen.dart';
 import 'package:mi_app_constructora/features/clients/presentation/clients_screen.dart';
+import 'package:mi_app_constructora/features/home/domain/app_module.dart';
 import 'package:mi_app_constructora/features/home/presentation/home_screen.dart';
 import 'package:mi_app_constructora/features/home/presentation/widgets/app_drawer.dart';
 import 'package:mi_app_constructora/features/projects/presentation/projects_screen.dart';
@@ -79,10 +81,8 @@ void main() {
   }
 
   /// Acota el finder al menú: los mismos títulos están en la rejilla del panel.
-  Finder inDrawer(String label) => find.descendant(
-    of: find.byType(AppDrawer),
-    matching: find.text(label),
-  );
+  Finder inDrawer(String label) =>
+      find.descendant(of: find.byType(AppDrawer), matching: find.text(label));
 
   testWidgets('el botón de menú abre el cajón desde el panel', (
     WidgetTester tester,
@@ -98,16 +98,31 @@ void main() {
   ) async {
     await pumpWithDrawerOpen(tester);
 
-    // Módulos con pantalla…
-    expect(inDrawer('Proyectos'), findsOneWidget);
-    expect(inDrawer('Clientes'), findsOneWidget);
-    // …y módulos aún sin implementar, marcados como tales.
-    expect(inDrawer('Inventario'), findsOneWidget);
-    expect(inDrawer('Usuarios'), findsOneWidget);
-    expect(inDrawer('Pronto'), findsWidgets);
+    for (final AppModule module in kAppModules) {
+      expect(
+        inDrawer(module.title),
+        findsOneWidget,
+        reason: 'un administrador (permiso «*») ve todos los módulos',
+      );
+    }
+    expect(
+      inDrawer('Pronto'),
+      findsNothing,
+      reason: 'ya no queda ningún módulo sin pantalla',
+    );
 
     expect(inDrawer('Andrés Pérez'), findsOneWidget);
     expect(inDrawer('Administrador'), findsOneWidget);
+  });
+
+  test('todos los módulos del catálogo tienen ruta', () {
+    // Guarda contra añadir un módulo al menú y olvidar registrar su pantalla:
+    // el usuario lo vería listado y no podría entrar.
+    expect(
+      kAppModules.where((AppModule m) => !m.isAvailable),
+      isEmpty,
+      reason: 'un módulo sin `routePath` sale en el menú como «Pronto»',
+    );
   });
 
   testWidgets('un rol limitado solo ve sus módulos en el menú', (
@@ -139,7 +154,7 @@ void main() {
     expect(find.byType(AppDrawer), findsNothing, reason: 'el cajón se cierra');
   });
 
-  testWidgets('tocar un módulo sin pantalla avisa y no navega', (
+  testWidgets('un módulo por obra hereda el proyecto elegido en el panel', (
     WidgetTester tester,
   ) async {
     await pumpWithDrawerOpen(tester);
@@ -147,8 +162,8 @@ void main() {
     await tester.tap(inDrawer('Presupuestos'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Presupuestos: módulo en construcción'), findsOneWidget);
-    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.byType(BudgetsScreen), findsOneWidget);
+    expect(find.byType(HomeScreen), findsNothing);
   });
 
   testWidgets('el menú también está disponible dentro de un módulo', (

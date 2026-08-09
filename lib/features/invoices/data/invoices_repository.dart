@@ -10,9 +10,9 @@ class InvoicesRepository {
 
   /// `GET /invoices/project/{project_id}`.
   Future<List<Invoice>> fetchByProject(String projectId) async =>
-      (await _api.getList('/invoices/project/$projectId'))
-          .map(Invoice.fromJson)
-          .toList(growable: false);
+      (await _api.getList(
+        '/invoices/project/$projectId',
+      )).map(Invoice.fromJson).toList(growable: false);
 
   /// `GET /invoices/{id}` — la factura con sus líneas y sus pagos.
   Future<Invoice> fetchById(String id) async =>
@@ -46,9 +46,9 @@ class InvoicesRepository {
 
   /// `GET /invoices/payments/{invoice_id}`.
   Future<List<Payment>> fetchPayments(String invoiceId) async =>
-      (await _api.getList('/invoices/payments/$invoiceId'))
-          .map(Payment.fromJson)
-          .toList(growable: false);
+      (await _api.getList(
+        '/invoices/payments/$invoiceId',
+      )).map(Payment.fromJson).toList(growable: false);
 
   /// `POST /invoices/payments` — registra un cobro o un pago.
   Future<Payment> registerPayment(Payment payment) async => Payment.fromJson(

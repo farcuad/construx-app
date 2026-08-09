@@ -32,9 +32,9 @@ class PhotosRepository {
 
   /// `GET /photos/{project_id}`.
   Future<List<ProjectPhoto>> fetchByProject(String projectId) async =>
-      (await _api.getList('/photos/$projectId'))
-          .map(ProjectPhoto.fromJson)
-          .toList(growable: false);
+      (await _api.getList(
+        '/photos/$projectId',
+      )).map(ProjectPhoto.fromJson).toList(growable: false);
 
   /// Sube la imagen a Supabase y registra sus metadatos en el ERP.
   ///

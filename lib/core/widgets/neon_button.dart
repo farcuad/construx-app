@@ -40,8 +40,10 @@ class NeonButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: AppTheme.borderRadius,
             gradient: AppColors.brandGradient,
+            // El único resplandor apreciable de la app: es la acción principal
+            // de la pantalla y conviene que destaque sobre todo lo demás.
             boxShadow: enabled
-                ? AppColors.glow(AppColors.orange, blur: 26, opacity: 0.38)
+                ? AppColors.glow(AppColors.orange, blur: 20, opacity: 0.22)
                 : null,
           ),
           child: Material(

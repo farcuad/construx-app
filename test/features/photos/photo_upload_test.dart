@@ -250,15 +250,17 @@ void main() {
         const ProjectPhoto(
           id: 'ph1',
           projectId: 'p1',
-          photoUrl:
-              '$supabaseUrl/storage/v1/object/public/$bucket/p1/foto.jpg',
+          photoUrl: '$supabaseUrl/storage/v1/object/public/$bucket/p1/foto.jpg',
         ),
       );
 
       expect(env.api.single.method, 'DELETE');
       expect(env.api.single.url.path, '/photos/ph1');
       expect(env.storage.single.method, 'DELETE');
-      expect(env.storage.single.url.path, '/storage/v1/object/photos/p1/foto.jpg');
+      expect(
+        env.storage.single.url.path,
+        '/storage/v1/object/photos/p1/foto.jpg',
+      );
     });
 
     test('una foto alojada fuera del bucket solo se borra del ERP', () async {

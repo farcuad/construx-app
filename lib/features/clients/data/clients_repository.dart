@@ -14,8 +14,9 @@ class ClientsRepository {
   }
 
   /// `POST /clients`.
-  Future<Client> create(Client client) async =>
-      Client.fromJson(await _api.post('/clients', body: client.toRequestBody()));
+  Future<Client> create(Client client) async => Client.fromJson(
+    await _api.post('/clients', body: client.toRequestBody()),
+  );
 
   /// `PUT /clients/{id}`.
   Future<Client> update(Client client) async => Client.fromJson(
