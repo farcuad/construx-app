@@ -71,13 +71,20 @@ class NeonButton extends StatelessWidget {
                               Icon(icon, size: 20, color: Colors.black),
                               const SizedBox(width: 10),
                             ],
-                            Text(
-                              label,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.3,
+                            // Flexible con recorte: si el padre limita el ancho
+                            // (p. ej. un botón fijo), el texto se corta con
+                            // puntos suspensivos en vez de desbordar el Row.
+                            Flexible(
+                              child: Text(
+                                label,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.3,
+                                ),
                               ),
                             ),
                           ],

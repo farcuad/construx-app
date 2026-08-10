@@ -147,6 +147,15 @@ final List<GoRoute> _moduleRoutes = <GoRoute>[
 /// El `redirect` es la única fuente de verdad de la navegación por sesión: al
 /// cambiar [AuthState.status] el router recalcula la ruta, de modo que ninguna
 /// pantalla necesita empujar o descartar rutas manualmente al entrar o salir.
+/// Navegador raíz de la app.
+///
+/// Hace falta para abrir cosas desde fuera del árbol de widgets: cuando el
+/// trabajador toca una notificación del sistema, quien reacciona es un callback
+/// del plugin, que no tiene ningún `BuildContext` a mano.
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
+  debugLabel: 'root',
+);
+
 final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
   final ValueNotifier<AuthStatus> authStatus = ValueNotifier<AuthStatus>(
     ref.read(authControllerProvider).status,
@@ -159,6 +168,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
   );
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: SplashScreen.routePath,
     refreshListenable: authStatus,
     redirect: (BuildContext context, GoRouterState state) {

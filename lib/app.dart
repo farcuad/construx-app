@@ -9,6 +9,7 @@ import 'core/i18n/locale_controller.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_assets.dart';
 import 'core/theme/app_theme.dart';
+import 'core/widgets/offline_gate.dart';
 import 'features/auth/application/auth_controller.dart';
 import 'features/notifications/presentation/widgets/notifications_sync.dart';
 
@@ -79,8 +80,11 @@ class _ConstructoraAppState extends ConsumerState<ConstructoraApp> {
             ),
           ),
           // Por encima del router: la conexión de avisos vive mientras dure la
-          // sesión, no mientras dure la pantalla que muestra la campana.
-          child: NotificationsSync(child: child ?? const SizedBox.shrink()),
+          // sesión, no mientras dure la pantalla que muestra la campana, y el
+          // aviso de «sin conexión» tapa la app entera sin desmontarla.
+          child: NotificationsSync(
+            child: OfflineGate(child: child ?? const SizedBox.shrink()),
+          ),
         );
       },
     );

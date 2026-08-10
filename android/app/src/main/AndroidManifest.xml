@@ -1,4 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- La app habla con el backend y con Supabase Storage, así que necesita
+         internet en todas las variantes. Ojo: la plantilla de Flutter solo
+         declara este permiso en `src/debug/` y `src/profile/`, que no se
+         fusionan en release; sin esta línea el APK de producción falla en la
+         primera petición con un error de red. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Avisos en la bandeja del sistema. Desde Android 13 además hay que
+         pedirlo en tiempo de ejecución; lo hace `LocalNotifier.initialize`. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- Saber si el teléfono tiene red, para la pantalla de «sin conexión». -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <application
         android:label="Construx"
         android:name="${applicationName}"

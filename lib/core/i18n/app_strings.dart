@@ -41,6 +41,11 @@ class AppStrings {
     required this.noticeMarkedRead,
     required this.unreadOne,
     required this.unreadMany,
+    required this.noticeChannelName,
+    required this.noticeChannelDescription,
+    required this.offlineTitle,
+    required this.offlineMessage,
+    required this.offlineRestored,
     required this.settings,
     required this.settingsSession,
     required this.settingsPreferences,
@@ -133,6 +138,16 @@ class AppStrings {
 
   /// Plural con `{n}` como hueco para la cifra.
   final String unreadMany;
+
+  /// Nombre del canal de Android donde caen los avisos. Sale en los ajustes
+  /// del teléfono, así que se traduce como cualquier otro texto visible.
+  final String noticeChannelName;
+  final String noticeChannelDescription;
+
+  // Sin conexión.
+  final String offlineTitle;
+  final String offlineMessage;
+  final String offlineRestored;
 
   // Ajustes.
   final String settings;

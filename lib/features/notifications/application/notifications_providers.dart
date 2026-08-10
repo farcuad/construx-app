@@ -1,9 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers.dart';
+import '../data/local_notifier.dart';
 import '../data/notifications_repository.dart';
 import '../data/notifications_socket.dart';
 import '../domain/notification_models.dart';
+
+/// Quién saca los avisos a la bandeja del sistema.
+///
+/// Por defecto no hace nada: el plugin necesita un canal de plataforma que
+/// bajo `flutter test` no existe. `main()` lo sustituye por
+/// [SystemLocalNotifier], que es el que habla con Android de verdad.
+final Provider<LocalNotifier> localNotifierProvider = Provider<LocalNotifier>(
+  (Ref ref) => const SilentLocalNotifier(),
+);
 
 final Provider<NotificationsRepository> notificationsRepositoryProvider =
     Provider<NotificationsRepository>(

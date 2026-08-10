@@ -46,6 +46,14 @@ const AppStrings kStringsEn = AppStrings(
   noticeMarkedRead: 'Alert marked as read',
   unreadOne: '1 unread alert',
   unreadMany: '{n} unread alerts',
+  noticeChannelName: 'Site alerts',
+  noticeChannelDescription:
+      'Updates from your projects: budgets, tasks and issues.',
+  offlineTitle: 'No connection',
+  offlineMessage:
+      'Construx needs internet to work. Check your wi-fi or mobile data: as '
+      'soon as the signal is back you will pick up where you left off.',
+  offlineRestored: 'Connection restored',
   settings: 'Settings',
   settingsSession: 'Session',
   settingsPreferences: 'Preferences',

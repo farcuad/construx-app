@@ -6,6 +6,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'app.dart';
 import 'core/config/app_config.dart';
 import 'core/i18n/app_language.dart';
+import 'features/notifications/application/notifications_providers.dart';
+import 'features/notifications/data/local_notifier.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,5 +37,15 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  runApp(const ProviderScope(child: ConstructoraApp()));
+  runApp(
+    ProviderScope(
+      // El notificador real solo se monta aquí: es lo único de la app que
+      // necesita un canal de plataforma vivo, y así los tests se quedan con la
+      // versión muda sin tener que declararlo en cada uno.
+      overrides: <Override>[
+        localNotifierProvider.overrideWithValue(SystemLocalNotifier()),
+      ],
+      child: const ConstructoraApp(),
+    ),
+  );
 }

@@ -46,6 +46,14 @@ const AppStrings kStringsPt = AppStrings(
   noticeMarkedRead: 'Aviso marcado como lido',
   unreadOne: '1 aviso não lido',
   unreadMany: '{n} avisos não lidos',
+  noticeChannelName: 'Avisos de obra',
+  noticeChannelDescription:
+      'Novidades dos seus projetos: orçamentos, tarefas e ocorrências.',
+  offlineTitle: 'Sem conexão',
+  offlineMessage:
+      'O Construx precisa de internet para funcionar. Verifique o wi-fi ou os '
+      'dados móveis: assim que o sinal voltar, você continua de onde parou.',
+  offlineRestored: 'Conexão restabelecida',
   settings: 'Ajustes',
   settingsSession: 'Sessão',
   settingsPreferences: 'Preferências',
