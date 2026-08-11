@@ -95,7 +95,7 @@ class _ClientFormSheetState extends ConsumerState<_ClientFormSheet> {
       }
       if (!mounted) return;
       Navigator.of(context).pop();
-      showAppSnackBar(
+      showAppToast(
         context,
         _isEditing
             ? ref.read(stringsProvider).clients.updated

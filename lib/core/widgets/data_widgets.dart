@@ -254,7 +254,7 @@ Future<bool> confirmDestructive(
   return confirmed ?? false;
 }
 
-/// Ejecuta [action] y traduce el resultado a un `SnackBar`.
+/// Ejecuta [action] y traduce el resultado a un aviso momentáneo.
 ///
 /// Concentra el `try/catch` que si no se repetiría en cada botón de borrar,
 /// aprobar o anular.
@@ -265,10 +265,12 @@ Future<bool> runWithFeedback(
 }) async {
   try {
     await action();
-    if (context.mounted) showAppSnackBar(context, successMessage);
+    if (context.mounted) showAppToast(context, successMessage);
     return true;
   } on ApiException catch (e) {
-    if (context.mounted) showAppSnackBar(context, e.message, isError: true);
+    if (context.mounted) {
+      showAppToast(context, e.message, kind: ToastKind.error);
+    }
     return false;
   }
 }

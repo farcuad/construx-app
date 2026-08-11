@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:toastification/toastification.dart';
 
 import '../i18n/app_strings.dart';
 import '../i18n/locale_controller.dart';
@@ -223,30 +224,69 @@ class AppCard extends StatelessWidget {
   }
 }
 
-/// Muestra un `SnackBar` con estilo de la app.
-void showAppSnackBar(
+/// Qué clase de aviso momentáneo se está dando.
+enum ToastKind {
+  /// Salió bien: se guardó, se borró, se aprobó.
+  success(Icons.check_circle_outline_rounded, AppColors.success),
+
+  /// Falló algo que el usuario intentó hacer.
+  error(Icons.error_outline_rounded, AppColors.danger),
+
+  /// Ni bien ni mal: un dato que conviene saber.
+  info(Icons.info_outline_rounded, AppColors.cyanNeon);
+
+  const ToastKind(this.icon, this.color);
+
+  final IconData icon;
+  final Color color;
+}
+
+/// Muestra un aviso momentáneo arriba de la pantalla.
+///
+/// Sustituye al `SnackBar` de Material, que se pegaba al borde inferior y ahí
+/// chocaba con la barra de pestañas y con los botones flotantes. El toast va
+/// arriba, se cierra solo y no depende del `Scaffold` que haya debajo: eso es
+/// lo que permite avisar también desde un formulario a media pantalla.
+void showAppToast(
   BuildContext context,
   String message, {
-  bool isError = false,
+  ToastKind kind = ToastKind.success,
 }) {
-  final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar();
-  messenger.showSnackBar(
-    SnackBar(
-      content: Row(
-        children: <Widget>[
-          Icon(
-            isError
-                ? Icons.error_outline_rounded
-                : Icons.check_circle_outline_rounded,
-            color: isError ? AppColors.danger : AppColors.success,
-            size: 20,
-          ),
-          const SizedBox(width: 10),
-          Expanded(child: Text(message)),
-        ],
-      ),
-      duration: Duration(seconds: isError ? 4 : 3),
+  // Uno cada vez. Encadenar toasts al borrar varias cosas seguidas solo tapa
+  // la pantalla con avisos que el usuario ya no va a leer.
+  toastification.dismissAll(delayForAnimation: false);
+
+  toastification.show(
+    context: context,
+    alignment: Alignment.topCenter,
+    autoCloseDuration: Duration(seconds: kind == ToastKind.error ? 4 : 3),
+    // La app va sin animaciones; aquí queda lo justo para que el aviso no
+    // aparezca de golpe, que se lee como un parpadeo.
+    animationDuration: const Duration(milliseconds: 150),
+    style: ToastificationStyle.flat,
+    type: switch (kind) {
+      ToastKind.success => ToastificationType.success,
+      ToastKind.error => ToastificationType.error,
+      ToastKind.info => ToastificationType.info,
+    },
+    icon: Icon(kind.icon, size: 20, color: kind.color),
+    primaryColor: kind.color,
+    backgroundColor: AppColors.surfaceHigh,
+    foregroundColor: AppColors.textPrimary,
+    borderSide: const BorderSide(color: AppColors.border),
+    borderRadius: AppTheme.borderRadius,
+    boxShadow: const <BoxShadow>[
+      BoxShadow(color: Color(0x66000000), blurRadius: 16, offset: Offset(0, 4)),
+    ],
+    title: Text(
+      message,
+      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
     ),
+    // Sin barra de progreso: es una animación por fotograma durante toda la
+    // vida del aviso a cambio de nada.
+    showProgressBar: false,
+    closeButton: const ToastCloseButton(showType: CloseButtonShowType.onHover),
+    dragToClose: true,
+    applyBlurEffect: false,
   );
 }

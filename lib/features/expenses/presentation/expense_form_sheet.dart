@@ -121,7 +121,7 @@ class _ExpenseFormSheetState extends ConsumerState<_ExpenseFormSheet> {
       if (!mounted) return;
       Navigator.of(context).pop();
       final ExpensesStrings strings = ref.read(stringsProvider).expenses;
-      showAppSnackBar(context, _isEditing ? strings.updated : strings.created);
+      showAppToast(context, _isEditing ? strings.updated : strings.created);
     } on ApiException catch (e) {
       if (!mounted) return;
       setState(() {

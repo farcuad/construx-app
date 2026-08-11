@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:toastification/toastification.dart';
 
 import 'core/config/app_config.dart';
 import 'core/i18n/app_language.dart';
@@ -52,41 +53,46 @@ class _ConstructoraAppState extends ConsumerState<ConstructoraApp> {
     final GoRouter router = ref.watch(routerProvider);
     final AppLanguage language = ref.watch(localeControllerProvider);
 
-    return MaterialApp.router(
-      title: AppConfig.appName,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
-      routerConfig: router,
-      // El idioma lo manda Ajustes, no el del sistema: la app se usa en obra y
-      // el trabajador puede querer una lengua distinta a la del teléfono.
-      locale: language.locale,
-      supportedLocales: AppLanguage.supportedLocales,
-      localizationsDelegates: const <LocalizationsDelegate<Object>>[
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      builder: (BuildContext context, Widget? child) {
-        // Fija el escalado de texto en un rango razonable: la app tiene
-        // tarjetas de altura ajustada que se rompen con escalas extremas.
-        final MediaQueryData media = MediaQuery.of(context);
-        return MediaQuery(
-          data: media.copyWith(
-            textScaler: media.textScaler.clamp(
-              minScaleFactor: 0.9,
-              maxScaleFactor: 1.25,
+    // `ToastificationWrapper` monta el overlay de los avisos por encima del
+    // router, así que un toast sobrevive a un cambio de pantalla y no depende
+    // del `Scaffold` desde el que se lanzó.
+    return ToastificationWrapper(
+      child: MaterialApp.router(
+        title: AppConfig.appName,
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.dark,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.dark,
+        routerConfig: router,
+        // El idioma lo manda Ajustes, no el del sistema: la app se usa en obra
+        // y el trabajador puede querer una lengua distinta a la del teléfono.
+        locale: language.locale,
+        supportedLocales: AppLanguage.supportedLocales,
+        localizationsDelegates: const <LocalizationsDelegate<Object>>[
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        builder: (BuildContext context, Widget? child) {
+          // Fija el escalado de texto en un rango razonable: la app tiene
+          // tarjetas de altura ajustada que se rompen con escalas extremas.
+          final MediaQueryData media = MediaQuery.of(context);
+          return MediaQuery(
+            data: media.copyWith(
+              textScaler: media.textScaler.clamp(
+                minScaleFactor: 0.9,
+                maxScaleFactor: 1.25,
+              ),
             ),
-          ),
-          // Por encima del router: la conexión de avisos vive mientras dure la
-          // sesión, no mientras dure la pantalla que muestra la campana, y el
-          // aviso de «sin conexión» tapa la app entera sin desmontarla.
-          child: NotificationsSync(
-            child: OfflineGate(child: child ?? const SizedBox.shrink()),
-          ),
-        );
-      },
+            // Por encima del router: la conexión de avisos vive mientras dure la
+            // sesión, no mientras dure la pantalla que muestra la campana, y el
+            // aviso de «sin conexión» tapa la app entera sin desmontarla.
+            child: NotificationsSync(
+              child: OfflineGate(child: child ?? const SizedBox.shrink()),
+            ),
+          );
+        },
+      ),
     );
   }
 }

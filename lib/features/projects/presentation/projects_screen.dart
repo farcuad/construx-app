@@ -275,9 +275,11 @@ class _ProjectMenu extends ConsumerWidget {
 
     try {
       await ref.read(projectsControllerProvider.notifier).delete(project.id);
-      if (context.mounted) showAppSnackBar(context, strings.deleted);
+      if (context.mounted) showAppToast(context, strings.deleted);
     } on ApiException catch (e) {
-      if (context.mounted) showAppSnackBar(context, e.message, isError: true);
+      if (context.mounted) {
+        showAppToast(context, e.message, kind: ToastKind.error);
+      }
     }
   }
 }

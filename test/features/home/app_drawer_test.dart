@@ -23,7 +23,6 @@ void main() {
   /// módulos y en 800×600 la mitad quedaría fuera del viewport, sin construir.
   Future<void> pumpWithDrawerOpen(
     WidgetTester tester, {
-    List<String> permissions = const <String>['*'],
     String role = 'Administrador',
   }) async {
     tester.view.physicalSize = const Size(1000, 2000);
@@ -41,9 +40,7 @@ void main() {
           (Ref ref) => ApiClient(
             baseUrl: 'https://api.test',
             httpClient: MockClient(
-              (_) async => jsonResponse(
-                loginResponse(role: role, permissions: permissions),
-              ),
+              (_) async => jsonResponse(loginResponse(role: role)),
             ),
           ),
         ),
@@ -128,11 +125,7 @@ void main() {
   testWidgets('un rol limitado solo ve sus módulos en el menú', (
     WidgetTester tester,
   ) async {
-    await pumpWithDrawerOpen(
-      tester,
-      role: 'Supervisor',
-      permissions: const <String>['projects:read', 'inventory:read'],
-    );
+    await pumpWithDrawerOpen(tester, role: 'Supervisor');
 
     expect(inDrawer('Panel'), findsOneWidget);
     expect(inDrawer('Proyectos'), findsOneWidget);

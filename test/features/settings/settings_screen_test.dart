@@ -24,7 +24,7 @@ void main() {
   /// para poder comprobar qué se recordó.
   Future<InMemorySecureStore> pumpApp(
     WidgetTester tester, {
-    List<String> permissions = const <String>['*'],
+    String role = 'Administrador',
   }) async {
     tester.view.physicalSize = const Size(1000, 2000);
     tester.view.devicePixelRatio = 1;
@@ -38,8 +38,7 @@ void main() {
           (Ref ref) => ApiClient(
             baseUrl: 'https://api.test',
             httpClient: MockClient(
-              (_) async =>
-                  jsonResponse(loginResponse(permissions: permissions)),
+              (_) async => jsonResponse(loginResponse(role: role)),
             ),
           ),
         ),
@@ -126,10 +125,7 @@ void main() {
     testWidgets('un rol sin gastos no ve esa pestaña', (
       WidgetTester tester,
     ) async {
-      await pumpApp(
-        tester,
-        permissions: const <String>['projects:read', 'dashboard:read'],
-      );
+      await pumpApp(tester, role: 'Supervisor');
 
       final Finder bar = find.byType(AppNavBar);
       expect(

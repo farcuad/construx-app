@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
+import 'package:toastification/toastification.dart';
 
 /// Construye un JWT sin firmar válido para las pruebas (solo se decodifica el
 /// payload; la app nunca verifica la firma, eso lo hace el backend).
@@ -9,7 +11,6 @@ String fakeJwt({
   DateTime? expiresAt,
   String companyId = 'company-1',
   String userId = 'user-1',
-  List<String> permissions = const <String>['*'],
 }) {
   String segment(Map<String, dynamic> data) =>
       base64Url.encode(utf8.encode(jsonEncode(data))).replaceAll('=', '');
@@ -17,7 +18,7 @@ String fakeJwt({
   final DateTime exp =
       expiresAt ?? DateTime.now().toUtc().add(const Duration(hours: 24));
   return '${segment(<String, dynamic>{'alg': 'HS256', 'typ': 'JWT'})}.'
-      '${segment(<String, dynamic>{'user_id': userId, 'company_id': companyId, 'permissions': permissions, 'exp': exp.millisecondsSinceEpoch ~/ 1000})}.'
+      '${segment(<String, dynamic>{'user_id': userId, 'company_id': companyId, 'exp': exp.millisecondsSinceEpoch ~/ 1000})}.'
       'firma-de-prueba';
 }
 
@@ -27,16 +28,15 @@ Map<String, dynamic> loginResponse({
   String name = 'Andrés Pérez',
   String email = 'andres@xyz.com',
   String role = 'Administrador',
-  List<String> permissions = const <String>['*'],
 }) => <String, dynamic>{
   'message': 'Inicio de sesion exitoso',
-  'token': token ?? fakeJwt(permissions: permissions),
+  'token': token ?? fakeJwt(),
+  // Desde el cambio del backend, el cargo es lo único que decide qué se ve.
   'user': <String, dynamic>{
     'id': 'user-1',
     'name': name,
     'email': email,
     'role': role,
-    'permissions': permissions,
   },
 };
 
@@ -129,3 +129,14 @@ http.Response textResponse(String body, {int status = 200}) =>
       status,
       headers: <String, String>{'content-type': 'text/plain'},
     );
+
+/// Cierra los avisos momentáneos que sigan en pantalla.
+///
+/// `toastification` programa un temporizador para cerrar el aviso solo, y si el
+/// test acaba antes de que salte, el binding de Flutter falla por «timer
+/// pendiente». No es un defecto de la app: en el teléfono ese temporizador es
+/// justo lo que hace desaparecer el aviso.
+Future<void> dismissToasts(WidgetTester tester) async {
+  toastification.dismissAll(delayForAnimation: false);
+  await tester.pumpAndSettle();
+}

@@ -136,7 +136,7 @@ class _ProjectFormSheetState extends ConsumerState<_ProjectFormSheet> {
       }
       if (!mounted) return;
       Navigator.of(context).pop();
-      showAppSnackBar(
+      showAppToast(
         context,
         _isEditing
             ? ref.read(stringsProvider).projects.updated

@@ -1,47 +1,37 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mi_app_constructora/features/auth/domain/auth_user.dart';
-import 'package:mi_app_constructora/features/auth/domain/permissions.dart';
 import 'package:mi_app_constructora/features/home/domain/app_module.dart';
 
 void main() {
-  AuthUser user(List<String> permissions) => AuthUser(
-    id: '1',
-    name: 'Test',
-    email: 't@t.com',
-    role: 'Test',
-    permissions: permissions.toSet(),
-  );
+  AuthUser user(String role) =>
+      AuthUser(id: '1', name: 'Test', email: 't@t.com', role: role);
 
   List<String> idsFor(AuthUser u) =>
       modulesFor(u).map((AppModule m) => m.id).toList();
 
   test('el administrador ve todos los módulos', () {
-    expect(
-      modulesFor(user(<String>[Perm.wildcard])),
-      hasLength(kAppModules.length),
-    );
+    expect(modulesFor(user('Administrador')), hasLength(kAppModules.length));
   });
 
-  test('un usuario sin permisos no ve ningún módulo', () {
-    expect(modulesFor(user(<String>[])), isEmpty);
+  test('un cargo que la app no conoce no ve ningún módulo', () {
+    expect(modulesFor(user('Pasante')), isEmpty);
   });
 
-  test('el rol Supervisor ve solo proyectos, inventario y presupuestos', () {
-    final List<String> ids = idsFor(
-      user(<String>[Perm.projectsRead, Perm.inventoryRead, Perm.budgetsRead]),
-    );
+  test('el supervisor ve la obra pero no el dinero', () {
+    final List<String> ids = idsFor(user('Supervisor'));
 
-    expect(ids, containsAll(<String>['projects', 'inventory', 'budgets']));
+    expect(ids, containsAll(<String>['projects', 'inventory', 'attendance']));
     expect(ids, isNot(contains('users')));
     expect(ids, isNot(contains('invoices')));
+    expect(ids, isNot(contains('budgets')));
   });
 
-  test('el rol Almacén ve inventario con solo el permiso de gestión', () {
-    expect(idsFor(user(<String>[Perm.inventoryManage])), contains('inventory'));
+  test('almacén ve inventario porque tiene el permiso de gestión', () {
+    expect(idsFor(user('Almacén')), contains('inventory'));
   });
 
   test('los módulos conservan el orden del catálogo', () {
-    final List<String> ids = idsFor(user(<String>[Perm.wildcard]));
+    final List<String> ids = idsFor(user('Administrador'));
     expect(ids.first, 'projects');
     expect(ids[1], 'clients');
   });

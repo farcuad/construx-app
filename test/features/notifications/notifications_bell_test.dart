@@ -37,7 +37,7 @@ void main() {
   /// Arranca la app con sesión iniciada en el panel.
   Future<List<String>> pumpHome(
     WidgetTester tester, {
-    List<String> permissions = const <String>['*'],
+    String role = 'Administrador',
     List<Map<String, dynamic>> inbox = const <Map<String, dynamic>>[],
     void Function(ProviderContainer container)? onReady,
   }) async {
@@ -53,8 +53,7 @@ void main() {
           (Ref ref) => ApiClient(
             baseUrl: 'https://api.test',
             httpClient: MockClient(
-              (_) async =>
-                  jsonResponse(loginResponse(permissions: permissions)),
+              (_) async => jsonResponse(loginResponse(role: role)),
             ),
           ),
         ),
@@ -221,7 +220,8 @@ void main() {
   ) async {
     final List<String> paths = await pumpHome(
       tester,
-      permissions: const <String>['projects:read', 'dashboard:read'],
+      // Un cargo que la app no conoce no recibe ningún permiso.
+      role: 'Pasante',
     );
 
     expect(find.byType(NotificationsBell), findsOneWidget);

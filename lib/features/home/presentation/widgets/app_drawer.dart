@@ -127,7 +127,11 @@ class _NavTile extends StatelessWidget {
     if (_available) {
       router.go(routePath!);
     } else {
-      showAppSnackBar(navigator.context, '$title: módulo en construcción');
+      showAppToast(
+        navigator.context,
+        '$title: módulo en construcción',
+        kind: ToastKind.info,
+      );
     }
   }
 

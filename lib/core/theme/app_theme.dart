@@ -151,12 +151,6 @@ abstract final class AppTheme {
         backgroundColor: AppColors.orange,
         foregroundColor: Colors.black,
       ),
-      snackBarTheme: const SnackBarThemeData(
-        backgroundColor: AppColors.surfaceHigh,
-        contentTextStyle: TextStyle(color: AppColors.textPrimary),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: borderRadius),
-      ),
       dialogTheme: const DialogThemeData(
         backgroundColor: AppColors.surfaceHigh,
         surfaceTintColor: Colors.transparent,

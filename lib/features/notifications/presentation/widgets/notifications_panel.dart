@@ -304,7 +304,7 @@ class _NoticeTile extends ConsumerWidget {
       ref.invalidate(notificationsInboxProvider);
     } on ApiException catch (error) {
       if (context.mounted) {
-        showAppSnackBar(context, error.message, isError: true);
+        showAppToast(context, error.message, kind: ToastKind.error);
       }
     }
   }

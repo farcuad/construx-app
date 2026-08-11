@@ -42,7 +42,7 @@ void main() {
   /// Arranca la app con el socket y el notificador bajo control.
   Future<(_RecordingNotifier, StreamController<AppNotification>)> pumpApp(
     WidgetTester tester, {
-    List<String> permissions = const <String>['*'],
+    String role = 'Administrador',
   }) async {
     tester.view.physicalSize = const Size(1000, 2000);
     tester.view.devicePixelRatio = 1;
@@ -61,8 +61,7 @@ void main() {
           (Ref ref) => ApiClient(
             baseUrl: 'https://api.test',
             httpClient: MockClient(
-              (_) async =>
-                  jsonResponse(loginResponse(permissions: permissions)),
+              (_) async => jsonResponse(loginResponse(role: role)),
             ),
           ),
         ),
@@ -77,9 +76,7 @@ void main() {
       overrides: <Override>[
         secureStoreProvider.overrideWithValue(store),
         localNotifierProvider.overrideWithValue(notifier),
-        notificationsStreamProvider.overrideWith(
-          (Ref ref) => socket.stream,
-        ),
+        notificationsStreamProvider.overrideWith((Ref ref) => socket.stream),
         apiClientProvider.overrideWith(
           (Ref ref) => ApiClient(
             baseUrl: 'https://api.test',
@@ -122,7 +119,9 @@ void main() {
     final (
       _RecordingNotifier notifier,
       StreamController<AppNotification> socket,
-    ) = await pumpApp(tester);
+    ) = await pumpApp(
+      tester,
+    );
 
     socket.add(aviso);
     await tester.pumpAndSettle();
@@ -138,7 +137,9 @@ void main() {
     final (
       _RecordingNotifier notifier,
       StreamController<AppNotification> socket,
-    ) = await pumpApp(tester);
+    ) = await pumpApp(
+      tester,
+    );
 
     await tester.tap(
       find.descendant(
@@ -164,7 +165,9 @@ void main() {
     final (
       _RecordingNotifier notifier,
       StreamController<AppNotification> socket,
-    ) = await pumpApp(tester);
+    ) = await pumpApp(
+      tester,
+    );
 
     await tester.tap(
       find.descendant(
@@ -188,7 +191,10 @@ void main() {
     final (
       _RecordingNotifier notifier,
       StreamController<AppNotification> socket,
-    ) = await pumpApp(tester, permissions: const <String>['dashboard:read']);
+    ) = await pumpApp(
+      tester,
+      role: 'Pasante',
+    );
 
     socket.add(aviso);
     await tester.pumpAndSettle();

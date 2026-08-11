@@ -161,9 +161,7 @@ void main() {
     addTearDown(probe.controller.close);
 
     final ProviderContainer container = ProviderContainer(
-      overrides: <Override>[
-        connectivityProbeProvider.overrideWithValue(probe),
-      ],
+      overrides: <Override>[connectivityProbeProvider.overrideWithValue(probe)],
     );
     addTearDown(container.dispose);
 

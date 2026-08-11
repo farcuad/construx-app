@@ -6,34 +6,30 @@ import 'package:mi_app_constructora/features/auth/domain/session.dart';
 import '../../helpers/test_helpers.dart';
 
 void main() {
-  AuthUser user(List<String> permissions) => AuthUser(
+  AuthUser user(String role) => AuthUser(
     id: '1',
     name: 'María Gómez',
     email: 'maria@xyz.com',
-    role: 'Ingeniero',
-    permissions: permissions.toSet(),
+    role: role,
   );
 
   group('AuthUser · permisos', () {
-    test('el comodín concede cualquier permiso', () {
-      final AuthUser admin = user(<String>[Perm.wildcard]);
+    test('el administrador lo puede todo por el comodín', () {
+      final AuthUser admin = user('Administrador');
       expect(admin.isAdmin, isTrue);
       expect(admin.can(Perm.invoicesCancel), isTrue);
       expect(admin.can('permiso:inventado'), isTrue);
     });
 
-    test('un rol concreto solo concede sus permisos', () {
-      final AuthUser engineer = user(<String>[
-        Perm.projectsRead,
-        Perm.budgetsRead,
-      ]);
+    test('un cargo concreto solo concede lo suyo', () {
+      final AuthUser engineer = user('Ingeniero');
       expect(engineer.isAdmin, isFalse);
       expect(engineer.can(Perm.projectsRead), isTrue);
       expect(engineer.can(Perm.projectsDelete), isFalse);
     });
 
     test('canAny acepta si tiene al menos uno', () {
-      final AuthUser warehouse = user(<String>[Perm.inventoryManage]);
+      final AuthUser warehouse = user('Almacén');
       expect(
         warehouse.canAny(<String>[Perm.inventoryRead, Perm.inventoryManage]),
         isTrue,
@@ -45,14 +41,11 @@ void main() {
     });
 
     test('canAny con comodín siempre acepta', () {
-      expect(
-        user(<String>[Perm.wildcard]).canAny(<String>[Perm.auditsRead]),
-        isTrue,
-      );
+      expect(user('Administrador').canAny(<String>[Perm.auditsRead]), isTrue);
     });
 
-    test('un usuario sin permisos no puede nada', () {
-      final AuthUser none = user(<String>[]);
+    test('un cargo desconocido no puede nada', () {
+      final AuthUser none = user('Pasante');
       expect(none.can(Perm.projectsRead), isFalse);
       expect(none.canAny(<String>[Perm.projectsRead]), isFalse);
     });
@@ -65,7 +58,6 @@ void main() {
         'name': 'Andrés Pérez',
         'email': 'andres@xyz.com',
         'role': 'Administrador',
-        'permissions': <String>['*'],
       });
 
       expect(parsed.id, 'a1b2');
@@ -79,17 +71,32 @@ void main() {
     });
 
     test('toJson/fromJson es de ida y vuelta', () {
-      final AuthUser original = user(<String>[
-        Perm.projectsRead,
-        Perm.budgetsRead,
-      ]);
+      final AuthUser original = user('Ingeniero');
       expect(AuthUser.fromJson(original.toJson()), original);
+      expect(
+        AuthUser.fromJson(original.toJson()).can(Perm.budgetsRead),
+        isTrue,
+      );
+    });
+
+    test('un permissions que llegue todavía en el JSON se ignora', () {
+      final AuthUser parsed = AuthUser.fromJson(<String, dynamic>{
+        'role': 'Supervisor',
+        'permissions': <String>['*'],
+      });
+
+      expect(
+        parsed.isAdmin,
+        isFalse,
+        reason: 'manda el cargo; si no, bastaría con falsear la respuesta',
+      );
+      expect(parsed.can(Perm.invoicesRead), isFalse);
     });
   });
 
   group('AuthUser · iniciales', () {
     test('toma dos iniciales de nombre y apellido', () {
-      expect(user(<String>[]).initials, 'MG');
+      expect(user('Ingeniero').initials, 'MG');
     });
 
     test('con un solo nombre toma una inicial', () {
@@ -98,7 +105,6 @@ void main() {
         name: 'Andrés',
         email: 'a@b.com',
         role: 'Gerente',
-        permissions: const <String>{},
       );
       expect(single.initials, 'A');
     });
@@ -109,7 +115,6 @@ void main() {
         name: '   ',
         email: 'a@b.com',
         role: '',
-        permissions: const <String>{},
       );
       expect(anon.initials, '?');
     });
@@ -120,7 +125,7 @@ void main() {
       final DateTime exp = DateTime.utc(2026, 12, 31, 10);
       final Session session = Session(
         token: fakeJwt(expiresAt: exp),
-        user: user(<String>[]),
+        user: user('Ingeniero'),
       );
 
       expect(
@@ -135,7 +140,7 @@ void main() {
         token: fakeJwt(
           expiresAt: DateTime.now().toUtc().subtract(const Duration(hours: 1)),
         ),
-        user: user(<String>[]),
+        user: user('Ingeniero'),
       );
       expect(session.isExpired, isTrue);
     });
@@ -145,7 +150,7 @@ void main() {
         token: fakeJwt(
           expiresAt: DateTime.now().toUtc().add(const Duration(seconds: 20)),
         ),
-        user: user(<String>[]),
+        user: user('Ingeniero'),
       );
       expect(session.isExpired, isTrue);
     });
@@ -153,7 +158,7 @@ void main() {
     test('expone el company_id del token', () {
       final Session session = Session(
         token: fakeJwt(companyId: '6f3e-empresa'),
-        user: user(<String>[]),
+        user: user('Ingeniero'),
       );
       expect(session.companyId, '6f3e-empresa');
     });
@@ -161,7 +166,7 @@ void main() {
     test('un token malformado devuelve null en los claims y no expira', () {
       final Session session = Session(
         token: 'esto-no-es-un-jwt',
-        user: user(<String>[]),
+        user: user('Ingeniero'),
       );
       expect(session.expiresAt, isNull);
       expect(session.companyId, isNull);

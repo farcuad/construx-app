@@ -27,7 +27,7 @@ void main() {
   Future<List<String>> pumpModule(
     WidgetTester tester,
     String location, {
-    List<String> permissions = const <String>['*'],
+    String role = 'Administrador',
     http.Response Function(Uri url)? handler,
     bool withProjects = true,
   }) async {
@@ -43,8 +43,7 @@ void main() {
           (Ref ref) => ApiClient(
             baseUrl: 'https://api.test',
             httpClient: MockClient(
-              (_) async =>
-                  jsonResponse(loginResponse(permissions: permissions)),
+              (_) async => jsonResponse(loginResponse(role: role)),
             ),
           ),
         ),
@@ -222,11 +221,7 @@ void main() {
   testWidgets('un rol limitado no ve en el menú lo que no puede abrir', (
     WidgetTester tester,
   ) async {
-    await pumpModule(
-      tester,
-      '/expenses',
-      permissions: const <String>['expenses:read', 'projects:read'],
-    );
+    await pumpModule(tester, '/expenses', role: 'Contabilidad');
 
     await tester.tap(find.byIcon(Icons.menu));
     await tester.pumpAndSettle();

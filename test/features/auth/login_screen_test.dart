@@ -152,6 +152,7 @@ void main() {
       container.read(authControllerProvider).status,
       AuthStatus.authenticated,
     );
+    await dismissToasts(tester);
   });
 
   testWidgets('con «Recordar datos» marcado guarda las credenciales cifradas', (
@@ -172,6 +173,7 @@ void main() {
     expect(store.snapshot[StorageKeys.rememberMe], '1');
     expect(store.snapshot[StorageKeys.rememberedEmail], 'andres@xyz.com');
     expect(store.snapshot[StorageKeys.rememberedPassword], 'claveSegura123');
+    await dismissToasts(tester);
   });
 
   testWidgets('sin «Recordar datos» no guarda credenciales', (
@@ -188,6 +190,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(store.snapshot.containsKey(StorageKeys.rememberedPassword), isFalse);
+    await dismissToasts(tester);
   });
 
   testWidgets('prerrellena el formulario con las credenciales recordadas', (
@@ -263,5 +266,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(calls, 1);
+    await dismissToasts(tester);
   });
 }

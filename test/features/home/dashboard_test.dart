@@ -19,7 +19,6 @@ void main() {
   Future<List<Uri>> pumpDashboard(
     WidgetTester tester, {
     required http.Response Function(Uri url) handler,
-    List<String> permissions = const <String>['*'],
     String role = 'Administrador',
   }) async {
     tester.view.physicalSize = const Size(1000, 1800);
@@ -34,9 +33,7 @@ void main() {
           (Ref ref) => ApiClient(
             baseUrl: 'https://api.test',
             httpClient: MockClient(
-              (_) async => jsonResponse(
-                loginResponse(role: role, permissions: permissions),
-              ),
+              (_) async => jsonResponse(loginResponse(role: role)),
             ),
           ),
         ),
@@ -204,7 +201,6 @@ void main() {
     final List<Uri> requested = await pumpDashboard(
       tester,
       role: 'Supervisor',
-      permissions: const <String>['projects:read'],
       handler: singleProject(),
     );
 

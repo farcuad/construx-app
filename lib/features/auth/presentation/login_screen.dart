@@ -83,7 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!ok || !mounted) return;
     // La navegación la resuelve el `redirect` del router al cambiar el estado
     // de autenticación; aquí solo se confirma al usuario.
-    showAppSnackBar(context, ref.read(stringsProvider).auth.welcomeBack);
+    showAppToast(context, ref.read(stringsProvider).auth.welcomeBack);
   }
 
   @override

@@ -35,6 +35,9 @@ class CompanyRole {
 ///
 /// Es distinto de `AuthUser`: aquel representa *quién* ha iniciado sesión,
 /// este es una fila del listado de administración.
+///
+/// Guarda el cargo pero no una lista de permisos: igual que en la sesión, lo
+/// que puede hacer cada quien se deduce del cargo con `AppRole`.
 @immutable
 class CompanyUser {
   const CompanyUser({
@@ -42,21 +45,18 @@ class CompanyUser {
     required this.name,
     required this.email,
     this.role = '',
-    this.permissions = const <String>[],
   });
 
   final String id;
   final String name;
   final String email;
   final String role;
-  final List<String> permissions;
 
   factory CompanyUser.fromJson(Map<String, dynamic> json) => CompanyUser(
     id: J.str(json['id']),
     name: J.str(json['name']),
     email: J.str(json['email']),
     role: J.str(json['role']),
-    permissions: J.strings(json['permissions']),
   );
 
   @override

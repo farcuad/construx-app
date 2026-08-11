@@ -1,8 +1,14 @@
 import 'package:flutter/foundation.dart';
 
+import 'app_role.dart';
 import 'permissions.dart';
 
 /// Usuario autenticado, tal y como lo devuelve `POST /login`.
+///
+/// El backend manda nombre, correo y cargo; **la lista de permisos ya no
+/// viaja**, se deduce del cargo con [AppRole]. Por eso [permissions] es un
+/// campo calculado y no algo que se reciba o se guarde: así no hay forma de
+/// que la sesión en disco y el cargo se contradigan.
 @immutable
 class AuthUser {
   AuthUser({
@@ -10,14 +16,17 @@ class AuthUser {
     required this.name,
     required this.email,
     required this.role,
-    required Set<String> permissions,
-  }) : permissions = Set<String>.unmodifiable(permissions);
+  }) : kind = AppRole.fromName(role);
 
-  /// Permisos del usuario. Si contiene [Perm.wildcard] puede todo.
+  /// El cargo ya resuelto, o `null` si el backend mandó uno que la app no
+  /// conoce. Se calcula una vez al crear la sesión y no en cada `build`.
+  final AppRole? kind;
+
+  /// Lo que puede hacer este usuario.
   ///
-  /// Se guarda como `Set` para que [can] sea O(1): la comprobación se ejecuta
-  /// en cada `build` que pinta un botón o un módulo.
-  final Set<String> permissions;
+  /// Un cargo desconocido se queda sin nada: es preferible una app vacía —que
+  /// se ve y se reporta— a enseñar de más por no reconocer un nombre.
+  Set<String> get permissions => kind?.permissions ?? const <String>{};
 
   final String id;
   final String name;
@@ -25,7 +34,7 @@ class AuthUser {
   final String role;
 
   /// `true` si el usuario es administrador (permiso comodín).
-  bool get isAdmin => permissions.contains(Perm.wildcard);
+  bool get isAdmin => kind == AppRole.administrador;
 
   /// `true` si el usuario tiene [permission] o el comodín `*`.
   bool can(String permission) =>
@@ -53,14 +62,16 @@ class AuthUser {
     return '$first$second'.toUpperCase();
   }
 
+  /// Lee el usuario de `POST /login`.
+  ///
+  /// Si la respuesta trae todavía un `permissions`, se ignora a propósito: el
+  /// cargo es la única fuente de verdad y mezclarlas solo daría sesiones que se
+  /// comportan distinto según por dónde entraran.
   factory AuthUser.fromJson(Map<String, dynamic> json) => AuthUser(
     id: json['id'] as String? ?? '',
     name: json['name'] as String? ?? '',
     email: json['email'] as String? ?? '',
     role: json['role'] as String? ?? '',
-    permissions: <String>{
-      ...?(json['permissions'] as List<dynamic>?)?.whereType<String>(),
-    },
   );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -68,7 +79,6 @@ class AuthUser {
     'name': name,
     'email': email,
     'role': role,
-    'permissions': permissions.toList(growable: false),
   };
 
   @override
@@ -78,9 +88,8 @@ class AuthUser {
           other.id == id &&
           other.name == name &&
           other.email == email &&
-          other.role == role &&
-          setEquals(other.permissions, permissions);
+          other.role == role;
 
   @override
-  int get hashCode => Object.hash(id, name, email, role, permissions.length);
+  int get hashCode => Object.hash(id, name, email, role);
 }

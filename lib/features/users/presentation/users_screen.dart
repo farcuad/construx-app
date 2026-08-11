@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../core/widgets/data_widgets.dart';
 import '../../auth/application/auth_controller.dart';
+import '../../auth/domain/app_role.dart';
 import '../../auth/domain/auth_user.dart';
 import '../../auth/domain/permissions.dart';
 import '../../home/presentation/widgets/module_scaffold.dart';
@@ -66,7 +67,10 @@ class _UserCard extends ConsumerWidget {
     final UsersStrings strings = all.users;
     final bool canDelete =
         (me?.can(Perm.usersDelete) ?? false) && me?.id != user.id;
-    final bool isAdmin = user.permissions.contains(Perm.wildcard);
+    // El listado ya no trae permisos: se deducen del cargo, igual que en la
+    // sesión, para que la ficha diga lo mismo que ve el usuario al entrar.
+    final AppRole? kind = AppRole.fromName(user.role);
+    final bool isAdmin = kind == AppRole.administrador;
 
     return AppCard(
       child: Row(
@@ -112,7 +116,7 @@ class _UserCard extends ConsumerWidget {
                   icon: Icons.key_outlined,
                   text: isAdmin
                       ? strings.fullAccess
-                      : strings.permissions(user.permissions.length),
+                      : strings.permissions(kind?.permissions.length ?? 0),
                 ),
               ],
             ),
