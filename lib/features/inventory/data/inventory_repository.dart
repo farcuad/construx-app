@@ -62,10 +62,13 @@ class InventoryRepository {
 
   // ── Movimientos y existencias ───────────────────────────────────────────
 
-  /// `POST /inventory/movements` — registra una entrada o salida.
+  /// `POST /warehouses/movements` — registra una entrada o salida.
   Future<StockMovement> registerMovement(StockMovement movement) async =>
       StockMovement.fromJson(
-        await _api.post('/inventory/movements', body: movement.toRequestBody()),
+        await _api.post(
+          '/warehouses/movements',
+          body: movement.toRequestBody(),
+        ),
       );
 
   /// `GET /inventory/stock/{warehouse_id}` — existencias por material.

@@ -57,6 +57,9 @@ void main() {
           ('{a}', (AppStrings s) => s.dashboard.overBudget),
           ('{i}', (AppStrings s) => s.invoices.dates),
           ('{d}', (AppStrings s) => s.invoices.dates),
+          ('{w}', (AppStrings s) => s.inventory.stockOf),
+          ('{a}', (AppStrings s) => s.attendance.ofTotal),
+          ('{b}', (AppStrings s) => s.attendance.ofTotal),
         ];
 
     for (final AppStrings table in tables.values) {

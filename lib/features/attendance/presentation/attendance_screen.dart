@@ -1,25 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/i18n/locale_controller.dart';
 import '../../../core/i18n/sections/site_strings.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/queries.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../core/widgets/data_widgets.dart';
+import '../../auth/application/auth_controller.dart';
+import '../../auth/domain/auth_user.dart';
+import '../../auth/domain/permissions.dart';
 import '../../home/presentation/widgets/module_scaffold.dart';
 import '../../personnel/application/personnel_providers.dart';
 import '../../personnel/domain/personnel_models.dart';
 import '../../progress/presentation/widgets/day_selector.dart';
+import '../../projects/application/project_scope.dart';
 import '../../projects/domain/project.dart';
 import '../../projects/presentation/widgets/project_selector.dart';
 import '../application/attendance_providers.dart';
 import '../domain/attendance_models.dart';
-
-/// Día del que se consulta la lista.
-final StateProvider<DateTime> attendanceDayProvider = StateProvider<DateTime>(
-  (Ref ref) => DateTime.now(),
-);
+import 'attendance_form_sheet.dart';
 
 /// Asistencia de la obra en una fecha (`GET /attendance/{project_id}?date=…`).
 class AttendanceScreen extends ConsumerWidget {
@@ -29,20 +30,52 @@ class AttendanceScreen extends ConsumerWidget {
   static const String routePath = '/attendance';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => ModuleScaffold(
-    title: 'Asistencia',
-    currentPath: routePath,
-    onRefresh: () => ref.invalidate(attendanceProvider),
-    body: ProjectScope(
-      emptyMessage: ref.watch(stringsProvider).attendance.needsProject,
-      builder: (BuildContext context, Project project) => Column(
-        children: <Widget>[
-          DaySelector(dayProvider: attendanceDayProvider),
-          Expanded(child: _Sheet(project: project)),
-        ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AppStrings strings = ref.watch(stringsProvider);
+    final AuthUser? user = ref.watch(currentUserProvider);
+    final Project? project = ref.watch(activeProjectProvider);
+    final DateTime day = ref.watch(attendanceDayProvider);
+
+    // El botón desaparece si ese día ya tiene lista: la jornada se pasa una
+    // vez, y así el supervisor no choca contra un error del backend. Se lee el
+    // mismo provider que pinta el cuerpo, así que no hay petición de más.
+    final bool taken =
+        project != null &&
+        (ref
+                .watch(attendanceProvider(projectDateQuery(project.id, day)))
+                .valueOrNull
+                ?.logs
+                .isNotEmpty ??
+            false);
+    final bool canMark =
+        (user?.can(Perm.attendanceMark) ?? false) && project != null && !taken;
+
+    return ModuleScaffold(
+      title: 'Asistencia',
+      currentPath: routePath,
+      onRefresh: () => ref.invalidate(attendanceProvider),
+      floatingActionButton: canMark
+          ? FloatingActionButton.extended(
+              onPressed: () => showAttendanceFormSheet(
+                context,
+                projectId: project.id,
+                date: day,
+              ),
+              icon: const Icon(Icons.how_to_reg_rounded),
+              label: Text(strings.attendance.formTitle),
+            )
+          : null,
+      body: ProjectScope(
+        emptyMessage: strings.attendance.needsProject,
+        builder: (BuildContext context, Project project) => Column(
+          children: <Widget>[
+            DaySelector(dayProvider: attendanceDayProvider),
+            Expanded(child: _Sheet(project: project)),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _Sheet extends ConsumerWidget {
@@ -86,13 +119,13 @@ class _Sheet extends ConsumerWidget {
           header: _Summary(attendance: data),
           itemBuilder: (BuildContext context, int index) {
             final AttendanceLog log = data.logs[index];
-            final Color color = _statusColor(log.status);
+            final Color color = attendanceStatusColor(log.status);
             return AppCard(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
               child: Row(
                 children: <Widget>[
                   LeadingIcon(
-                    icon: _statusIcon(log.status),
+                    icon: attendanceStatusIcon(log.status),
                     color: color,
                     size: 36,
                   ),
@@ -134,7 +167,7 @@ class _Sheet extends ConsumerWidget {
                       if (log.hoursWorked > 0) ...<Widget>[
                         const SizedBox(height: 4),
                         Text(
-                          '${_hours(log.hoursWorked)} ${strings.hourSuffix}',
+                          '${formatHours(log.hoursWorked)} ${strings.hourSuffix}',
                           style: const TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 11.5,
@@ -188,7 +221,7 @@ class _Summary extends ConsumerWidget {
           Expanded(
             child: LabeledValue(
               label: strings.hoursUpper,
-              value: _hours(attendance.totalHours),
+              value: formatHours(attendance.totalHours),
               alignEnd: true,
             ),
           ),
@@ -198,20 +231,3 @@ class _Summary extends ConsumerWidget {
   }
 }
 
-Color _statusColor(AttendanceStatus status) => switch (status) {
-  AttendanceStatus.present => AppColors.success,
-  AttendanceStatus.late => AppColors.warning,
-  AttendanceStatus.absent => AppColors.danger,
-  AttendanceStatus.justifiedAbsence => AppColors.textSecondary,
-};
-
-IconData _statusIcon(AttendanceStatus status) => switch (status) {
-  AttendanceStatus.present => Icons.check_circle_outline_rounded,
-  AttendanceStatus.late => Icons.schedule_rounded,
-  AttendanceStatus.absent => Icons.cancel_outlined,
-  AttendanceStatus.justifiedAbsence => Icons.event_busy_rounded,
-};
-
-/// Horas sin decimales cuando son enteras: «8 h», no «8.0 h».
-String _hours(double value) =>
-    value % 1 == 0 ? value.toStringAsFixed(0) : value.toStringAsFixed(1);

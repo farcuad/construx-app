@@ -110,8 +110,9 @@ const Set<String> _gerente = <String>{
   Perm.suppliersCreate,
   Perm.suppliersRead,
   Perm.suppliersUpdate,
+  // Gerencia consulta existencias, pero no las mueve: dar de alta materiales,
+  // abrir almacenes y registrar entradas y salidas es trabajo de almacén.
   Perm.inventoryRead,
-  Perm.inventoryManage,
   Perm.equipmentRead,
   Perm.equipmentManage,
   Perm.equipmentAssign,
@@ -159,7 +160,8 @@ const Set<String> _ingeniero = <String>{
   Perm.contractorsRead,
   Perm.scheduleRead,
   Perm.scheduleUpdate,
-  Perm.progressCreate,
+  // Lee y corrige el avance, pero el parte del día lo levanta quien estuvo en
+  // el terreno: el supervisor.
   Perm.progressRead,
   Perm.progressUpdate,
   Perm.photosUpload,

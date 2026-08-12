@@ -10,6 +10,14 @@ final Provider<ProgressRepository> progressRepositoryProvider =
       (Ref ref) => ProgressRepository(ref.watch(apiClientProvider)),
     );
 
+/// Día del reporte que se está consultando —o levantando—.
+///
+/// Vive aquí y no en la pantalla porque el formulario también lo mueve: al
+/// guardar un parte con otra fecha, la pantalla salta a ese día.
+final StateProvider<DateTime> progressDayProvider = StateProvider<DateTime>(
+  (Ref ref) => DateTime.now(),
+);
+
 /// `GET /progress/{project_id}?date=…`. `null` = sin reporte ese día.
 ///
 /// La clave se construye con [projectDateQuery].

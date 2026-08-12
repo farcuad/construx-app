@@ -51,6 +51,62 @@ void main() {
     });
   });
 
+  // Quién puede *escribir* en cada módulo, no solo consultarlo. Se comprueba
+  // cargo por cargo —y no solo el que sí puede— porque el fallo que importa es
+  // el contrario: que a alguien le aparezca un botón que no le toca.
+  group('AuthUser · quién registra', () {
+    const List<String> everyRole = <String>[
+      'Administrador',
+      'Gerente',
+      'Ingeniero',
+      'Supervisor',
+      'Almacén',
+      'Compras',
+      'Contabilidad',
+    ];
+
+    void onlyTheseCan(String permission, Set<String> allowed) {
+      for (final String role in everyRole) {
+        expect(
+          user(role).can(permission),
+          allowed.contains(role),
+          reason: '$role y $permission',
+        );
+      }
+    }
+
+    test('la lista de asistencia la pasa el supervisor', () {
+      onlyTheseCan(Perm.attendanceMark, <String>{
+        'Administrador',
+        'Supervisor',
+      });
+    });
+
+    test('el parte de avance lo levanta el supervisor', () {
+      onlyTheseCan(Perm.progressCreate, <String>{
+        'Administrador',
+        'Supervisor',
+      });
+    });
+
+    test('el inventario lo mueve almacén', () {
+      onlyTheseCan(Perm.inventoryManage, <String>{'Administrador', 'Almacén'});
+    });
+
+    test('gerencia sigue viendo las existencias aunque no las mueva', () {
+      final AuthUser manager = user('Gerente');
+      expect(manager.can(Perm.inventoryRead), isTrue);
+      expect(manager.can(Perm.inventoryManage), isFalse);
+    });
+
+    test('el ingeniero sigue corrigiendo el avance que no levanta', () {
+      final AuthUser engineer = user('Ingeniero');
+      expect(engineer.can(Perm.progressRead), isTrue);
+      expect(engineer.can(Perm.progressUpdate), isTrue);
+      expect(engineer.can(Perm.progressCreate), isFalse);
+    });
+  });
+
   group('AuthUser · serialización', () {
     test('fromJson lee la respuesta de /login', () {
       final AuthUser parsed = AuthUser.fromJson(<String, dynamic>{

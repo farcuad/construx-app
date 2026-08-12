@@ -6,6 +6,7 @@ import 'package:mi_app_constructora/features/expenses/domain/expense.dart';
 import 'package:mi_app_constructora/features/inventory/domain/inventory_models.dart';
 import 'package:mi_app_constructora/features/invoices/domain/invoice_models.dart';
 import 'package:mi_app_constructora/features/personnel/domain/personnel_models.dart';
+import 'package:mi_app_constructora/features/progress/domain/daily_report.dart';
 import 'package:mi_app_constructora/features/purchases/domain/purchase_order.dart';
 import 'package:mi_app_constructora/features/subscriptions/domain/subscription.dart';
 
@@ -137,6 +138,26 @@ void main() {
 
       expect(movement.toRequestBody()['movement_type'], 'OUTPUT');
     });
+
+    test('el movimiento sin referencia no manda la clave vacía', () {
+      const StockMovement movement = StockMovement(
+        id: '',
+        warehouseId: 'c488c692',
+        materialId: 'e0ee05f3',
+        type: MovementType.input,
+        quantity: 2.5,
+        description: 'Entrada por recepción de la OC #104',
+      );
+
+      final Map<String, dynamic> body = movement.toRequestBody();
+      expect(body['warehouse_id'], 'c488c692');
+      expect(body['quantity'], 2.5);
+      expect(
+        body.containsKey('reference_id'),
+        isFalse,
+        reason: 'una entrada sin orden de compra no inventa el campo',
+      );
+    });
   });
 
   group('Asistencia', () {
@@ -176,6 +197,68 @@ void main() {
       );
 
       expect(log.toRequestBody()['status'], 'Justified Absence');
+    });
+
+    test('la jornada entera viaja con la fecha simple y sus marcas', () {
+      final Attendance attendance = Attendance(
+        projectId: '4fe2d832',
+        date: DateTime(2026, 7, 2),
+        logs: const <AttendanceLog>[
+          AttendanceLog(
+            employeeId: '8a00707f',
+            status: AttendanceStatus.late,
+            hoursWorked: 7.5,
+            notes: 'Llegó 30 minutos tarde.',
+          ),
+        ],
+      );
+
+      final Map<String, dynamic> body = attendance.toRequestBody();
+      expect(body['project_id'], '4fe2d832');
+      expect(body['date'], '2026-07-02', reason: 'sin hora, como pide el API');
+
+      final List<Map<String, dynamic>> logs =
+          (body['logs'] as List<dynamic>).cast<Map<String, dynamic>>();
+      expect(logs.single, <String, dynamic>{
+        'employee_id': '8a00707f',
+        'status': 'Late',
+        'hours_worked': 7.5,
+        'notes': 'Llegó 30 minutos tarde.',
+      });
+    });
+  });
+
+  group('Avance de obra', () {
+    test('el parte diario manda report_date en RFC 3339 y sus tareas', () {
+      final DailyReport report = DailyReport(
+        id: '',
+        projectId: '4fe2d832',
+        reportDate: DateTime.utc(2026, 7, 4),
+        weatherCondition: 'Lluvia ligera por la mañana',
+        observations: 'Se avanzó con el vaciado.',
+        entries: const <ProgressEntry>[
+          ProgressEntry(
+            taskId: '475b3a9d',
+            progressPercentage: 45.5,
+            quantityExecuted: 12.5,
+            notes: 'Vaciado de vigas principales.',
+          ),
+          ProgressEntry(taskId: '268f85f6', progressPercentage: 100),
+        ],
+      );
+
+      final Map<String, dynamic> body = report.toRequestBody();
+      expect(body['report_date'], '2026-07-04T00:00:00Z');
+      expect(body['weather_condition'], 'Lluvia ligera por la mañana');
+
+      final List<Map<String, dynamic>> entries =
+          (body['progress_entries'] as List<dynamic>)
+              .cast<Map<String, dynamic>>();
+      expect(entries.length, 2);
+      expect(entries.first['task_id'], '475b3a9d');
+      expect(entries.first['progress_percentage'], 45.5);
+      expect(entries.first['quantity_executed'], 12.5);
+      expect(entries.last['notes'], '', reason: 'sin nota va vacía, no nula');
     });
   });
 

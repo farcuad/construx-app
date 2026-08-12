@@ -103,7 +103,7 @@ enum MovementType {
       raw == output.apiValue ? output : input;
 }
 
-/// Movimiento de existencias (`POST /inventory/movements`).
+/// Movimiento de existencias (`POST /warehouses/movements`).
 @immutable
 class StockMovement {
   const StockMovement({

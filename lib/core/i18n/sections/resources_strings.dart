@@ -7,8 +7,9 @@ import 'common_strings.dart';
 @immutable
 class InventoryStrings {
   const InventoryStrings({
-    required this.tabStock,
+    required this.tabWarehouses,
     required this.tabMaterials,
+    required this.stockTitle,
     required this.warehousesError,
     required this.noWarehousesTitle,
     required this.noWarehousesMessage,
@@ -19,10 +20,41 @@ class InventoryStrings {
     required this.materialsError,
     required this.noMaterialsTitle,
     required this.noMaterialsMessage,
+    required this.viewStock,
+    required this.stockOf,
+    required this.newWarehouse,
+    required this.warehouseName,
+    required this.warehouseNameRequired,
+    required this.warehouseSubmit,
+    required this.warehouseCreated,
+    required this.projectsError,
+    required this.projectRequired,
+    required this.newMaterial,
+    required this.materialName,
+    required this.materialNameRequired,
+    required this.materialCode,
+    required this.materialCodeRequired,
+    required this.materialUnit,
+    required this.materialUnitRequired,
+    required this.materialSubmit,
+    required this.materialCreated,
+    required this.movementTitle,
+    required this.movementSubmit,
+    required this.movementCreated,
+    required this.movementTypeLabel,
+    required this.movements,
+    required this.materialLabel,
+    required this.materialRequired,
+    required this.referenceOptional,
+    required this.noMaterialsForMovement,
   });
 
-  final String tabStock;
+  final String tabWarehouses;
   final String tabMaterials;
+
+  /// Rótulo de las existencias, usado como título de la hoja del ojo.
+  final String stockTitle;
+
   final String warehousesError;
   final String noWarehousesTitle;
   final String noWarehousesMessage;
@@ -34,8 +66,53 @@ class InventoryStrings {
   final String noMaterialsTitle;
   final String noMaterialsMessage;
 
+  // ── Existencias de un almacén ─────────────────────────────────────────
+  final String viewStock;
+
+  /// Título de la hoja de existencias: `{w}` es el almacén.
+  final String stockOf;
+
+  // ── Alta de almacén ───────────────────────────────────────────────────
+  final String newWarehouse;
+  final String warehouseName;
+  final String warehouseNameRequired;
+  final String warehouseSubmit;
+  final String warehouseCreated;
+  final String projectsError;
+  final String projectRequired;
+
+  // ── Alta de material ──────────────────────────────────────────────────
+  final String newMaterial;
+  final String materialName;
+  final String materialNameRequired;
+  final String materialCode;
+  final String materialCodeRequired;
+  final String materialUnit;
+  final String materialUnitRequired;
+  final String materialSubmit;
+  final String materialCreated;
+
+  // ── Movimiento de existencias ─────────────────────────────────────────
+  final String movementTitle;
+  final String movementSubmit;
+  final String movementCreated;
+  final String movementTypeLabel;
+
+  /// Sentidos del movimiento, indexados por el valor exacto de la API
+  /// (`INPUT`, `OUTPUT`), igual que los estados de asistencia.
+  final Map<String, String> movements;
+
+  final String materialLabel;
+  final String materialRequired;
+  final String referenceOptional;
+  final String noMaterialsForMovement;
+
   String emptyWarehouseFor(String warehouse) =>
       fill(emptyWarehouseMessage, <String, String>{'w': warehouse});
+  String stockTitleFor(String warehouse) =>
+      fill(stockOf, <String, String>{'w': warehouse});
+  String movement(String apiValue, String fallback) =>
+      movements[apiValue] ?? fallback;
 }
 
 @immutable
@@ -147,8 +224,9 @@ class DocumentsStrings {
 // ─────────────────────────────── español ────────────────────────────────
 
 const InventoryStrings kInventoryEs = InventoryStrings(
-  tabStock: 'Existencias',
+  tabWarehouses: 'Almacenes',
   tabMaterials: 'Materiales',
+  stockTitle: 'Existencias',
   warehousesError: 'No se pudieron cargar los almacenes.',
   noWarehousesTitle: 'Sin almacenes',
   noWarehousesMessage: 'Crea un almacén para poder controlar existencias.',
@@ -159,6 +237,34 @@ const InventoryStrings kInventoryEs = InventoryStrings(
   materialsError: 'No se pudieron cargar los materiales.',
   noMaterialsTitle: 'Sin materiales',
   noMaterialsMessage: 'El catálogo de materiales está vacío.',
+  viewStock: 'Ver materiales',
+  stockOf: 'Existencias · {w}',
+  newWarehouse: 'Nuevo almacén',
+  warehouseName: 'Nombre del almacén',
+  warehouseNameRequired: 'Ponle nombre al almacén',
+  warehouseSubmit: 'Crear almacén',
+  warehouseCreated: 'Almacén creado',
+  projectsError: 'No se pudieron cargar las obras.',
+  projectRequired: 'Elige la obra del almacén',
+  newMaterial: 'Nuevo material',
+  materialName: 'Nombre del material',
+  materialNameRequired: 'Ponle nombre al material',
+  materialCode: 'Código',
+  materialCodeRequired: 'Ingresa el código',
+  materialUnit: 'Unidad de medida',
+  materialUnitRequired: 'Indica la unidad (saco, m³, tonelada…)',
+  materialSubmit: 'Crear material',
+  materialCreated: 'Material creado',
+  movementTitle: 'Movimiento de existencias',
+  movementSubmit: 'Registrar movimiento',
+  movementCreated: 'Movimiento registrado',
+  movementTypeLabel: 'Tipo de movimiento',
+  movements: <String, String>{'INPUT': 'Entrada', 'OUTPUT': 'Salida'},
+  materialLabel: 'Material',
+  materialRequired: 'Elige un material',
+  referenceOptional: 'Documento de referencia (opcional)',
+  noMaterialsForMovement:
+      'Primero da de alta un material en el catálogo para poder moverlo.',
 );
 
 const EquipmentStrings kEquipmentEs = EquipmentStrings(
@@ -210,8 +316,9 @@ const DocumentsStrings kDocumentsEs = DocumentsStrings(
 // ────────────────────────────── português ───────────────────────────────
 
 const InventoryStrings kInventoryPt = InventoryStrings(
-  tabStock: 'Estoque',
+  tabWarehouses: 'Depósitos',
   tabMaterials: 'Materiais',
+  stockTitle: 'Estoque',
   warehousesError: 'Não foi possível carregar os depósitos.',
   noWarehousesTitle: 'Sem depósitos',
   noWarehousesMessage: 'Crie um depósito para poder controlar o estoque.',
@@ -222,6 +329,34 @@ const InventoryStrings kInventoryPt = InventoryStrings(
   materialsError: 'Não foi possível carregar os materiais.',
   noMaterialsTitle: 'Sem materiais',
   noMaterialsMessage: 'O catálogo de materiais está vazio.',
+  viewStock: 'Ver materiais',
+  stockOf: 'Estoque · {w}',
+  newWarehouse: 'Novo depósito',
+  warehouseName: 'Nome do depósito',
+  warehouseNameRequired: 'Dê um nome ao depósito',
+  warehouseSubmit: 'Criar depósito',
+  warehouseCreated: 'Depósito criado',
+  projectsError: 'Não foi possível carregar as obras.',
+  projectRequired: 'Escolha a obra do depósito',
+  newMaterial: 'Novo material',
+  materialName: 'Nome do material',
+  materialNameRequired: 'Dê um nome ao material',
+  materialCode: 'Código',
+  materialCodeRequired: 'Digite o código',
+  materialUnit: 'Unidade de medida',
+  materialUnitRequired: 'Indique a unidade (saco, m³, tonelada…)',
+  materialSubmit: 'Criar material',
+  materialCreated: 'Material criado',
+  movementTitle: 'Movimentação de estoque',
+  movementSubmit: 'Registrar movimentação',
+  movementCreated: 'Movimentação registrada',
+  movementTypeLabel: 'Tipo de movimentação',
+  movements: <String, String>{'INPUT': 'Entrada', 'OUTPUT': 'Saída'},
+  materialLabel: 'Material',
+  materialRequired: 'Escolha um material',
+  referenceOptional: 'Documento de referência (opcional)',
+  noMaterialsForMovement:
+      'Cadastre primeiro um material no catálogo para poder movimentá-lo.',
 );
 
 const EquipmentStrings kEquipmentPt = EquipmentStrings(
@@ -273,8 +408,9 @@ const DocumentsStrings kDocumentsPt = DocumentsStrings(
 // ─────────────────────────────── english ────────────────────────────────
 
 const InventoryStrings kInventoryEn = InventoryStrings(
-  tabStock: 'Stock',
+  tabWarehouses: 'Warehouses',
   tabMaterials: 'Materials',
+  stockTitle: 'Stock',
   warehousesError: 'Warehouses could not be loaded.',
   noWarehousesTitle: 'No warehouses',
   noWarehousesMessage: 'Create a warehouse to start tracking stock.',
@@ -285,6 +421,34 @@ const InventoryStrings kInventoryEn = InventoryStrings(
   materialsError: 'Materials could not be loaded.',
   noMaterialsTitle: 'No materials',
   noMaterialsMessage: 'The material catalogue is empty.',
+  viewStock: 'View materials',
+  stockOf: 'Stock · {w}',
+  newWarehouse: 'New warehouse',
+  warehouseName: 'Warehouse name',
+  warehouseNameRequired: 'Name the warehouse',
+  warehouseSubmit: 'Create warehouse',
+  warehouseCreated: 'Warehouse created',
+  projectsError: 'Sites could not be loaded.',
+  projectRequired: 'Pick the warehouse’s site',
+  newMaterial: 'New material',
+  materialName: 'Material name',
+  materialNameRequired: 'Name the material',
+  materialCode: 'Code',
+  materialCodeRequired: 'Enter the code',
+  materialUnit: 'Unit of measure',
+  materialUnitRequired: 'State the unit (bag, m³, tonne…)',
+  materialSubmit: 'Create material',
+  materialCreated: 'Material created',
+  movementTitle: 'Stock movement',
+  movementSubmit: 'Record movement',
+  movementCreated: 'Movement recorded',
+  movementTypeLabel: 'Movement type',
+  movements: <String, String>{'INPUT': 'In', 'OUTPUT': 'Out'},
+  materialLabel: 'Material',
+  materialRequired: 'Pick a material',
+  referenceOptional: 'Reference document (optional)',
+  noMaterialsForMovement:
+      'Add a material to the catalogue first so there is something to move.',
 );
 
 const EquipmentStrings kEquipmentEn = EquipmentStrings(

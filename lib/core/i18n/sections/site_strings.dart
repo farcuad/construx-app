@@ -51,6 +51,21 @@ class ProgressStrings {
     required this.reportOfDayUpper,
     required this.unnamedTask,
     required this.executed,
+    required this.formTitle,
+    required this.submit,
+    required this.created,
+    required this.weather,
+    required this.observations,
+    required this.tasksTitle,
+    required this.addTask,
+    required this.removeTask,
+    required this.tasksError,
+    required this.noTasksTitle,
+    required this.noTasksMessage,
+    required this.allTasksAdded,
+    required this.needsEntries,
+    required this.percentLabel,
+    required this.percentInvalid,
   });
 
   final String needsProject;
@@ -62,6 +77,23 @@ class ProgressStrings {
 
   /// Cantidad ejecutada: `{q}`.
   final String executed;
+
+  // ── Formulario del parte diario ───────────────────────────────────────
+  final String formTitle;
+  final String submit;
+  final String created;
+  final String weather;
+  final String observations;
+  final String tasksTitle;
+  final String addTask;
+  final String removeTask;
+  final String tasksError;
+  final String noTasksTitle;
+  final String noTasksMessage;
+  final String allTasksAdded;
+  final String needsEntries;
+  final String percentLabel;
+  final String percentInvalid;
 
   String executedOf(String quantity) =>
       fill(executed, <String, String>{'q': quantity});
@@ -81,6 +113,15 @@ class AttendanceStrings {
     required this.hourSuffix,
     required this.unnamedEmployee,
     required this.statuses,
+    required this.formTitle,
+    required this.submit,
+    required this.created,
+    required this.shiftHours,
+    required this.employeesError,
+    required this.noEmployeesTitle,
+    required this.noEmployeesMessage,
+    required this.adjustTitle,
+    required this.hoursLabel,
   });
 
   final String needsProject;
@@ -98,6 +139,20 @@ class AttendanceStrings {
   final String hourSuffix;
 
   final String unnamedEmployee;
+
+  // ── Formulario de la lista ────────────────────────────────────────────
+  final String formTitle;
+  final String submit;
+  final String created;
+
+  /// Horas que se dan por defecto a quien vino a trabajar.
+  final String shiftHours;
+
+  final String employeesError;
+  final String noEmployeesTitle;
+  final String noEmployeesMessage;
+  final String adjustTitle;
+  final String hoursLabel;
 
   /// Estados de asistencia, indexados por el valor exacto de la API
   /// (`Present`, `Absent`, `Late`, `Justified Absence`). Se indexa por ahí y no
@@ -215,6 +270,22 @@ const ProgressStrings kProgressEs = ProgressStrings(
   reportOfDayUpper: 'REPORTE DEL DÍA',
   unnamedTask: 'Tarea',
   executed: 'Ejecutado: {q}',
+  formTitle: 'Reporte del día',
+  submit: 'Guardar reporte',
+  created: 'Reporte guardado',
+  weather: 'Clima de la jornada',
+  observations: 'Observaciones',
+  tasksTitle: 'Avance por tarea',
+  addTask: 'Añadir tarea',
+  removeTask: 'Quitar del reporte',
+  tasksError: 'No se pudo cargar el cronograma.',
+  noTasksTitle: 'Sin tareas que reportar',
+  noTasksMessage: 'Esta obra no tiene cronograma. Planifícalo antes de '
+      'reportar avance.',
+  allTasksAdded: 'Ya añadiste todas las tareas del cronograma.',
+  needsEntries: 'Añade al menos una tarea al reporte.',
+  percentLabel: 'Avance (%)',
+  percentInvalid: 'El avance va de 0 a 100.',
 );
 
 const AttendanceStrings kAttendanceEs = AttendanceStrings(
@@ -234,6 +305,15 @@ const AttendanceStrings kAttendanceEs = AttendanceStrings(
     'Late': 'Tarde',
     'Justified Absence': 'Falta justificada',
   },
+  formTitle: 'Pasar lista',
+  submit: 'Guardar lista',
+  created: 'Lista guardada',
+  shiftHours: 'Horas de jornada',
+  employeesError: 'No se pudo cargar la plantilla.',
+  noEmployeesTitle: 'Sin trabajadores',
+  noEmployeesMessage: 'Da de alta la plantilla antes de pasar lista.',
+  adjustTitle: 'Ajustar marca',
+  hoursLabel: 'Horas trabajadas',
 );
 
 const PhotosStrings kPhotosEs = PhotosStrings(
@@ -294,6 +374,22 @@ const ProgressStrings kProgressPt = ProgressStrings(
   reportOfDayUpper: 'RELATÓRIO DO DIA',
   unnamedTask: 'Tarefa',
   executed: 'Executado: {q}',
+  formTitle: 'Relatório do dia',
+  submit: 'Salvar relatório',
+  created: 'Relatório salvo',
+  weather: 'Clima da jornada',
+  observations: 'Observações',
+  tasksTitle: 'Andamento por tarefa',
+  addTask: 'Adicionar tarefa',
+  removeTask: 'Tirar do relatório',
+  tasksError: 'Não foi possível carregar o cronograma.',
+  noTasksTitle: 'Sem tarefas para reportar',
+  noTasksMessage: 'Esta obra não tem cronograma. Planeje-o antes de reportar '
+      'andamento.',
+  allTasksAdded: 'Você já adicionou todas as tarefas do cronograma.',
+  needsEntries: 'Adicione pelo menos uma tarefa ao relatório.',
+  percentLabel: 'Andamento (%)',
+  percentInvalid: 'O andamento vai de 0 a 100.',
 );
 
 const AttendanceStrings kAttendancePt = AttendanceStrings(
@@ -313,6 +409,15 @@ const AttendanceStrings kAttendancePt = AttendanceStrings(
     'Late': 'Atrasado',
     'Justified Absence': 'Falta justificada',
   },
+  formTitle: 'Fazer a chamada',
+  submit: 'Salvar chamada',
+  created: 'Chamada salva',
+  shiftHours: 'Horas da jornada',
+  employeesError: 'Não foi possível carregar o quadro de pessoal.',
+  noEmployeesTitle: 'Sem trabalhadores',
+  noEmployeesMessage: 'Cadastre o quadro de pessoal antes de fazer a chamada.',
+  adjustTitle: 'Ajustar marcação',
+  hoursLabel: 'Horas trabalhadas',
 );
 
 const PhotosStrings kPhotosPt = PhotosStrings(
@@ -372,6 +477,22 @@ const ProgressStrings kProgressEn = ProgressStrings(
   reportOfDayUpper: 'DAILY REPORT',
   unnamedTask: 'Task',
   executed: 'Completed: {q}',
+  formTitle: 'Daily report',
+  submit: 'Save report',
+  created: 'Report saved',
+  weather: 'Weather on site',
+  observations: 'Observations',
+  tasksTitle: 'Progress per task',
+  addTask: 'Add task',
+  removeTask: 'Remove from report',
+  tasksError: 'The schedule could not be loaded.',
+  noTasksTitle: 'No tasks to report on',
+  noTasksMessage: 'This site has no schedule. Plan it before reporting '
+      'progress.',
+  allTasksAdded: 'Every task in the schedule is already in the report.',
+  needsEntries: 'Add at least one task to the report.',
+  percentLabel: 'Progress (%)',
+  percentInvalid: 'Progress runs from 0 to 100.',
 );
 
 const AttendanceStrings kAttendanceEn = AttendanceStrings(
@@ -391,6 +512,15 @@ const AttendanceStrings kAttendanceEn = AttendanceStrings(
     'Late': 'Late',
     'Justified Absence': 'Excused absence',
   },
+  formTitle: 'Take attendance',
+  submit: 'Save roll call',
+  created: 'Roll call saved',
+  shiftHours: 'Shift hours',
+  employeesError: 'The staff list could not be loaded.',
+  noEmployeesTitle: 'No workers',
+  noEmployeesMessage: 'Add your staff before taking attendance.',
+  adjustTitle: 'Adjust entry',
+  hoursLabel: 'Hours worked',
 );
 
 const PhotosStrings kPhotosEn = PhotosStrings(

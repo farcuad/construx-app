@@ -412,7 +412,7 @@ void main() {
     ),
     (
       method: 'POST',
-      path: '/inventory/movements',
+      path: '/warehouses/movements',
       response: emptyObject,
       call: (ApiClient api) =>
           InventoryRepository(api).registerMovement(movement),

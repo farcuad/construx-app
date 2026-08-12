@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/i18n/app_strings.dart';
 import '../../../core/i18n/locale_controller.dart';
 import '../../../core/i18n/sections/site_strings.dart';
 import '../../../core/theme/app_colors.dart';
@@ -8,19 +9,19 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/utils/queries.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../core/widgets/data_widgets.dart';
+import '../../auth/application/auth_controller.dart';
+import '../../auth/domain/auth_user.dart';
+import '../../auth/domain/permissions.dart';
 import '../../home/presentation/widgets/module_scaffold.dart';
+import '../../projects/application/project_scope.dart';
 import '../../projects/domain/project.dart';
 import '../../projects/presentation/widgets/project_selector.dart';
 import '../../schedule/application/schedule_providers.dart';
 import '../../schedule/domain/schedule_task.dart';
 import '../application/progress_providers.dart';
 import '../domain/daily_report.dart';
+import 'progress_form_sheet.dart';
 import 'widgets/day_selector.dart';
-
-/// Día del reporte que se está consultando.
-final StateProvider<DateTime> progressDayProvider = StateProvider<DateTime>(
-  (Ref ref) => DateTime.now(),
-);
 
 /// Reporte diario de avance (`GET /progress/{project_id}?date=…`).
 class ProgressScreen extends ConsumerWidget {
@@ -30,20 +31,51 @@ class ProgressScreen extends ConsumerWidget {
   static const String routePath = '/progress';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => ModuleScaffold(
-    title: 'Avance de obra',
-    currentPath: routePath,
-    onRefresh: () => ref.invalidate(dailyReportProvider),
-    body: ProjectScope(
-      emptyMessage: ref.watch(stringsProvider).progress.needsProject,
-      builder: (BuildContext context, Project project) => Column(
-        children: <Widget>[
-          DaySelector(dayProvider: progressDayProvider),
-          Expanded(child: _Report(project: project)),
-        ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AppStrings strings = ref.watch(stringsProvider);
+    final AuthUser? user = ref.watch(currentUserProvider);
+    final Project? project = ref.watch(activeProjectProvider);
+    final DateTime day = ref.watch(progressDayProvider);
+
+    // Un día tiene un parte y solo uno: si ya está levantado, el botón sobra.
+    // Es el mismo provider que pinta el cuerpo, así que no hay petición extra.
+    final bool reported =
+        project != null &&
+        ref
+                .watch(dailyReportProvider(projectDateQuery(project.id, day)))
+                .valueOrNull !=
+            null;
+    final bool canCreate =
+        (user?.can(Perm.progressCreate) ?? false) &&
+        project != null &&
+        !reported;
+
+    return ModuleScaffold(
+      title: 'Avance de obra',
+      currentPath: routePath,
+      onRefresh: () => ref.invalidate(dailyReportProvider),
+      floatingActionButton: canCreate
+          ? FloatingActionButton.extended(
+              onPressed: () => showProgressFormSheet(
+                context,
+                projectId: project.id,
+                date: day,
+              ),
+              icon: const Icon(Icons.add_rounded),
+              label: Text(strings.progress.formTitle),
+            )
+          : null,
+      body: ProjectScope(
+        emptyMessage: strings.progress.needsProject,
+        builder: (BuildContext context, Project project) => Column(
+          children: <Widget>[
+            DaySelector(dayProvider: progressDayProvider),
+            Expanded(child: _Report(project: project)),
+          ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _Report extends ConsumerWidget {
