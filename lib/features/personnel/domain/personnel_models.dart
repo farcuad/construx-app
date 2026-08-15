@@ -98,6 +98,16 @@ abstract final class ContractType {
   static const String indefinite = 'Indefinite';
   static const String fixed = 'Fixed';
   static const String perProject = 'Per Project';
+
+  /// Nombre interno por si la traducción no conoce el tipo.
+  static String labelFor(String apiValue) => switch (apiValue) {
+    perProject => 'Per Project',
+    fixed => 'Fixed',
+    _ => 'Indefinite',
+  };
+
+  /// Todos los valores, en el orden en que se muestran.
+  static List<String> get values => <String>[indefinite, fixed, perProject];
 }
 
 /// Contrato laboral de un empleado en un proyecto (`/contracts`).

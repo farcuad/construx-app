@@ -6,10 +6,8 @@ import '../../features/attendance/presentation/attendance_screen.dart';
 import '../../features/audits/presentation/audits_screen.dart';
 import '../../features/auth/application/auth_controller.dart';
 import '../../features/auth/presentation/login_screen.dart';
-import '../../features/budgets/presentation/budgets_screen.dart';
 import '../../features/clients/presentation/clients_screen.dart';
 import '../../features/contractors/presentation/contractors_screen.dart';
-import '../../features/documents/presentation/documents_screen.dart';
 import '../../features/equipment/presentation/equipment_screen.dart';
 import '../../features/expenses/presentation/expenses_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
@@ -20,7 +18,6 @@ import '../../features/photos/presentation/photos_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
 import '../../features/projects/presentation/project_detail_screen.dart';
 import '../../features/projects/presentation/projects_screen.dart';
-import '../../features/purchases/presentation/purchases_screen.dart';
 import '../../features/schedule/presentation/schedule_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/settings/presentation/terms_screen.dart';
@@ -76,16 +73,10 @@ GoRoute _module(String path, String name, Widget Function() build) => GoRoute(
 
 /// Los módulos del ERP, en el mismo orden que el menú lateral.
 final List<GoRoute> _moduleRoutes = <GoRoute>[
-  _module(BudgetsScreen.routePath, BudgetsScreen.routeName, BudgetsScreen.new),
   _module(
     ExpensesScreen.routePath,
     ExpensesScreen.routeName,
     ExpensesScreen.new,
-  ),
-  _module(
-    PurchasesScreen.routePath,
-    PurchasesScreen.routeName,
-    PurchasesScreen.new,
   ),
   _module(
     SuppliersScreen.routePath,
@@ -132,11 +123,6 @@ final List<GoRoute> _moduleRoutes = <GoRoute>[
     InvoicesScreen.routePath,
     InvoicesScreen.routeName,
     InvoicesScreen.new,
-  ),
-  _module(
-    DocumentsScreen.routePath,
-    DocumentsScreen.routeName,
-    DocumentsScreen.new,
   ),
   _module(UsersScreen.routePath, UsersScreen.routeName, UsersScreen.new),
   _module(AuditsScreen.routePath, AuditsScreen.routeName, AuditsScreen.new),

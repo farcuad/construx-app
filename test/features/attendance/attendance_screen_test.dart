@@ -125,14 +125,15 @@ void main() {
     expect(find.text('Pasar lista'), findsNothing);
   });
 
-  testWidgets('si el día ya tiene lista, el botón no aparece', (
+  testWidgets('si el día ya tiene lista, el botón sigue disponible', (
     WidgetTester tester,
   ) async {
     await pumpAttendance(tester, role: 'Supervisor', alreadyTaken: true);
     expect(
       find.text('Pasar lista'),
-      findsNothing,
-      reason: 'la jornada se pasa una vez, no dos',
+      findsOneWidget,
+      reason: 'se puede volver a pasar lista y añadir entradas aunque el '
+          'día ya tenga registros',
     );
   });
 

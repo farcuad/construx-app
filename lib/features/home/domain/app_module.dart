@@ -57,25 +57,11 @@ const List<AppModule> kAppModules = <AppModule>[
     routePath: '/clients',
   ),
   AppModule(
-    id: 'budgets',
-    title: 'Presupuestos',
-    icon: Icons.request_quote_rounded,
-    requiredPermissions: <String>[Perm.budgetsRead],
-    routePath: '/budgets',
-  ),
-  AppModule(
     id: 'expenses',
     title: 'Gastos',
     icon: Icons.payments_rounded,
     requiredPermissions: <String>[Perm.expensesRead],
     routePath: '/expenses',
-  ),
-  AppModule(
-    id: 'purchases',
-    title: 'Órdenes de compra',
-    icon: Icons.shopping_cart_checkout_rounded,
-    requiredPermissions: <String>[Perm.purchasesRead],
-    routePath: '/purchases',
   ),
   AppModule(
     id: 'suppliers',
@@ -146,13 +132,6 @@ const List<AppModule> kAppModules = <AppModule>[
     icon: Icons.receipt_long_rounded,
     requiredPermissions: <String>[Perm.invoicesRead],
     routePath: '/invoices',
-  ),
-  AppModule(
-    id: 'documents',
-    title: 'Documentos',
-    icon: Icons.folder_copy_rounded,
-    requiredPermissions: <String>[Perm.documentsRead],
-    routePath: '/documents',
   ),
   AppModule(
     id: 'users',

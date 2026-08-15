@@ -8,43 +8,93 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../core/widgets/data_widgets.dart';
+import '../../auth/application/auth_controller.dart';
+import '../../auth/domain/auth_user.dart';
+import '../../auth/domain/permissions.dart';
 import '../../home/presentation/widgets/module_scaffold.dart';
+import '../../projects/application/project_scope.dart';
 import '../../projects/domain/project.dart';
 import '../../projects/presentation/widgets/project_selector.dart';
 import '../application/personnel_providers.dart';
 import '../domain/personnel_models.dart';
+import 'contract_form_sheet.dart';
+import 'employee_form_sheet.dart';
+import 'position_form_sheet.dart';
 
 /// Personal de la empresa: empleados, cargos y contratos laborales por obra.
-class PersonnelScreen extends ConsumerWidget {
+class PersonnelScreen extends ConsumerStatefulWidget {
   const PersonnelScreen({super.key});
 
   static const String routeName = 'personnel';
   static const String routePath = '/personnel';
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final PersonnelStrings strings = ref.watch(stringsProvider).personnel;
+  ConsumerState<PersonnelScreen> createState() => _PersonnelScreenState();
+}
 
-    return DefaultTabController(
-      length: 3,
-      child: ModuleScaffold(
-        title: 'Personal',
-        currentPath: routePath,
-        onRefresh: () {
-          ref.invalidate(employeesProvider);
-          ref.invalidate(positionsProvider);
-          ref.invalidate(projectContractsProvider);
-        },
-        bottom: TabBar(
-          tabs: <Widget>[
-            Tab(text: strings.tabEmployees),
-            Tab(text: strings.tabPositions),
-            Tab(text: strings.tabContracts),
-          ],
-        ),
-        body: const TabBarView(
-          children: <Widget>[_EmployeesTab(), _PositionsTab(), _ContractsTab()],
-        ),
+class _PersonnelScreenState extends ConsumerState<PersonnelScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabs = TabController(length: 3, vsync: this);
+
+  @override
+  void dispose() {
+    _tabs.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final PersonnelStrings strings = ref.watch(stringsProvider).personnel;
+    final AuthUser? user = ref.watch(currentUserProvider);
+    final bool canManage = user?.can(Perm.personnelManage) ?? false;
+    final Project? project = ref.watch(activeProjectProvider);
+
+    return ModuleScaffold(
+      title: 'Personal',
+      currentPath: PersonnelScreen.routePath,
+      onRefresh: () {
+        ref.invalidate(employeesProvider);
+        ref.invalidate(positionsProvider);
+        ref.invalidate(projectContractsProvider);
+      },
+      bottom: TabBar(
+        controller: _tabs,
+        tabs: <Widget>[
+          Tab(text: strings.tabEmployees),
+          Tab(text: strings.tabPositions),
+          Tab(text: strings.tabContracts),
+        ],
+      ),
+      floatingActionButton: canManage
+          ? ListenableBuilder(
+              listenable: _tabs.animation!,
+              builder: (BuildContext context, Widget? _) {
+                final int tabIndex = _tabs.index;
+                final todo = switch (tabIndex) {
+                  0 => (label: strings.newEmployee, onPressed: () => showEmployeeFormSheet(context)),
+                  1 => (label: strings.newPosition, onPressed: () => showPositionFormSheet(context)),
+                  _ => (
+                    label: strings.newContract,
+                    onPressed: project == null
+                        ? null
+                        : () => showContractFormSheet(context, projectId: project.id),
+                  ),
+                };
+                return FloatingActionButton.extended(
+                  onPressed: todo.onPressed,
+                  icon: const Icon(Icons.add_rounded),
+                  label: Text(todo.label),
+                );
+              },
+            )
+          : null,
+      body: TabBarView(
+        controller: _tabs,
+        children: const <Widget>[
+          _EmployeesTab(),
+          _PositionsTab(),
+          _ContractsTab(),
+        ],
       ),
     );
   }

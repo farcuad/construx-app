@@ -36,19 +36,10 @@ class AttendanceScreen extends ConsumerWidget {
     final Project? project = ref.watch(activeProjectProvider);
     final DateTime day = ref.watch(attendanceDayProvider);
 
-    // El botón desaparece si ese día ya tiene lista: la jornada se pasa una
-    // vez, y así el supervisor no choca contra un error del backend. Se lee el
-    // mismo provider que pinta el cuerpo, así que no hay petición de más.
-    final bool taken =
-        project != null &&
-        (ref
-                .watch(attendanceProvider(projectDateQuery(project.id, day)))
-                .valueOrNull
-                ?.logs
-                .isNotEmpty ??
-            false);
+    // Se puede volver a pasar lista aunque el día ya tenga registros: así el
+    // supervisor puede corregir o añadir entradas sin que el botón se oculte.
     final bool canMark =
-        (user?.can(Perm.attendanceMark) ?? false) && project != null && !taken;
+        (user?.can(Perm.attendanceMark) ?? false) && project != null;
 
     return ModuleScaffold(
       title: 'Asistencia',

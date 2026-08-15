@@ -164,6 +164,32 @@ class PersonnelStrings {
     required this.salaryUpper,
     required this.fromUpper,
     required this.toUpper,
+    required this.newPosition,
+    required this.positionName,
+    required this.positionNameRequired,
+    required this.baseSalaryLabel,
+    required this.positionSubmit,
+    required this.positionCreated,
+    required this.newEmployee,
+    required this.employeeFirstName,
+    required this.employeeFirstNameRequired,
+    required this.employeeLastName,
+    required this.employeeLastNameRequired,
+    required this.employeePosition,
+    required this.employeeDni,
+    required this.employeeSubmit,
+    required this.employeeCreated,
+    required this.newContract,
+    required this.contractEmployee,
+    required this.contractEmployeeRequired,
+    required this.contractEmployeeNotFound,
+    required this.contractTypeLabel,
+    required this.contractTypes,
+    required this.contractSalary,
+    required this.contractStart,
+    required this.contractEnd,
+    required this.contractSubmit,
+    required this.contractCreated,
   });
 
   final String tabEmployees;
@@ -189,10 +215,47 @@ class PersonnelStrings {
   final String fromUpper;
   final String toUpper;
 
+  // ── Formulario de cargo ───────────────────────────────────────────────
+  final String newPosition;
+  final String positionName;
+  final String positionNameRequired;
+  final String baseSalaryLabel;
+  final String positionSubmit;
+  final String positionCreated;
+
+  // ── Formulario de empleado ─────────────────────────────────────────────
+  final String newEmployee;
+  final String employeeFirstName;
+  final String employeeFirstNameRequired;
+  final String employeeLastName;
+  final String employeeLastNameRequired;
+  final String employeePosition;
+  final String employeeDni;
+  final String employeeSubmit;
+  final String employeeCreated;
+
+  // ── Formulario de contrato ─────────────────────────────────────────────
+  final String newContract;
+  final String contractEmployee;
+  final String contractEmployeeRequired;
+  final String contractEmployeeNotFound;
+  final String contractTypeLabel;
+
+  /// Tipos de contrato, indexados por el valor exacto de la API.
+  final Map<String, String> contractTypes;
+
+  final String contractSalary;
+  final String contractStart;
+  final String contractEnd;
+  final String contractSubmit;
+  final String contractCreated;
+
   String nationalIdOf(String value) =>
       fill(nationalId, <String, String>{'v': value});
   String contractsEmptyFor(String project) =>
       fill(contractsEmptyMessage, <String, String>{'p': project});
+  String contractType(String apiValue, String fallback) =>
+      contractTypes[apiValue] ?? fallback;
 }
 
 @immutable
@@ -300,6 +363,37 @@ const PersonnelStrings kPersonnelEs = PersonnelStrings(
   salaryUpper: 'SALARIO',
   fromUpper: 'DESDE',
   toUpper: 'HASTA',
+  newPosition: 'Nuevo cargo',
+  positionName: 'Nombre del cargo',
+  positionNameRequired: 'Ponle nombre al cargo',
+  baseSalaryLabel: 'Salario base',
+  positionSubmit: 'Crear cargo',
+  positionCreated: 'Cargo creado',
+  newEmployee: 'Nuevo empleado',
+  employeeFirstName: 'Nombre',
+  employeeFirstNameRequired: 'Ponle nombre',
+  employeeLastName: 'Apellido',
+  employeeLastNameRequired: 'Ponle apellido',
+  employeePosition: 'Cargo',
+  employeeDni: 'DNI',
+  employeeSubmit: 'Crear empleado',
+  employeeCreated: 'Empleado creado',
+  newContract: 'Nuevo contrato',
+  contractEmployee: 'Empleado',
+  contractEmployeeRequired: 'Elige un empleado',
+  contractEmployeeNotFound:
+      'Da de alta al empleado antes de asignarle un contrato.',
+  contractTypeLabel: 'Tipo de contrato',
+  contractTypes: <String, String>{
+    'Indefinite': 'Indefinido',
+    'Fixed': 'A plazo fijo',
+    'Per Project': 'Por obra',
+  },
+  contractSalary: 'Salario',
+  contractStart: 'Inicio del contrato',
+  contractEnd: 'Fin del contrato',
+  contractSubmit: 'Crear contrato',
+  contractCreated: 'Contrato creado',
 );
 
 const DocumentsStrings kDocumentsEs = DocumentsStrings(
@@ -392,6 +486,37 @@ const PersonnelStrings kPersonnelPt = PersonnelStrings(
   salaryUpper: 'SALÁRIO',
   fromUpper: 'DESDE',
   toUpper: 'ATÉ',
+  newPosition: 'Novo cargo',
+  positionName: 'Nome do cargo',
+  positionNameRequired: 'Dê um nome ao cargo',
+  baseSalaryLabel: 'Salário-base',
+  positionSubmit: 'Criar cargo',
+  positionCreated: 'Cargo criado',
+  newEmployee: 'Novo funcionário',
+  employeeFirstName: 'Nome',
+  employeeFirstNameRequired: 'Digite o nome',
+  employeeLastName: 'Sobrenome',
+  employeeLastNameRequired: 'Digite o sobrenome',
+  employeePosition: 'Cargo',
+  employeeDni: 'CPF',
+  employeeSubmit: 'Criar funcionário',
+  employeeCreated: 'Funcionário criado',
+  newContract: 'Novo contrato',
+  contractEmployee: 'Funcionário',
+  contractEmployeeRequired: 'Escolha um funcionário',
+  contractEmployeeNotFound:
+      'Cadastre o funcionário antes de atribuir um contrato.',
+  contractTypeLabel: 'Tipo de contrato',
+  contractTypes: <String, String>{
+    'Indefinite': 'Indeterminado',
+    'Fixed': 'Prazo fixo',
+    'Per Project': 'Por obra',
+  },
+  contractSalary: 'Salário',
+  contractStart: 'Início do contrato',
+  contractEnd: 'Fim do contrato',
+  contractSubmit: 'Criar contrato',
+  contractCreated: 'Contrato criado',
 );
 
 const DocumentsStrings kDocumentsPt = DocumentsStrings(
@@ -484,6 +609,36 @@ const PersonnelStrings kPersonnelEn = PersonnelStrings(
   salaryUpper: 'SALARY',
   fromUpper: 'FROM',
   toUpper: 'TO',
+  newPosition: 'New position',
+  positionName: 'Position name',
+  positionNameRequired: 'Name the position',
+  baseSalaryLabel: 'Base salary',
+  positionSubmit: 'Create position',
+  positionCreated: 'Position created',
+  newEmployee: 'New employee',
+  employeeFirstName: 'First name',
+  employeeFirstNameRequired: 'Enter a first name',
+  employeeLastName: 'Last name',
+  employeeLastNameRequired: 'Enter a last name',
+  employeePosition: 'Position',
+  employeeDni: 'ID number',
+  employeeSubmit: 'Create employee',
+  employeeCreated: 'Employee created',
+  newContract: 'New contract',
+  contractEmployee: 'Employee',
+  contractEmployeeRequired: 'Pick an employee',
+  contractEmployeeNotFound: 'Add the employee before assigning a contract.',
+  contractTypeLabel: 'Contract type',
+  contractTypes: <String, String>{
+    'Indefinite': 'Indefinite',
+    'Fixed': 'Fixed-term',
+    'Per Project': 'Per site',
+  },
+  contractSalary: 'Salary',
+  contractStart: 'Contract start',
+  contractEnd: 'Contract end',
+  contractSubmit: 'Create contract',
+  contractCreated: 'Contract created',
 );
 
 const DocumentsStrings kDocumentsEn = DocumentsStrings(

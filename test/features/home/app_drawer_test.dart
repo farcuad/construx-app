@@ -7,12 +7,12 @@ import 'package:mi_app_constructora/core/network/api_client.dart';
 import 'package:mi_app_constructora/core/providers.dart';
 import 'package:mi_app_constructora/core/storage/secure_store.dart';
 import 'package:mi_app_constructora/features/auth/application/auth_controller.dart';
-import 'package:mi_app_constructora/features/budgets/presentation/budgets_screen.dart';
 import 'package:mi_app_constructora/features/clients/presentation/clients_screen.dart';
 import 'package:mi_app_constructora/features/home/domain/app_module.dart';
 import 'package:mi_app_constructora/features/home/presentation/home_screen.dart';
 import 'package:mi_app_constructora/features/home/presentation/widgets/app_drawer.dart';
 import 'package:mi_app_constructora/features/projects/presentation/projects_screen.dart';
+import 'package:mi_app_constructora/features/schedule/presentation/schedule_screen.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -152,10 +152,10 @@ void main() {
   ) async {
     await pumpWithDrawerOpen(tester);
 
-    await tester.tap(inDrawer('Presupuestos'));
+    await tester.tap(inDrawer('Cronograma'));
     await tester.pumpAndSettle();
 
-    expect(find.byType(BudgetsScreen), findsOneWidget);
+    expect(find.byType(ScheduleScreen), findsOneWidget);
     expect(find.byType(HomeScreen), findsNothing);
   });
 
