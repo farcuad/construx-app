@@ -107,7 +107,7 @@ const List<AppModule> kAppModules = <AppModule>[
   ),
   AppModule(
     id: 'schedule',
-    title: 'Cronograma',
+    title: 'Tareas',
     icon: Icons.calendar_month_rounded,
     requiredPermissions: <String>[Perm.scheduleRead],
     routePath: '/schedule',

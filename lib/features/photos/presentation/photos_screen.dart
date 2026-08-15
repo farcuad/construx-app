@@ -16,6 +16,7 @@ import '../../projects/domain/project.dart';
 import '../../projects/presentation/widgets/project_selector.dart';
 import '../application/photos_providers.dart';
 import '../domain/project_photo.dart';
+import 'photo_detail_sheet.dart';
 
 /// Fotos de obra (`GET /photos/{project_id}`), alojadas en Supabase Storage.
 class PhotosScreen extends ConsumerWidget {
@@ -98,6 +99,15 @@ class _PhotoTile extends ConsumerWidget {
       child: Stack(
         fit: StackFit.expand,
         children: <Widget>[
+          Positioned.fill(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                // Al tocar la foto se abre su detalle con todo el contexto.
+                onTap: () => showPhotoDetailSheet(context, photo: photo),
+              ),
+            ),
+          ),
           // `cacheWidth` decodifica la imagen al tamaño de la celda en vez de a
           // resolución completa: una foto de móvil ocuparía ~48 MB en memoria.
           Image.network(

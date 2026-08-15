@@ -21,7 +21,7 @@ const AppStrings kStringsPt = AppStrings(
     'personnel': 'Pessoal',
     'attendance': 'Presença',
     'contractors': 'Empreiteiros',
-    'schedule': 'Cronograma',
+    'schedule': 'Tarefas',
     'progress': 'Andamento da obra',
     'photos': 'Fotos',
     'invoices': 'Faturamento',

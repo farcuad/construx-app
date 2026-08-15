@@ -37,18 +37,10 @@ class ProgressScreen extends ConsumerWidget {
     final Project? project = ref.watch(activeProjectProvider);
     final DateTime day = ref.watch(progressDayProvider);
 
-    // Un día tiene un parte y solo uno: si ya está levantado, el botón sobra.
-    // Es el mismo provider que pinta el cuerpo, así que no hay petición extra.
-    final bool reported =
-        project != null &&
-        ref
-                .watch(dailyReportProvider(projectDateQuery(project.id, day)))
-                .valueOrNull !=
-            null;
+    // El botón no se oculta aunque el día ya tenga un parte: el supervisor
+    // puede levantar otro y dejar constancia de cada cuadrilla o jornada.
     final bool canCreate =
-        (user?.can(Perm.progressCreate) ?? false) &&
-        project != null &&
-        !reported;
+        (user?.can(Perm.progressCreate) ?? false) && project != null;
 
     return ModuleScaffold(
       title: 'Avance de obra',

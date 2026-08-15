@@ -22,7 +22,7 @@ class ScheduleScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => ModuleScaffold(
-    title: 'Cronograma',
+    title: 'Tareas',
     currentPath: routePath,
     onRefresh: () => ref.invalidate(projectScheduleProvider),
     body: ProjectScope(
@@ -33,6 +33,7 @@ class ScheduleScreen extends ConsumerWidget {
   );
 }
 
+/// Agrupa las tareas por estado y pinta cada sección que no esté vacía.
 class _ScheduleList extends ConsumerWidget {
   const _ScheduleList({required this.project});
 
@@ -55,16 +56,135 @@ class _ScheduleList extends ConsumerWidget {
               title: strings.emptyTitle,
               message: strings.emptyFor(project.name),
             )
-          : ModuleList(
-              itemCount: data.length,
+          : _Sections(
+              tasks: data,
+              strings: strings,
               onRefresh: () async =>
                   ref.invalidate(projectScheduleProvider(project.id)),
-              header: _Summary(tasks: data),
-              itemBuilder: (BuildContext context, int index) =>
-                  _TaskCard(task: data[index]),
             ),
     );
   }
+}
+
+/// Lista con el resumen arriba y una sección por estado.
+class _Sections extends ConsumerWidget {
+  const _Sections({
+    required this.tasks,
+    required this.strings,
+    required this.onRefresh,
+  });
+
+  final List<ScheduleTask> tasks;
+  final ScheduleStrings strings;
+  final Future<void> Function() onRefresh;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final List<(String, List<ScheduleTask>, Color)> sections = <(
+      String,
+      List<ScheduleTask>,
+      Color,
+    )>[
+      (
+        strings.pendingSection,
+        tasks
+            .where((ScheduleTask t) => t.status == TaskStatus.pending)
+            .toList(growable: false),
+        AppColors.textSecondary,
+      ),
+      (
+        strings.inProgressSection,
+        tasks
+            .where((ScheduleTask t) => t.status == TaskStatus.inProgress)
+            .toList(growable: false),
+        AppColors.orangeNeon,
+      ),
+      (
+        strings.doneSection,
+        tasks
+            .where((ScheduleTask t) => t.status == TaskStatus.done || t.isDone)
+            .toList(growable: false),
+        AppColors.success,
+      ),
+    ];
+
+    final List<Widget> body = <Widget>[
+      _Summary(tasks: tasks),
+      for (final (String title, List<ScheduleTask> group, Color color)
+          in sections)
+        if (group.isNotEmpty) ...<Widget>[
+          _SectionHeader(title: title, count: group.length, color: color),
+          for (final ScheduleTask task in group) _TaskCard(task: task),
+        ],
+    ];
+
+    return RefreshIndicator(
+      color: AppColors.orangeNeon,
+      backgroundColor: AppColors.surface,
+      onRefresh: onRefresh,
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: body.length,
+        separatorBuilder: (BuildContext context, int index) =>
+            const SizedBox(height: 12),
+        itemBuilder: (BuildContext context, int index) => body[index],
+      ),
+    );
+  }
+}
+
+/// Encabezado con color que abre cada grupo de estado.
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.title,
+    required this.count,
+    required this.color,
+  });
+
+  final String title;
+  final int count;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 10, bottom: 2),
+    child: Row(
+      children: <Widget>[
+        Text(
+          title.toUpperCase(),
+          style: TextStyle(
+            color: color,
+            fontSize: 11.5,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.1,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1.5),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: const BorderRadius.all(Radius.circular(9)),
+          ),
+          child: Text(
+            '$count',
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        const Spacer(),
+        Container(
+          height: 1.5,
+          width: 64,
+          color: color.withValues(alpha: 0.35),
+        ),
+      ],
+    ),
+  );
 }
 
 /// Avance global: media simple del porcentaje de todas las tareas.
@@ -163,7 +283,9 @@ class _TaskCard extends ConsumerWidget {
               StatusChip(
                 label: late
                     ? strings.late
-                    : (task.status.isEmpty ? '—' : task.status),
+                    : (task.status.isEmpty
+                          ? '—'
+                          : strings.status(task.status, task.status)),
                 color: color,
               ),
             ],

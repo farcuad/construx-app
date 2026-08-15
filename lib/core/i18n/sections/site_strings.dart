@@ -16,6 +16,10 @@ class ScheduleStrings {
     required this.doneOfOne,
     required this.untitled,
     required this.late,
+    required this.pendingSection,
+    required this.inProgressSection,
+    required this.doneSection,
+    required this.statuses,
   });
 
   final String needsProject;
@@ -33,12 +37,23 @@ class ScheduleStrings {
   final String untitled;
   final String late;
 
+  /// Encabezados de las tres secciones en las que se agrupan las tareas.
+  final String pendingSection;
+  final String inProgressSection;
+  final String doneSection;
+
+  /// Nombres de estado, indexados por el valor exacto de la API
+  /// (`Pending`, `In Progress`, `Done`).
+  final Map<String, String> statuses;
+
   String emptyFor(String project) =>
       fill(emptyMessage, <String, String>{'p': project});
   String progressOf(int done, int total) => fill(
     total == 1 ? doneOfOne : doneOfTotal,
     <String, String>{'d': '$done', 'n': '$total'},
   );
+  String status(String apiValue, String fallback) =>
+      statuses[apiValue] ?? fallback;
 }
 
 @immutable
@@ -176,6 +191,10 @@ class PhotosStrings {
     required this.deleteTitle,
     required this.deleteMessage,
     required this.deleted,
+    required this.detailTitle,
+    required this.task,
+    required this.taskNotFound,
+    required this.location,
   });
 
   final String needsProject;
@@ -185,6 +204,18 @@ class PhotosStrings {
   final String deleteTitle;
   final String deleteMessage;
   final String deleted;
+
+  /// Título de la hoja que abre una foto al tocarla.
+  final String detailTitle;
+
+  /// Rótulo de la tarea asociada a la foto.
+  final String task;
+
+  /// Se muestra cuando la foto no tiene `task_id` o la tarea ya no existe.
+  final String taskNotFound;
+
+  /// Rótulo de las coordenadas cuando la foto trae `latitude`/`longitude`.
+  final String location;
 
   String emptyFor(String project) =>
       fill(emptyMessage, <String, String>{'p': project});
@@ -259,6 +290,14 @@ const ScheduleStrings kScheduleEs = ScheduleStrings(
   doneOfOne: '{d} de 1 tarea terminada',
   untitled: 'Tarea',
   late: 'Atrasada',
+  pendingSection: 'Pendientes',
+  inProgressSection: 'En progreso',
+  doneSection: 'Terminadas',
+  statuses: <String, String>{
+    'Pending': 'Pendiente',
+    'In Progress': 'En progreso',
+    'Done': 'Terminada',
+  },
 );
 
 const ProgressStrings kProgressEs = ProgressStrings(
@@ -324,6 +363,10 @@ const PhotosStrings kPhotosEs = PhotosStrings(
   deleteTitle: 'Eliminar foto',
   deleteMessage: 'Se borrará del registro y del almacenamiento.',
   deleted: 'Foto eliminada',
+  detailTitle: 'Detalle de la foto',
+  task: 'Tarea',
+  taskNotFound: 'Foto sin tarea asociada',
+  location: 'Ubicación',
 );
 
 const ContractorsStrings kContractorsEs = ContractorsStrings(
@@ -363,6 +406,14 @@ const ScheduleStrings kSchedulePt = ScheduleStrings(
   doneOfOne: '{d} de 1 tarefa concluída',
   untitled: 'Tarefa',
   late: 'Atrasada',
+  pendingSection: 'Pendentes',
+  inProgressSection: 'Em andamento',
+  doneSection: 'Concluídas',
+  statuses: <String, String>{
+    'Pending': 'Pendente',
+    'In Progress': 'Em andamento',
+    'Done': 'Concluída',
+  },
 );
 
 const ProgressStrings kProgressPt = ProgressStrings(
@@ -428,6 +479,10 @@ const PhotosStrings kPhotosPt = PhotosStrings(
   deleteTitle: 'Excluir foto',
   deleteMessage: 'Será apagada do registro e do armazenamento.',
   deleted: 'Foto excluída',
+  detailTitle: 'Detalhe da foto',
+  task: 'Tarefa',
+  taskNotFound: 'Foto sem tarefa associada',
+  location: 'Localização',
 );
 
 const ContractorsStrings kContractorsPt = ContractorsStrings(
@@ -467,6 +522,14 @@ const ScheduleStrings kScheduleEn = ScheduleStrings(
   doneOfOne: '{d} of 1 task finished',
   untitled: 'Task',
   late: 'Overdue',
+  pendingSection: 'Pending',
+  inProgressSection: 'In progress',
+  doneSection: 'Done',
+  statuses: <String, String>{
+    'Pending': 'Pending',
+    'In Progress': 'In progress',
+    'Done': 'Done',
+  },
 );
 
 const ProgressStrings kProgressEn = ProgressStrings(
@@ -531,6 +594,10 @@ const PhotosStrings kPhotosEn = PhotosStrings(
   deleteTitle: 'Delete photo',
   deleteMessage: 'It will be removed from the records and from storage.',
   deleted: 'Photo deleted',
+  detailTitle: 'Photo detail',
+  task: 'Task',
+  taskNotFound: 'Photo with no linked task',
+  location: 'Location',
 );
 
 const ContractorsStrings kContractorsEn = ContractorsStrings(

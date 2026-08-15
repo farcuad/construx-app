@@ -22,7 +22,7 @@ const AppStrings kStringsEs = AppStrings(
     'personnel': 'Personal',
     'attendance': 'Asistencia',
     'contractors': 'Contratistas',
-    'schedule': 'Cronograma',
+    'schedule': 'Tareas',
     'progress': 'Avance de obra',
     'photos': 'Fotos',
     'invoices': 'Facturación',

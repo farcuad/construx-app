@@ -175,6 +175,11 @@ class AuditsStrings {
     required this.emptyMessage,
     required this.changedOne,
     required this.changedMany,
+    required this.before,
+    required this.after,
+    required this.moreOne,
+    required this.moreMany,
+    required this.noFields,
   });
 
   final String loadError;
@@ -183,7 +188,21 @@ class AuditsStrings {
   final String changedOne;
   final String changedMany;
 
+  /// Rótulo del valor anterior en el comparativo de cada campo.
+  final String before;
+
+  /// Rótulo del valor nuevo en el comparativo de cada campo.
+  final String after;
+
+  /// Campos que quedan fuera del mini cuadro: `{n}`.
+  final String moreOne;
+  final String moreMany;
+
+  /// Cuando la entrada no trae valores que comparar (`noFields`).
+  final String noFields;
+
   String changed(int n) => plural(n, changedOne, changedMany);
+  String more(int n) => plural(n, moreOne, moreMany);
 }
 
 /// Desplegable de obra y el envoltorio que usan los módulos por obra.
@@ -377,6 +396,11 @@ const AuditsStrings kAuditsEs = AuditsStrings(
       'en el sistema.',
   changedOne: '1 campo con valor nuevo',
   changedMany: '{n} campos con valor nuevo',
+  before: 'Antes',
+  after: 'Después',
+  moreOne: 'y 1 campo más',
+  moreMany: 'y {n} campos más',
+  noFields: 'Sin datos de la fila afectada',
 );
 
 const ProjectScopeStrings kProjectScopeEs = ProjectScopeStrings(
@@ -508,6 +532,11 @@ const AuditsStrings kAuditsPt = AuditsStrings(
       'sistema.',
   changedOne: '1 campo com valor novo',
   changedMany: '{n} campos com valor novo',
+  before: 'Antes',
+  after: 'Depois',
+  moreOne: 'e mais 1 campo',
+  moreMany: 'e mais {n} campos',
+  noFields: 'Sem dados da linha afetada',
 );
 
 const ProjectScopeStrings kProjectScopePt = ProjectScopeStrings(
@@ -637,6 +666,11 @@ const AuditsStrings kAuditsEn = AuditsStrings(
       'the system.',
   changedOne: '1 field with a new value',
   changedMany: '{n} fields with new values',
+  before: 'Before',
+  after: 'After',
+  moreOne: 'and 1 more field',
+  moreMany: 'and {n} more fields',
+  noFields: 'No data for the affected row',
 );
 
 const ProjectScopeStrings kProjectScopeEn = ProjectScopeStrings(

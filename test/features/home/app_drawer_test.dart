@@ -152,7 +152,7 @@ void main() {
   ) async {
     await pumpWithDrawerOpen(tester);
 
-    await tester.tap(inDrawer('Cronograma'));
+    await tester.tap(inDrawer('Tareas'));
     await tester.pumpAndSettle();
 
     expect(find.byType(ScheduleScreen), findsOneWidget);
