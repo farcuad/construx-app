@@ -297,7 +297,6 @@ class AuthStrings {
     required this.signIn,
     required this.showPassword,
     required this.hidePassword,
-    required this.encrypted,
     required this.welcomeBack,
     required this.footer,
   });
@@ -309,9 +308,6 @@ class AuthStrings {
   final String signIn;
   final String showPassword;
   final String hidePassword;
-
-  /// Aviso junto a «Recordar datos»: lo guardado va cifrado.
-  final String encrypted;
 
   /// Confirmación tras entrar.
   final String welcomeBack;
@@ -448,7 +444,6 @@ const AuthStrings kAuthEs = AuthStrings(
   signIn: 'Iniciar sesión',
   showPassword: 'Mostrar contraseña',
   hidePassword: 'Ocultar contraseña',
-  encrypted: 'Cifrado',
   welcomeBack: 'Bienvenido de nuevo',
   footer: 'Conexión segura · Datos cifrados en el dispositivo',
 );
@@ -584,7 +579,6 @@ const AuthStrings kAuthPt = AuthStrings(
   signIn: 'Entrar',
   showPassword: 'Mostrar senha',
   hidePassword: 'Ocultar senha',
-  encrypted: 'Criptografado',
   welcomeBack: 'Bem-vindo de volta',
   footer: 'Conexão segura · Dados criptografados no aparelho',
 );
@@ -718,7 +712,6 @@ const AuthStrings kAuthEn = AuthStrings(
   signIn: 'Sign in',
   showPassword: 'Show password',
   hidePassword: 'Hide password',
-  encrypted: 'Encrypted',
   welcomeBack: 'Welcome back',
   footer: 'Secure connection · Data encrypted on the device',
 );

@@ -134,21 +134,21 @@ class _CompareBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String action = log.action.toUpperCase();
-    final List<(String, Object?)> rows = switch (action) {
+    final List<(String, Object? before, Object? after)> rows = switch (action) {
       'INSERT' || 'CREATE' => [
         for (final MapEntry<String, dynamic> e in log.newValues.entries)
-          (e.key, e.value),
+          (e.key, null, e.value),
       ],
       'DELETE' => [
         for (final MapEntry<String, dynamic> e in log.oldValues.entries)
-          (e.key, e.value),
+          (e.key, e.value, null),
       ],
       'UPDATE' => [
         for (final String key in log.oldValues.keys)
           if (!_same(log.oldValues[key], log.newValues[key]))
-            (key, log.newValues[key]),
+            (key, log.oldValues[key], log.newValues[key]),
       ],
-      _ => const <(String, Object?)>[],
+      _ => const <(String, Object?, Object?)>[],
     };
 
     if (rows.isEmpty) {
@@ -166,17 +166,31 @@ class _CompareBlock extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(11),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.surfaceHigh,
-        borderRadius: const BorderRadius.all(Radius.circular(12)),
-        border: Border.all(color: color.withValues(alpha: 0.25)),
+        borderRadius: const BorderRadius.all(Radius.circular(14)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          for (int i = 0; i < shown; i++)
-            _fieldRow(rows[i], action, i == 0),
+          for (int i = 0; i < shown; i++) ...<Widget>[
+            _fieldDiff(
+              label: rows[i].$1,
+              before: rows[i].$2,
+              after: rows[i].$3,
+            ),
+            if (i < shown - 1)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: color.withValues(alpha: 0.18),
+                ),
+              ),
+          ],
           if (rows.length > shown)
             Padding(
               padding: const EdgeInsets.only(top: 8),
@@ -193,35 +207,90 @@ class _CompareBlock extends StatelessWidget {
     );
   }
 
-  Widget _fieldRow((String, Object?) row, String action, bool first) {
-    final (String label, Object? value) = row;
-    final Color valueColor = action == 'DELETE'
-        ? AppColors.danger
-        : (action == 'UPDATE' ? AppColors.warning : AppColors.success);
-
-    return Padding(
-      padding: EdgeInsets.only(top: first ? 0 : 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            label,
-            style: const TextStyle(color: AppColors.textDisabled, fontSize: 11),
+  /// Un campo con el valor anterior arriba, una flecha y el valor nuevo abajo.
+  Widget _fieldDiff({
+    required String label,
+    required Object? before,
+    required Object? after,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          label,
+          style: TextStyle(
+            color: color.withValues(alpha: 0.85),
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.3,
           ),
-          const SizedBox(height: 3),
-          Text(
-            _display(value),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: valueColor,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+        ),
+        const SizedBox(height: 6),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _valueBlock(
+              label: strings.before,
+              value: before,
+              color: before == null ? AppColors.textDisabled : AppColors.danger,
             ),
-          ),
-        ],
-      ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Column(
+                children: <Widget>[
+                  const SizedBox(height: 16),
+                  Icon(
+                    after == null
+                        ? Icons.arrow_upward_rounded
+                        : Icons.arrow_downward_rounded,
+                    size: 16,
+                    color: color,
+                  ),
+                ],
+              ),
+            ),
+            _valueBlock(
+              label: strings.after,
+              value: after,
+              color: after == null ? AppColors.textDisabled : AppColors.success,
+              expand: true,
+            ),
+          ],
+        ),
+      ],
     );
+  }
+
+  Widget _valueBlock({
+    required String label,
+    required Object? value,
+    required Color color,
+    bool expand = false,
+  }) {
+    final Widget content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          label,
+          style: const TextStyle(color: AppColors.textDisabled, fontSize: 10.5),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          _display(value),
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: color,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            height: 1.25,
+          ),
+        ),
+      ],
+    );
+
+    if (!expand) return content;
+    return Expanded(child: content);
   }
 
   static bool _same(Object? a, Object? b) {

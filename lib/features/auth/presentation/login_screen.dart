@@ -319,26 +319,6 @@ class _RememberMeRow extends ConsumerWidget {
               ),
             ),
           ),
-          if (value)
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                const Icon(
-                  Icons.shield_moon_outlined,
-                  size: 15,
-                  color: AppColors.cyanNeon,
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  ref.watch(stringsProvider).auth.encrypted,
-                  style: const TextStyle(
-                    color: AppColors.cyanNeon,
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
         ],
       ),
     ),
