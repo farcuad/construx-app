@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/providers.dart';
 import '../data/projects_repository.dart';
 import '../domain/project.dart';
-import '../domain/project_kpis.dart';
+import '../domain/project_dashboard_model.dart';
 
 final Provider<ProjectsRepository> projectsRepositoryProvider =
     Provider<ProjectsRepository>(
@@ -66,8 +66,9 @@ projectsControllerProvider =
 
 /// KPIs financieros de un proyecto. `family` cachea por `projectId` y
 /// `autoDispose` libera la memoria al salir de la pantalla de detalle.
-final AutoDisposeFutureProviderFamily<ProjectKpis, String> projectKpisProvider =
-    FutureProvider.autoDispose.family<ProjectKpis, String>(
+final AutoDisposeFutureProviderFamily<ProjectDashboardModel, String>
+projectKpisProvider =
+    FutureProvider.autoDispose.family<ProjectDashboardModel, String>(
       (Ref ref, String projectId) =>
           ref.watch(projectsRepositoryProvider).fetchKpis(projectId),
     );

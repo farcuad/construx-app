@@ -17,7 +17,7 @@ import '../../clients/application/clients_controller.dart';
 import '../../home/presentation/widgets/app_nav_bar.dart';
 import '../application/projects_controller.dart';
 import '../domain/project.dart';
-import '../domain/project_kpis.dart';
+import '../domain/project_dashboard_model.dart';
 
 /// Detalle de un proyecto con sus KPIs financieros
 /// (`GET /dashboard/financial/{project_id}`).
@@ -173,7 +173,7 @@ class _KpiSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<ProjectKpis> kpis = ref.watch(
+    final AsyncValue<ProjectDashboardModel> kpis = ref.watch(
       projectKpisProvider(projectId),
     );
     final AppStrings all = ref.watch(stringsProvider);
@@ -193,10 +193,10 @@ class _KpiSection extends ConsumerWidget {
           ),
         ),
         switch (kpis) {
-          AsyncData<ProjectKpis>(:final ProjectKpis value) => _KpiGrid(
+          AsyncData<ProjectDashboardModel>(:final ProjectDashboardModel value) => _KpiGrid(
             kpis: value,
           ),
-          AsyncError<ProjectKpis>(:final Object error) => AppCard(
+          AsyncError<ProjectDashboardModel>(:final Object error) => AppCard(
             child: Text(
               error is ApiException ? error.message : all.dashboard.kpisError,
               style: const TextStyle(
@@ -215,7 +215,7 @@ class _KpiSection extends ConsumerWidget {
 class _KpiGrid extends ConsumerWidget {
   const _KpiGrid({required this.kpis});
 
-  final ProjectKpis kpis;
+  final ProjectDashboardModel kpis;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

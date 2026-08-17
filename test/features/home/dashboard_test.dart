@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,8 +21,9 @@ void main() {
     WidgetTester tester, {
     required http.Response Function(Uri url) handler,
     String role = 'Administrador',
+    Size size = const Size(1000, 1800),
   }) async {
-    tester.view.physicalSize = const Size(1000, 1800);
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
@@ -86,23 +88,24 @@ void main() {
     return jsonResponse(null);
   };
 
-  testWidgets('el panel muestra las siete cifras del dashboard financiero', (
+  testWidgets('el panel muestra las cuatro tarjetas clave del dashboard', (
     WidgetTester tester,
   ) async {
     await pumpDashboard(tester, handler: singleProject());
 
-    // Etiquetas de las siete métricas del endpoint.
     expect(find.text('Presupuesto total'), findsOneWidget);
+    expect(find.text('Total gastado'), findsOneWidget);
+    expect(find.text('Cobrado vs. facturado'), findsOneWidget);
+    expect(find.text('Variación financiera'), findsOneWidget);
+
+    // La leyenda de la tendencia reutiliza las etiquetas de las series.
+    expect(find.text('Facturado'), findsOneWidget);
+    expect(find.text('Cobrado'), findsOneWidget);
     expect(
       find.text('Gastos'),
       findsWidgets,
-      reason: 'la tarjeta de gastos y la pestaña de gastos se llaman igual',
+      reason: 'la leyenda de la tendencia y la pestaña de gastos se llaman igual',
     );
-    expect(find.text('Compras'), findsOneWidget);
-    expect(find.text('Facturado'), findsOneWidget);
-    expect(find.text('Cobrado'), findsOneWidget);
-    expect(find.text('Pagado a proveedores'), findsOneWidget);
-    expect(find.text('Variación financiera'), findsOneWidget);
 
     // Y el proyecto al que pertenecen.
     expect(find.text('Torres del Parque'), findsOneWidget);
@@ -212,5 +215,77 @@ void main() {
       isEmpty,
       reason: 'no tiene sentido gastar una petición que dará 403',
     );
+  });
+
+  testWidgets('dibuja la tendencia mensual y la dona de categorías', (
+    WidgetTester tester,
+  ) async {
+    // Pantalla alta de propósito: los dos gráficos quedan bajo las tarjetas.
+    await pumpDashboard(
+      tester,
+      size: const Size(1100, 2800),
+      handler: singleProject(),
+    );
+
+    expect(find.byType(LineChart), findsOneWidget);
+    expect(find.byType(PieChart), findsOneWidget);
+    expect(find.text('Tendencia financiera'), findsOneWidget);
+    expect(find.text('Gastos por categoría'), findsOneWidget);
+
+    // Leyenda de la dona con los rubros del desglose.
+    for (final String category in <String>['Materiales', 'Personal', 'Equipos']) {
+      expect(find.text(category), findsOneWidget);
+    }
+  });
+
+  testWidgets('sin categorías cae a la distribución por defecto', (
+    WidgetTester tester,
+  ) async {
+    await pumpDashboard(
+      tester,
+      size: const Size(1100, 2800),
+      handler: singleProject(
+        kpis: kpisJson(expensesByCategory: const <Map<String, dynamic>>[]),
+      ),
+    );
+
+    expect(find.byType(PieChart), findsOneWidget);
+    for (final String category in <String>['Materiales', 'Personal', 'Equipos']) {
+      expect(find.text(category), findsOneWidget);
+    }
+  });
+
+  testWidgets('sin tendencia muestra el estado vacío del gráfico', (
+    WidgetTester tester,
+  ) async {
+    await pumpDashboard(
+      tester,
+      size: const Size(1100, 2800),
+      handler: singleProject(
+        kpis: kpisJson(monthlyTrends: const <Map<String, dynamic>>[]),
+      ),
+    );
+
+    expect(find.text('Sin datos de tendencia para este proyecto.'), findsOneWidget);
+    expect(find.byType(LineChart), findsNothing);
+  });
+
+  testWidgets('sin gastos la dona avisa en vez de pintar vacío', (
+    WidgetTester tester,
+  ) async {
+    await pumpDashboard(
+      tester,
+      size: const Size(1100, 2800),
+      handler: singleProject(
+        kpis: kpisJson(
+          totalExpenses: 0,
+          totalPurchased: 0,
+          expensesByCategory: const <Map<String, dynamic>>[],
+        ),
+      ),
+    );
+
+    expect(find.text('Sin gastos registrados.'), findsOneWidget);
+    expect(find.byType(PieChart), findsNothing);
   });
 }

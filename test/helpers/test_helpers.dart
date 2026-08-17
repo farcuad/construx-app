@@ -58,6 +58,9 @@ Map<String, dynamic> projectJson({
 
 /// Respuesta de `GET /dashboard/financial/{project_id}`, con los mismos
 /// campos y el mismo orden que la documentación de la API.
+///
+/// [monthlyTrends] y [expensesByCategory] reproducen la tendencia mensual y el
+/// desglose por categoría que dibujan los gráficos del panel.
 Map<String, dynamic> kpisJson({
   String projectId = 'p1',
   double totalBudget = 2500000,
@@ -67,6 +70,8 @@ Map<String, dynamic> kpisJson({
   double totalCollected = 700000,
   double totalPaidToProv = 400000,
   double financialVariance = 1520000,
+  List<Map<String, dynamic>>? monthlyTrends,
+  List<Map<String, dynamic>>? expensesByCategory,
 }) => <String, dynamic>{
   'company_id': 'company-1',
   'project_id': projectId,
@@ -77,6 +82,23 @@ Map<String, dynamic> kpisJson({
   'total_collected': totalCollected,
   'total_paid_to_prov': totalPaidToProv,
   'financial_variance': financialVariance,
+  'monthly_trends':
+      monthlyTrends ??
+      <Map<String, dynamic>>[
+        <String, dynamic>{'month': 'Mar', 'invoiced': 0, 'collected': 0, 'expenses': 0},
+        <String, dynamic>{'month': 'Abr', 'invoiced': 0, 'collected': 0, 'expenses': 120000},
+        <String, dynamic>{'month': 'May', 'invoiced': 150000, 'collected': 0, 'expenses': 260000},
+        <String, dynamic>{'month': 'Jun', 'invoiced': 420000, 'collected': 300000, 'expenses': 350000},
+        <String, dynamic>{'month': 'Jul', 'invoiced': 640000, 'collected': 420000, 'expenses': 300000},
+        <String, dynamic>{'month': 'Ago', 'invoiced': 1190000, 'collected': 700000, 'expenses': 980000},
+      ],
+  'expenses_by_category':
+      expensesByCategory ??
+      <Map<String, dynamic>>[
+        <String, dynamic>{'category': 'Materiales', 'spent': 520000},
+        <String, dynamic>{'category': 'Personal', 'spent': 260000},
+        <String, dynamic>{'category': 'Equipos', 'spent': 200000},
+      ],
 };
 
 /// Registro de una petición recibida por [recordingClient].

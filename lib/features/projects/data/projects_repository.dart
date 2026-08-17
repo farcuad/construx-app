@@ -1,6 +1,6 @@
 import '../../../core/network/api_client.dart';
 import '../domain/project.dart';
-import '../domain/project_kpis.dart';
+import '../domain/project_dashboard_model.dart';
 
 /// Acceso a los endpoints de proyectos y al dashboard financiero.
 class ProjectsRepository {
@@ -32,7 +32,8 @@ class ProjectsRepository {
   Future<void> delete(String id) => _api.delete('/projects/$id');
 
   /// `GET /dashboard/financial/{project_id}`.
-  Future<ProjectKpis> fetchKpis(String projectId) async => ProjectKpis.fromJson(
-    await _api.getObject('/dashboard/financial/$projectId'),
-  );
+  Future<ProjectDashboardModel> fetchKpis(String projectId) async =>
+      ProjectDashboardModel.fromJson(
+        await _api.getObject('/dashboard/financial/$projectId'),
+      );
 }

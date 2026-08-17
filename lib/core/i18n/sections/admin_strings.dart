@@ -251,6 +251,12 @@ class DashboardStrings {
     required this.variance,
     required this.inFavour,
     required this.against,
+    required this.totalSpent,
+    required this.collectedVsInvoiced,
+    required this.trendTitle,
+    required this.categoriesTitle,
+    required this.noTrendData,
+    required this.noExpenses,
   });
 
   final String projectsError;
@@ -279,6 +285,14 @@ class DashboardStrings {
   final String variance;
   final String inFavour;
   final String against;
+
+  // Gráficos del panel: tarjetas clave y títulos de sección.
+  final String totalSpent;
+  final String collectedVsInvoiced;
+  final String trendTitle;
+  final String categoriesTitle;
+  final String noTrendData;
+  final String noExpenses;
 
   String overBudgetBy(String amount) =>
       fill(overBudget, <String, String>{'a': amount});
@@ -434,6 +448,12 @@ const DashboardStrings kDashboardEs = DashboardStrings(
   variance: 'Variación financiera',
   inFavour: 'A favor',
   against: 'En contra',
+  totalSpent: 'Total gastado',
+  collectedVsInvoiced: 'Cobrado vs. facturado',
+  trendTitle: 'Tendencia financiera',
+  categoriesTitle: 'Gastos por categoría',
+  noTrendData: 'Sin datos de tendencia para este proyecto.',
+  noExpenses: 'Sin gastos registrados.',
 );
 
 const AuthStrings kAuthEs = AuthStrings(
@@ -569,6 +589,12 @@ const DashboardStrings kDashboardPt = DashboardStrings(
   variance: 'Variação financeira',
   inFavour: 'A favor',
   against: 'Contra',
+  totalSpent: 'Gasto total',
+  collectedVsInvoiced: 'Recebido vs. faturado',
+  trendTitle: 'Tendência financeira',
+  categoriesTitle: 'Despesas por categoria',
+  noTrendData: 'Sem dados de tendência para este projeto.',
+  noExpenses: 'Sem despesas registradas.',
 );
 
 const AuthStrings kAuthPt = AuthStrings(
@@ -702,6 +728,12 @@ const DashboardStrings kDashboardEn = DashboardStrings(
   variance: 'Financial variance',
   inFavour: 'In your favour',
   against: 'Against you',
+  totalSpent: 'Total spent',
+  collectedVsInvoiced: 'Collected vs. invoiced',
+  trendTitle: 'Financial trend',
+  categoriesTitle: 'Expenses by category',
+  noTrendData: 'No trend data for this project.',
+  noExpenses: 'No expenses recorded.',
 );
 
 const AuthStrings kAuthEn = AuthStrings(

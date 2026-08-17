@@ -5,7 +5,7 @@ import 'package:mi_app_constructora/core/network/api_client.dart';
 import 'package:mi_app_constructora/core/network/api_exception.dart';
 import 'package:mi_app_constructora/features/projects/data/projects_repository.dart';
 import 'package:mi_app_constructora/features/projects/domain/project.dart';
-import 'package:mi_app_constructora/features/projects/domain/project_kpis.dart';
+import 'package:mi_app_constructora/features/projects/domain/project_dashboard_model.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -192,28 +192,41 @@ void main() {
             'total_collected': 700000.00,
             'total_paid_to_prov': 400000.00,
             'financial_variance': 1520000.00,
+            'monthly_trends': <Map<String, dynamic>>[
+              <String, dynamic>{'month': 'Mar', 'invoiced': 0, 'collected': 0, 'expenses': 0},
+              <String, dynamic>{'month': 'Ago', 'invoiced': 1190000, 'collected': 700000, 'expenses': 980000},
+            ],
+            'expenses_by_category': <Map<String, dynamic>>[
+              <String, dynamic>{'category': 'Materiales', 'spent': 520000},
+            ],
           }),
         ),
       );
 
-      final ProjectKpis kpis = await repository.fetchKpis('p1');
+      final ProjectDashboardModel kpis = await repository.fetchKpis('p1');
 
       expect(requests.single.url.path, '/dashboard/financial/p1');
       expect(kpis.totalBudget, 2500000);
       expect(kpis.totalPaidToProviders, 400000);
       expect(kpis.budgetUsedPercent, closeTo(64, 0.01));
       expect(kpis.isOverBudget, isFalse);
+      expect(kpis.monthlyTrends, hasLength(2));
+      expect(kpis.monthlyTrends.first.month, 'Mar');
+      expect(kpis.expensesByCategory.single.category, 'Materiales');
+      expect(kpis.expensesByCategory.single.spent, 520000);
     });
 
     test(
       'detecta sobrecosto cuando gastos + compras superan el presupuesto',
       () {
-        final ProjectKpis kpis = ProjectKpis.fromJson(<String, dynamic>{
-          'project_id': 'p1',
-          'total_budget': 1000,
-          'total_expenses': 800,
-          'total_purchased': 400,
-        });
+        final ProjectDashboardModel kpis = ProjectDashboardModel.fromJson(
+          <String, dynamic>{
+            'project_id': 'p1',
+            'total_budget': 1000,
+            'total_expenses': 800,
+            'total_purchased': 400,
+          },
+        );
 
         expect(kpis.isOverBudget, isTrue);
         expect(kpis.budgetUsedPercent, 120);
@@ -221,14 +234,35 @@ void main() {
     );
 
     test('sin presupuesto no calcula el porcentaje consumido', () {
-      final ProjectKpis kpis = ProjectKpis.fromJson(<String, dynamic>{
-        'project_id': 'p1',
-        'total_budget': 0,
-        'total_expenses': 500,
-      });
+      final ProjectDashboardModel kpis = ProjectDashboardModel.fromJson(
+        <String, dynamic>{
+          'project_id': 'p1',
+          'total_budget': 0,
+          'total_expenses': 500,
+        },
+      );
 
       expect(kpis.budgetUsedPercent, isNull);
       expect(kpis.isOverBudget, isFalse);
+    });
+
+    test('sin categorías reparte lo gastado entre rubros por defecto', () {
+      final ProjectDashboardModel kpis = ProjectDashboardModel.fromJson(
+        <String, dynamic>{
+          'project_id': 'p1',
+          'total_budget': 1000,
+          'total_expenses': 800,
+          'total_purchased': 200,
+        },
+      );
+
+      final List<CategoryExpense> breakdown = kpis.categoryBreakdown;
+      expect(breakdown, hasLength(3));
+      expect(breakdown.map((CategoryExpense e) => e.category), contains('Materiales'));
+      expect(
+        breakdown.fold(0.0, (double sum, CategoryExpense e) => sum + e.spent),
+        closeTo(kpis.totalSpent, 0.001),
+      );
     });
   });
 
@@ -279,6 +313,64 @@ void main() {
       expect(updated.id, 'p1');
       expect(updated.name, 'Nueva');
       expect(updated.location, 'Cali');
+    });
+  });
+
+  group('Dashboard · modelo', () {
+    test('mapea la tendencia mensual y el desglose por categoría', () {
+      final ProjectDashboardModel dashboard = ProjectDashboardModel.fromJson(
+        <String, dynamic>{
+          'company_id': 'c1',
+          'project_id': 'p1',
+          'total_budget': 900,
+          'total_expenses': 30000,
+          'total_purchased': 1199.2,
+          'total_invoiced': 11634.81,
+          'total_collected': 65000,
+          'total_paid_to_prov': 0,
+          'financial_variance': -30299.2,
+          'monthly_trends': <Map<String, dynamic>>[
+            <String, dynamic>{'month': 'Jun', 'invoiced': 0, 'collected': 0, 'expenses': 0},
+            <String, dynamic>{'month': 'Aug', 'invoiced': 11669.62, 'collected': 65000, 'expenses': 90000},
+          ],
+          'expenses_by_category': <Map<String, dynamic>>[
+            <String, dynamic>{'category': 'Materiales', 'spent': 18000},
+            <String, dynamic>{'category': 'Personal', 'spent': 8000},
+            <String, dynamic>{'category': 'Equipos', 'spent': 4000},
+          ],
+        },
+      );
+
+      expect(dashboard.financialVariance, -30299.2);
+      expect(dashboard.totalSpent, closeTo(31199.2, 0.001));
+      expect(dashboard.monthlyTrends, hasLength(2));
+      expect(dashboard.monthlyTrends.last.collected, 65000);
+      expect(dashboard.categoryBreakdown, hasLength(3));
+      expect(dashboard.categoryBreakdown.first.spent, 18000);
+    });
+
+    test('tolera tendencia y categorías ausentes', () {
+      final ProjectDashboardModel dashboard = ProjectDashboardModel.fromJson(
+        <String, dynamic>{'project_id': 'p1', 'total_expenses': 500},
+      );
+
+      expect(dashboard.monthlyTrends, isEmpty);
+      expect(dashboard.expensesByCategory, isEmpty);
+      expect(dashboard.categoryBreakdown, hasLength(3));
+    });
+
+    test('categoryBreakdown respeta el desglose de la API aunque haya datos', () {
+      final ProjectDashboardModel dashboard = ProjectDashboardModel.fromJson(
+        <String, dynamic>{
+          'project_id': 'p1',
+          'expenses_by_category': <Map<String, dynamic>>[
+            <String, dynamic>{'category': 'Otro', 'spent': 10},
+          ],
+        },
+      );
+
+      expect(dashboard.categoryBreakdown, hasLength(1));
+      expect(dashboard.categoryBreakdown.single.category, 'Otro');
     });
   });
 }

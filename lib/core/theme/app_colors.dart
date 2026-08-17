@@ -36,6 +36,16 @@ abstract final class AppColors {
   /// turquesa saturado original, que era lo que más «ciberpunk» hacía ver todo.
   static const Color cyanNeon = Color(0xFF5FBDB4);
 
+  // ── Panel financiero ────────────────────────────────────────────────────
+  /// Verde esmeralda: presupuesto y cobros saludables del panel.
+  static const Color emerald = Color(0xFF10B981);
+
+  /// Rosa/rojo: gastos y variaciones negativas del panel.
+  static const Color rose = Color(0xFFF43F5E);
+
+  /// Índigo: facturación y métricas frías del panel.
+  static const Color indigo = Color(0xFF6366F1);
+
   // ── Semánticos ──────────────────────────────────────────────────────────
   static const Color success = Color(0xFF4CC98A);
   static const Color warning = Color(0xFFE8B647);
