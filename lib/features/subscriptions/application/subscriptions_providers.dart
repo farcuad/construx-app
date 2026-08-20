@@ -11,6 +11,10 @@ final Provider<SubscriptionsRepository> subscriptionsRepositoryProvider =
 
 /// `GET /subscriptions/me`. `null` = la empresa no tiene suscripción.
 final FutureProvider<CompanySubscription?> mySubscriptionProvider =
-    FutureProvider<CompanySubscription?>(
-      (Ref ref) => ref.watch(subscriptionsRepositoryProvider).fetchMine(),
-    );
+    FutureProvider<CompanySubscription?>((Ref ref) {
+      // El provider también alimenta el guardián del router. Esperar al token
+      // evita pedir el endpoint durante el splash o después del logout.
+      final String? token = ref.watch(authTokenProvider);
+      if (token == null || token.isEmpty) return null;
+      return ref.watch(subscriptionsRepositoryProvider).fetchMine();
+    });

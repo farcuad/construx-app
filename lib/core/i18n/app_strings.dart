@@ -55,6 +55,26 @@ class AppStrings {
     required this.terms,
     required this.termsIntro,
     required this.termsSections,
+    required this.subscription,
+    required this.subscriptionError,
+    required this.subscriptionMissingTitle,
+    required this.subscriptionMissingMessage,
+    required this.subscriptionExpiredTitle,
+    required this.subscriptionExpiredMessage,
+    required this.subscriptionActive,
+    required this.subscriptionTrial,
+    required this.subscriptionStatus,
+    required this.subscriptionStart,
+    required this.subscriptionTrialEnd,
+    required this.subscriptionEnd,
+    required this.subscriptionPrice,
+    required this.subscriptionBilling,
+    required this.subscriptionMonthly,
+    required this.subscriptionLimits,
+    required this.subscriptionProjects,
+    required this.subscriptionUsers,
+    required this.subscriptionStorage,
+    required this.subscriptionContact,
     required this.logout,
     required this.logoutMessage,
     required this.logoutConfirm,
@@ -159,6 +179,26 @@ class AppStrings {
   final String terms;
   final String termsIntro;
   final List<TermsSection> termsSections;
+  final String subscription;
+  final String subscriptionError;
+  final String subscriptionMissingTitle;
+  final String subscriptionMissingMessage;
+  final String subscriptionExpiredTitle;
+  final String subscriptionExpiredMessage;
+  final String subscriptionActive;
+  final String subscriptionTrial;
+  final String subscriptionStatus;
+  final String subscriptionStart;
+  final String subscriptionTrialEnd;
+  final String subscriptionEnd;
+  final String subscriptionPrice;
+  final String subscriptionBilling;
+  final String subscriptionMonthly;
+  final String subscriptionLimits;
+  final String subscriptionProjects;
+  final String subscriptionUsers;
+  final String subscriptionStorage;
+  final String subscriptionContact;
   final String logout;
   final String logoutMessage;
   final String logoutConfirm;

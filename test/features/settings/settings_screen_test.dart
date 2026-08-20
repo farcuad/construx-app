@@ -15,6 +15,7 @@ import 'package:mi_app_constructora/features/home/presentation/widgets/app_nav_b
 import 'package:mi_app_constructora/features/projects/presentation/projects_screen.dart';
 import 'package:mi_app_constructora/features/settings/presentation/settings_screen.dart';
 import 'package:mi_app_constructora/features/settings/presentation/terms_screen.dart';
+import 'package:mi_app_constructora/features/subscriptions/presentation/subscription_screen.dart';
 
 import '../../helpers/test_helpers.dart';
 
@@ -153,10 +154,21 @@ void main() {
       expect(find.byType(SettingsScreen), findsOneWidget);
       expect(find.text('andres@xyz.com'), findsOneWidget);
       expect(find.text('Cerrar sesión'), findsOneWidget);
+      expect(find.text('Mi plan'), findsOneWidget);
       expect(find.text('Términos y condiciones'), findsOneWidget);
       for (final AppLanguage language in AppLanguage.values) {
         expect(find.text(language.label), findsOneWidget);
       }
+    });
+
+    testWidgets('el plan se abre desde ajustes', (WidgetTester tester) async {
+      await pumpApp(tester);
+      await tapTab(tester, 'Ajustes');
+
+      await tester.tap(find.text('Mi plan'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SubscriptionScreen), findsOneWidget);
     });
 
     testWidgets('los términos se abren y se vuelve a ajustes', (

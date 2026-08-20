@@ -105,6 +105,31 @@ const AppStrings kStringsEs = AppStrings(
           'cualquier momento, por ejemplo al terminar tu relación laboral.',
     ),
   ],
+  subscription: 'Mi plan',
+  subscriptionError: 'No se pudo consultar el plan de tu empresa.',
+  subscriptionMissingTitle: 'No hay un plan asociado',
+  subscriptionMissingMessage:
+      'Tu empresa todavía no tiene una suscripción disponible para usar '
+      'Construx.',
+  subscriptionExpiredTitle: 'El acceso de tu empresa venció',
+  subscriptionExpiredMessage:
+      'Los módulos están pausados, pero los datos siguen seguros. Renueva el '
+      'plan para continuar trabajando.',
+  subscriptionActive: 'Plan activo',
+  subscriptionTrial: 'Periodo de prueba',
+  subscriptionStatus: 'Estado',
+  subscriptionStart: 'Inicio',
+  subscriptionTrialEnd: 'Fin de prueba',
+  subscriptionEnd: 'Vencimiento',
+  subscriptionPrice: 'Precio',
+  subscriptionBilling: 'Facturación',
+  subscriptionMonthly: 'Mensual',
+  subscriptionLimits: 'Capacidad incluida',
+  subscriptionProjects: 'Proyectos',
+  subscriptionUsers: 'Usuarios',
+  subscriptionStorage: 'Almacenamiento',
+  subscriptionContact:
+      'Contacta al administrador de tu cuenta para renovar o cambiar el plan.',
   logout: 'Cerrar sesión',
   logoutMessage:
       '¿Seguro que quieres salir? Los datos recordados se conservan.',

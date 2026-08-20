@@ -49,6 +49,29 @@ class CompanySubscription {
 
   bool get isActive => status.toLowerCase() == 'active';
 
+  /// Indica si la empresa puede entrar a los módulos protegidos del SaaS.
+  ///
+  /// Además del estado se comprueba la fecha: así un `trial` que todavía no
+  /// haya sido actualizado por el backend se bloquea al llegar su vencimiento.
+  bool get hasAccess => hasAccessAt(DateTime.now());
+
+  @visibleForTesting
+  bool hasAccessAt(DateTime now) {
+    final String normalizedStatus = status.trim().toLowerCase();
+    final DateTime instant = now.toUtc();
+
+    if (cancelledAt != null && !cancelledAt!.toUtc().isAfter(instant)) {
+      return false;
+    }
+    if (normalizedStatus == 'trial') {
+      return trialEndDate?.toUtc().isAfter(instant) ?? false;
+    }
+    if (normalizedStatus == 'active') {
+      return endDate?.toUtc().isAfter(instant) ?? true;
+    }
+    return false;
+  }
+
   /// Días que faltan para que caduque, o `null` si no tiene fin.
   int? get daysRemaining {
     final DateTime? end = endDate ?? trialEndDate;

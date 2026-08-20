@@ -21,6 +21,9 @@ import '../../features/projects/presentation/projects_screen.dart';
 import '../../features/schedule/presentation/schedule_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/settings/presentation/terms_screen.dart';
+import '../../features/subscriptions/application/subscriptions_providers.dart';
+import '../../features/subscriptions/domain/subscription.dart';
+import '../../features/subscriptions/presentation/subscription_screen.dart';
 import '../../features/suppliers/presentation/suppliers_screen.dart';
 import '../../features/users/presentation/users_screen.dart';
 import '../widgets/app_widgets.dart';
@@ -142,21 +145,50 @@ final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
   debugLabel: 'root',
 );
 
+enum _SubscriptionGate { loading, allowed, blocked }
+
 final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
   final ValueNotifier<AuthStatus> authStatus = ValueNotifier<AuthStatus>(
     ref.read(authControllerProvider).status,
   );
-  ref.onDispose(authStatus.dispose);
+  final ValueNotifier<_SubscriptionGate> subscriptionGate =
+      ValueNotifier<_SubscriptionGate>(_SubscriptionGate.loading);
+  ref.onDispose(() {
+    authStatus.dispose();
+    subscriptionGate.dispose();
+  });
 
   ref.listen<AuthStatus>(
     authControllerProvider.select((AuthState s) => s.status),
     (AuthStatus? _, AuthStatus next) => authStatus.value = next,
   );
+  ref.listen<AsyncValue<CompanySubscription?>>(mySubscriptionProvider, (
+    AsyncValue<CompanySubscription?>? _,
+    AsyncValue<CompanySubscription?> next,
+  ) {
+    final CompanySubscription? subscription = next.valueOrNull;
+    subscriptionGate.value = next.hasError
+        // Un fallo de red no confirma un vencimiento. Mantener el acceso
+        // evita bloquear toda la operación por una caída temporal del API.
+        ? _SubscriptionGate.allowed
+        : next.isLoading && subscription == null
+        ? _SubscriptionGate.loading
+        // Una respuesta incompleta tampoco demuestra que el plan venció.
+        : subscription != null &&
+              (subscription.id.isEmpty || subscription.status.isEmpty)
+        ? _SubscriptionGate.allowed
+        : subscription?.hasAccess == true
+        ? _SubscriptionGate.allowed
+        : _SubscriptionGate.blocked;
+  }, fireImmediately: true);
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: SplashScreen.routePath,
-    refreshListenable: authStatus,
+    refreshListenable: Listenable.merge(<Listenable>[
+      authStatus,
+      subscriptionGate,
+    ]),
     redirect: (BuildContext context, GoRouterState state) {
       final AuthStatus status = authStatus.value;
       final String location = state.matchedLocation;
@@ -170,7 +202,16 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       if (status == AuthStatus.unauthenticated) {
         return goingToLogin ? null : LoginScreen.routePath;
       }
-      // Autenticado: fuera del login y del splash.
+      final bool viewingSubscription = location == SubscriptionScreen.routePath;
+      if (subscriptionGate.value == _SubscriptionGate.loading) {
+        return viewingSubscription || location == SplashScreen.routePath
+            ? null
+            : SplashScreen.routePath;
+      }
+      if (subscriptionGate.value == _SubscriptionGate.blocked) {
+        return viewingSubscription ? null : SubscriptionScreen.routePath;
+      }
+      // Autenticado y con acceso: fuera del login y del splash.
       if (goingToLogin || location == SplashScreen.routePath) {
         return HomeScreen.routePath;
       }
@@ -229,6 +270,12 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             name: TermsScreen.routeName,
             pageBuilder: (BuildContext context, GoRouterState state) =>
                 _page(const TermsScreen()),
+          ),
+          GoRoute(
+            path: 'subscription',
+            name: SubscriptionScreen.routeName,
+            pageBuilder: (BuildContext context, GoRouterState state) =>
+                _page(const SubscriptionScreen()),
           ),
         ],
       ),

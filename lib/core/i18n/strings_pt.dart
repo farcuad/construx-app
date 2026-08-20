@@ -104,6 +104,32 @@ const AppStrings kStringsPt = AppStrings(
           'momento, por exemplo ao encerrar o vínculo de trabalho.',
     ),
   ],
+  subscription: 'Meu plano',
+  subscriptionError: 'Não foi possível consultar o plano da sua empresa.',
+  subscriptionMissingTitle: 'Nenhum plano associado',
+  subscriptionMissingMessage:
+      'Sua empresa ainda não tem uma assinatura disponível para usar o '
+      'Construx.',
+  subscriptionExpiredTitle: 'O acesso da sua empresa expirou',
+  subscriptionExpiredMessage:
+      'Os módulos estão pausados, mas os dados continuam seguros. Renove o '
+      'plano para continuar trabalhando.',
+  subscriptionActive: 'Plano ativo',
+  subscriptionTrial: 'Período de teste',
+  subscriptionStatus: 'Status',
+  subscriptionStart: 'Início',
+  subscriptionTrialEnd: 'Fim do teste',
+  subscriptionEnd: 'Vencimento',
+  subscriptionPrice: 'Preço',
+  subscriptionBilling: 'Faturamento',
+  subscriptionMonthly: 'Mensal',
+  subscriptionLimits: 'Capacidade incluída',
+  subscriptionProjects: 'Obras',
+  subscriptionUsers: 'Usuários',
+  subscriptionStorage: 'Armazenamento',
+  subscriptionContact:
+      'Entre em contato com o administrador da conta para renovar ou alterar '
+      'o plano.',
   logout: 'Sair da conta',
   logoutMessage: 'Deseja mesmo sair? Os dados lembrados são mantidos.',
   logoutConfirm: 'Sair',

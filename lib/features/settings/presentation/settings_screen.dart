@@ -12,6 +12,7 @@ import '../../auth/application/auth_controller.dart';
 import '../../auth/domain/auth_user.dart';
 import '../../auth/presentation/logout_dialog.dart';
 import '../../home/presentation/widgets/module_scaffold.dart';
+import '../../subscriptions/presentation/subscription_screen.dart';
 import 'terms_screen.dart';
 
 /// Ajustes de la app: sesión, idioma y textos legales.
@@ -39,6 +40,20 @@ class SettingsScreen extends ConsumerWidget {
           if (user != null) ...<Widget>[
             _SectionTitle(strings.settingsSession),
             _Panel(child: _Account(user: user)),
+            const SizedBox(height: 26),
+            _SectionTitle(strings.subscription),
+            _Panel(
+              child: _Row(
+                icon: Icons.workspace_premium_rounded,
+                label: strings.subscription,
+                trailing: const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: AppColors.textDisabled,
+                ),
+                onTap: () => context.go(SubscriptionScreen.routePath),
+              ),
+            ),
             const SizedBox(height: 26),
           ],
           _SectionTitle(strings.settingsPreferences),

@@ -103,6 +103,31 @@ const AppStrings kStringsEn = AppStrings(
           'access at any time, for instance when your employment ends.',
     ),
   ],
+  subscription: 'My plan',
+  subscriptionError: 'Your company plan could not be loaded.',
+  subscriptionMissingTitle: 'No plan is linked',
+  subscriptionMissingMessage:
+      'Your company does not have a subscription available to use Construx '
+      'yet.',
+  subscriptionExpiredTitle: 'Your company access has expired',
+  subscriptionExpiredMessage:
+      'Modules are paused, but your data remains safe. Renew the plan to keep '
+      'working.',
+  subscriptionActive: 'Active plan',
+  subscriptionTrial: 'Trial period',
+  subscriptionStatus: 'Status',
+  subscriptionStart: 'Started',
+  subscriptionTrialEnd: 'Trial ends',
+  subscriptionEnd: 'Expires',
+  subscriptionPrice: 'Price',
+  subscriptionBilling: 'Billing',
+  subscriptionMonthly: 'Monthly',
+  subscriptionLimits: 'Included capacity',
+  subscriptionProjects: 'Projects',
+  subscriptionUsers: 'Users',
+  subscriptionStorage: 'Storage',
+  subscriptionContact:
+      'Contact your account administrator to renew or change the plan.',
   logout: 'Sign out',
   logoutMessage: 'Sign out for real? Remembered credentials are kept.',
   logoutConfirm: 'Sign out',

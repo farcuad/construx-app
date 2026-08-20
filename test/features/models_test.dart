@@ -217,8 +217,8 @@ void main() {
       expect(body['project_id'], '4fe2d832');
       expect(body['date'], '2026-07-02', reason: 'sin hora, como pide el API');
 
-      final List<Map<String, dynamic>> logs =
-          (body['logs'] as List<dynamic>).cast<Map<String, dynamic>>();
+      final List<Map<String, dynamic>> logs = (body['logs'] as List<dynamic>)
+          .cast<Map<String, dynamic>>();
       expect(logs.single, <String, dynamic>{
         'employee_id': '8a00707f',
         'status': 'Late',
@@ -387,5 +387,30 @@ void main() {
         expect(sub.daysRemaining, 10);
       },
     );
+
+    test('un trial vigente conserva el acceso hasta su instante final', () {
+      final CompanySubscription sub = CompanySubscription.fromJson(
+        <String, dynamic>{
+          'id': 's1',
+          'status': 'trial',
+          'trial_end_date': '2026-08-19T19:01:01Z',
+        },
+      );
+
+      expect(sub.hasAccessAt(DateTime.utc(2026, 8, 19, 19)), isTrue);
+      expect(sub.hasAccessAt(DateTime.utc(2026, 8, 19, 19, 1, 1)), isFalse);
+    });
+
+    test('un plan activo con fecha pasada queda vencido', () {
+      final CompanySubscription sub = CompanySubscription.fromJson(
+        <String, dynamic>{
+          'id': 's1',
+          'status': 'active',
+          'end_date': '2026-08-01T00:00:00Z',
+        },
+      );
+
+      expect(sub.hasAccessAt(DateTime.utc(2026, 8, 19)), isFalse);
+    });
   });
 }
